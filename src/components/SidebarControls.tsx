@@ -822,7 +822,7 @@ export const SidebarControls: React.FC<SidebarControlsProps> = ({
         <button
           onClick={async () => {
             const filename = `BUFT-${activeTab === 'lab' ? 'Lab-Report' : activeTab === 'assignment' ? 'Assignment' : 'Index'}-${state.courseCode || 'Document'}.pdf`;
-            await downloadA4PDF('a4-print-page', filename);
+            await downloadA4PDF('a4-pdf-capture-page', filename);
           }}
           className="w-full py-3 bg-gradient-to-r from-pink-500 to-indigo-500 hover:from-pink-600 hover:to-indigo-600 text-white font-extrabold rounded-xl text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 shadow-lg shadow-pink-500/10 hover:shadow-pink-500/20 cursor-pointer active:scale-98"
         >
