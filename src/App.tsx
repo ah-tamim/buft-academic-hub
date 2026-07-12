@@ -552,16 +552,17 @@ export default function App() {
                   <span className="hidden sm:inline">Printing Guide</span>
                 </button>
 
-                <button
-                  onClick={async () => {
-                    const filename = `BUFT-${activeTab === 'lab' ? 'Lab-Report' : activeTab === 'assignment' ? 'Assignment' : 'Index'}-${coverState.courseCode || 'Document'}.pdf`;
-                    await downloadA4PDF('a4-pdf-capture-page', filename);
-                  }}
-                  className="flex items-center gap-1.5 px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition cursor-pointer shadow-md shadow-emerald-600/10"
-                >
-                  <Printer className="h-3.5 w-3.5" />
-                  <span>Export PDF</span>
-                </button>
+               {/* <button
+  onClick={async () => {
+    const filename = `BUFT-${activeTab === 'lab' ? 'Lab-Report' : activeTab === 'assignment' ? 'Assignment' : 'Index'}-${coverState}`;
+    await downloadA4PDF('a4-pdf-capture-page', filename);
+  }}
+  className="flex items-center gap-1.5 px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold tran"
+>
+  <Printer className="h-3.5 w-3.5" />
+  <span>Export PDF</span>
+</button> 
+*/}
               </div>
             </div>
 
