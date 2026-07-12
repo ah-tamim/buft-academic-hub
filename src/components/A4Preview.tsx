@@ -2,7 +2,7 @@ import React from 'react';
 import { CoverPageState, IndexRow } from '../types';
 import { FONT_PRESETS } from '../data';
 // @ts-ignore
-import buftLogo from '../buft-logo.png';
+
 
 interface A4PreviewProps {
   state: CoverPageState;
@@ -36,7 +36,7 @@ export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTa
   const spacingMultiplier = state.verticalSpacing * 0.25; // scaling factor
   
   // Permanent university logo with local asset fallback to avoid CORS issues
-  const logoSrc = state.customLogo || (state.logoUrl === 'https://buft.edu.bd/logo-326x329.png' ? buftLogo : state.logoUrl);
+  const logoSrc = state.customLogo || '/buft-logo.png';
 
   return (
     <div className="flex-1 flex justify-center items-start overflow-auto p-4 md:p-8 no-print select-none">
