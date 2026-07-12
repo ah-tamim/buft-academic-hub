@@ -15,28 +15,22 @@ export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTa
   // Find the selected font preset
   const selectedFont = FONT_PRESETS.find((f) => f.value === state.fontFamily) || FONT_PRESETS[0];
 
-  // Dynamic Border Style Calculator
-  const getBorderStyle = () => {
-    const color = state.borderColor;
-    const thickness = `${state.borderThickness}px`;
-    const gap = `${state.borderGap}px`;
-    const padding = `${state.borderPadding}mm`;
+  // Helper to force hex color for PDF compatibility
+  const forceHex = (color: string) => {
+    return color.startsWith('#') ? color : '#000000';
+  };
 
+  const getBorderStyle = () => {
     return {
-      padding,
-      borderColor: color,
-      thickness,
-      gap,
+      padding: `${state.borderPadding}mm`,
+      borderColor: forceHex(state.borderColor),
+      thickness: `${state.borderThickness}px`,
+      gap: `${state.borderGap}px`,
     };
   };
 
   const bs = getBorderStyle();
-
-  // Spacing helper based on verticalSpacing (1-10) and submissionBoxPosition (0-100)
-  // Higher vertical spacing means elements themselves have more padding/margins.
-  const spacingMultiplier = state.verticalSpacing * 0.25; // scaling factor
-  
-  // Permanent university logo with local asset fallback to avoid CORS issues
+  const spacingMultiplier = state.verticalSpacing * 0.25;
   const logoSrc = state.customLogo || '/buft-logo.png';
 
   return (
@@ -61,7 +55,7 @@ export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTa
           <div
             className="w-full h-full flex flex-col box-border relative"
             style={{
-              border: `${bs.thickness} solid ${bs.borderColor}`,
+              border: `${bs.thickness} solid ${forceHex(bs.borderColor)}`,
               padding: bs.gap,
             }}
           >
@@ -69,7 +63,7 @@ export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTa
             <div
               className="w-full h-full flex flex-col items-center box-border relative"
               style={{
-                border: `${bs.thickness} solid ${bs.borderColor}`,
+               border: `${bs.thickness} solid ${forceHex(bs.borderColor)}`,
                 padding: '2.5rem 1.8rem',
               }}
             >
@@ -78,7 +72,7 @@ export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTa
                 <h1 
                   className="font-bold tracking-wide text-center uppercase"
                   style={{
-                    color: state.borderColor === '#1e293b' ? '#0f172a' : state.borderColor,
+                  color: forceHex(state.borderColor === '#1e293b' ? '#0f172a' : state.borderColor),
                     fontSize: '22px',
                     lineHeight: '1.2',
                     fontFamily: state.fontFamily === 'serif' ? 'Times New Roman, Georgia, serif' : undefined,
@@ -118,7 +112,7 @@ export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTa
                   <div 
                     className="w-[85%] text-center px-4 py-2 mt-2 transition-all"
                     style={{
-                      border: `1.5px solid ${state.borderColor}`,
+                      border: `1.5px solid ${forceHex(state.borderColor)}`,
                       borderWidth: state.titleBoxStyle === 'double' ? '3px' : '1.5px',
                       borderStyle: state.titleBoxStyle === 'double' ? 'double' : 'solid',
                       backgroundColor: state.titleBoxStyle === 'solid' ? state.borderColor : 'transparent',
