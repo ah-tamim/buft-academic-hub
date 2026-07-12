@@ -589,7 +589,7 @@ export default function App() {
               }`}
             >
               <Settings2 className="h-4 w-4" />
-              <span>Edit Forms</span>
+              <span>Edit Page</span>
             </button>
             <button
               onClick={() => setMobileView('preview')}
@@ -600,7 +600,7 @@ export default function App() {
               }`}
             >
               <Eye className="h-4 w-4" />
-              <span>View Page</span>
+              <span>Preview Page</span>
             </button>
           </div>
 
