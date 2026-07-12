@@ -117,13 +117,7 @@ export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTa
                   </div>
 
                   {/* SUBMISSION INFO SEGMENT - Rises up beautifully with padding bottom offset */}
-                  <div 
-                    className="w-full flex-1 flex flex-col justify-end"
-                    style={{
-                      paddingBottom: `${state.submissionBoxPosition * 1.5}px`,
-                      transition: 'all 0.15s ease-out',
-                    }}
-                  >
+                  <div className="w-full flex-1 flex flex-col items-center relative box-border mt-2">
                     <div 
                       className={`grid grid-cols-2 gap-5 w-full ${state.submissionBoxStyle !== 'outlined-cards' ? 'border-t border-slate-100 pt-5' : ''}`}
                     >
