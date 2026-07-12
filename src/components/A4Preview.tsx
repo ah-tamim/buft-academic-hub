@@ -37,7 +37,7 @@ export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTa
   const spacingMultiplier = state.verticalSpacing * 0.25; // scaling factor
   
   // Permanent university logo with local asset fallback to avoid CORS issues
-  const logoSrc = state.customLogo || (state.logoUrl === 'https://buft.edu.bd/logo-326x329.png' ? BUFT_LOGO_BASE64 : state.logoUrl);
+  const logoSrc = state.customLogo || (state.logoUrl === 'https://buft.edu.bd/logo-326x329.png' ? '/buft-logo.png' : state.logoUrl);
 
   return (
     <div className="flex-1 flex justify-center items-start overflow-auto p-4 md:p-8 no-print select-none">
