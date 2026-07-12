@@ -555,7 +555,7 @@ export default function App() {
                 <button
                   onClick={async () => {
                     const filename = `BUFT-${activeTab === 'lab' ? 'Lab-Report' : activeTab === 'assignment' ? 'Assignment' : 'Index'}-${coverState.courseCode || 'Document'}.pdf`;
-                    await downloadA4PDF('a4-print-page', filename);
+                    await downloadA4PDF('a4-pdf-capture-page', filename);
                   }}
                   className="flex items-center gap-1.5 px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition cursor-pointer shadow-md shadow-emerald-600/10"
                 >
@@ -569,6 +569,7 @@ export default function App() {
             <div className="flex-1 bg-gradient-to-tr from-slate-200 via-zinc-100 to-indigo-100/30 overflow-y-auto overflow-x-auto flex justify-center items-start p-4 lg:p-8 scrollbar-thin scrollbar-thumb-slate-200">
               <div className="transform scale-[0.62] sm:scale-[0.75] md:scale-[0.88] lg:scale-100 origin-top transition-transform duration-300">
                 <A4Preview
+                  id="a4-preview-page"
                   state={coverState}
                   indexRows={indexRows}
                   activeTab={activeTab}
@@ -609,6 +610,20 @@ export default function App() {
       {/* HIGH RES REAL A4 PRINT OUTLET CONTAINER (Visible only in Print Media) */}
       <div className="print-only hidden">
         <A4Preview
+          id="a4-print-page"
+          state={coverState}
+          indexRows={indexRows}
+          activeTab={activeTab}
+        />
+      </div>
+
+      {/* Off-screen capture page for html2canvas to avoid CORS, display:none/hidden errors on mobile, and scale blurring */}
+      <div 
+        className="fixed left-[-9999px] top-[-9999px] overflow-hidden no-print"
+        style={{ width: '210mm', height: '297mm', pointerEvents: 'none' }}
+      >
+        <A4Preview
+          id="a4-pdf-capture-page"
           state={coverState}
           indexRows={indexRows}
           activeTab={activeTab}
