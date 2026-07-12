@@ -11,6 +11,12 @@ export async function downloadA4PDF(elementId: string, filename: string = 'BUFT-
     return;
   }
 
+  // --- ADD THESE TWO LINES ---
+  // This waits 800 milliseconds (0.8 seconds) to ensure the logo is loaded
+  await new Promise((resolve) => setTimeout(resolve, 800)); 
+  // ---------------------------
+
+
   // Save the current scroll positions
   const scrollX = window.scrollX;
   const scrollY = window.scrollY;
