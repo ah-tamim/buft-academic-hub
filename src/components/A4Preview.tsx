@@ -40,7 +40,7 @@ export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTa
   const logoSrc = state.customLogo || '/buft-logo.png';
 
   return (
-    <div className="flex-1 flex justify-center items-start overflow-auto p-4 md:p-8 no-print select-none">
+    <div className="flex-1 flex justify-center items-start overflow-auto p-4 md:p-8 select-none">
       {/* Real A4 Paper representation on screen */}
       <div
         id={id}
@@ -98,13 +98,14 @@ export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTa
                     }}
                   >
                     <img
-                      src={logoSrc}
-                      alt="University Crest"
-                      className="h-full w-auto object-contain mix-blend-multiply"
-                      onError={(e) => {
-                        (e.target as HTMLElement).style.display = 'none';
-                      }}
-                    />
+  src={logoSrc}
+  alt="University Crest"
+  crossOrigin="anonymous" 
+  className="h-full w-auto object-contain mix-blend-multiply"
+  onError={(e) => {
+    (e.target as HTMLElement).style.display = 'none';
+  }}
+/>
                   </div>
                 )}
               </div>
