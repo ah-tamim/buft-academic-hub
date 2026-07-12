@@ -4,7 +4,7 @@ import { FONT_PRESETS } from '../data';
 // @ts-ignore
 
 
-interface A4PreviewProps {
+export interface A4PreviewProps {
   state: CoverPageState;
   indexRows: IndexRow[];
   activeTab: 'lab' | 'assignment' | 'index';
