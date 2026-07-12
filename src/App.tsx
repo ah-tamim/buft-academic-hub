@@ -569,11 +569,11 @@ export default function App() {
             <div className="flex-1 bg-gradient-to-tr from-slate-200 via-zinc-100 to-indigo-100/30 overflow-y-auto overflow-x-auto flex justify-center items-start p-4 lg:p-8 scrollbar-thin scrollbar-thumb-slate-200">
               <div className="transform scale-[0.62] sm:scale-[0.75] md:scale-[0.88] lg:scale-100 origin-top transition-transform duration-300">
                 <A4Preview
-                  id="a4-preview-page"
-                  state={coverState}
-                  indexRows={indexRows}
-                  activeTab={activeTab}
-                />
+                id="a4-preview-page"
+                state={coverState}
+                indexRows={indexRows}
+                activeTab={activeTab}
+              />
               </div>
             </div>
           </div>
