@@ -11,11 +11,8 @@ export async function downloadA4PDF(elementId: string, filename: string = 'BUFT-
     return;
   }
 
-  // --- ADD THESE TWO LINES ---
-  // This waits 800 milliseconds (0.8 seconds) to ensure the logo is loaded
+  // Wait 800ms to ensure the logo and styles are fully rendered
   await new Promise((resolve) => setTimeout(resolve, 800)); 
-  // ---------------------------
-
 
   // Save the current scroll positions
   const scrollX = window.scrollX;
@@ -25,7 +22,7 @@ export async function downloadA4PDF(elementId: string, filename: string = 'BUFT-
     // Set rendering options for premium crispness (300 DPI equivalent via scale: 3)
     const canvas = await html2canvas(element, {
       scale: 3,
-      useCORS: true,
+      useCORS: true, // This allows the library to capture your local logo
       logging: false,
       backgroundColor: '#ffffff',
       allowTaint: false,
