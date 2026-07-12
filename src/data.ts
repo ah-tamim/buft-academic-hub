@@ -1,0 +1,130 @@
+import { CoverPageState, IndexRow } from './types';
+
+// =========================================================================
+// FEEDBACK HUB CONFIGURATION (For Static Hosting: GitHub / Netlify / Vercel)
+// =========================================================================
+// Since static sites do not run a server database, you can receive all student feedback 
+// directly in your email box (ahsanhabibtamim.new@gmail.com) completely for free!
+//
+// HOW TO SET IT UP:
+// 1. Visit Web3Forms (https://web3forms.com) or Formspree (https://formspree.io) and register.
+// 2. Paste your endpoint URL or access key below:
+// =========================================================================
+export const FEEDBACK_ENDPOINT = ''; // e.g., 'https://api.web3forms.com/submit' OR 'https://formspree.io/f/your_form_id'
+export const WEB3FORMS_ACCESS_KEY = ''; // If using Web3Forms, paste your Access Key here (e.g., '48f94d9f-...')
+
+export const COLOR_PRESETS = [
+  { name: 'Magenta Pink (Classic)', value: '#d946ef' },
+  { name: 'Deep Pink (Vibrant)', value: '#ec4899' },
+  { name: 'BUFT Navy (Brand)', value: '#0c2340' },
+  { name: 'Dark Emerald', value: '#0f766e' },
+  { name: 'Royal Blue', value: '#1d4ed8' },
+  { name: 'Charcoal Black', value: '#1e293b' },
+  { name: 'Maroon Red', value: '#991b1b' },
+];
+
+export const FONT_PRESETS = [
+  { name: 'Standard Academic (Times New Roman Style)', value: 'serif', cssClass: 'font-serif' },
+  { name: 'Clean Modern (Inter / Arial Style)', value: 'sans', cssClass: 'font-sans' },
+  { name: 'Georgia Elegant', value: 'georgia', cssClass: 'font-[Georgia,serif]' },
+  { name: 'Editorial Display (Playfair Style)', value: 'playfair', cssClass: 'font-["Playfair_Display",serif]' },
+  { name: 'Technical / Monospace', value: 'mono', cssClass: 'font-mono' },
+];
+
+export const DEPARTMENTS = [
+  'Textile Engineering (TE)',
+  'Knitwear Engineering (KE)',
+  'Textile Engineering & Management (TEM)',
+  'Apparel Merchandising & Management (AMM)',
+  'Apparel Manufacturing & Technology (AMT)',
+  'Fashion Studies',
+  'Fashion Design & Technology (FDT)',
+  'English',
+  'Business Administration',
+  'Computer Science & Engineering (CSE)',
+  'Industrial Engineering (IE)',
+  'Department of Environmental Science (ES)',
+];
+
+export const DESIGNATIONS = [
+  'Lecturer',
+  'Senior Lecturer',
+  'Assistant Professor',
+  'Associate Professor',
+  'Professor',
+  'Adjunct Faculty',
+  'Guest Teacher',
+];
+
+export const INITIAL_COVER_STATE: CoverPageState = {
+  universityName: 'BGMEA UNIVERSITY OF FASHION & TECHNOLOGY',
+  logoUrl: 'https://buft.edu.bd/logo-326x329.png',
+  coverType: 'lab',
+  courseCode: 'TEx 07232206',
+  courseTitle: 'Wet Processing-I',
+  experimentNo: '04',
+  experimentName: 'Study on the pre-treatment and dyeing of 100% cotton knit fabric with reactive dyes.',
+  assignmentTopic: 'Application of Smart Textiles in Modern Sustainable Apparel Design',
+  
+  // Submitted To
+  teacherName: 'Dr. Md. Mostafizur Rahman',
+  teacherDesignation: 'Associate Professor',
+  teacherDept: 'Textile Engineering',
+  
+  // Submitted By
+  studentName: 'Ahsan Tamim',
+  studentId: '242-520-801',
+  studentSection: '3A',
+  studentDept: 'Textile Engineering',
+  studentBatch: '221 (35th)',
+  studentSession: '2021-2022',
+  studentSemester: '6th Semester',
+  
+  // Dates
+  submissionDate: new Date().toLocaleDateString('en-GB'),
+  performanceDate: new Date().toLocaleDateString('en-GB'),
+  
+  // Layout & Styling
+  borderColor: '#d946ef', // default pink magenta from second picture
+  borderPadding: 10, // 10mm inset padding fixed
+  borderStyle: 'double',
+  borderThickness: 1.5,
+  borderGap: 2.5,
+  verticalSpacing: 10, // 10 scale (Balanced) fixed
+  submissionBoxPosition: 45, // 0 to 100 scale, controlling the "rises up" offset
+  fontFamily: 'serif',
+  showLogo: true,
+  customLogo: null,
+  titleBoxStyle: 'bordered',
+  submissionBoxStyle: 'minimal',
+};
+
+export const SAMPLE_INDEX_ROWS: IndexRow[] = [
+  {
+    id: '1',
+    no: '01',
+    name: 'Determination of moisture regain and moisture content of cotton fiber.',
+    performanceDate: '15/05/2026',
+    submissionDate: '22/05/2026',
+    pageNo: '01-05',
+    remarks: ''
+  },
+  {
+    id: '2',
+    no: '02',
+    name: 'Study on the single-jersey weft knitted structures and their properties.',
+    performanceDate: '29/05/2026',
+    submissionDate: '05/06/2026',
+    pageNo: '06-12',
+    remarks: ''
+  },
+  {
+    id: '3',
+    no: '03',
+    name: 'Dyeing of cotton knit fabric with direct dyes and assessment of color fastness.',
+    performanceDate: '12/06/2026',
+    submissionDate: '19/06/2026',
+    pageNo: '13-20',
+    remarks: ''
+  }
+];
