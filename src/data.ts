@@ -10,8 +10,8 @@ import { CoverPageState, IndexRow } from './types';
 // 1. Visit Web3Forms (https://web3forms.com) or Formspree (https://formspree.io) and register.
 // 2. Paste your endpoint URL or access key below:
 // =========================================================================
-export const FEEDBACK_ENDPOINT = ''; // e.g., 'https://api.web3forms.com/submit' OR 'https://formspree.io/f/your_form_id'
-export const WEB3FORMS_ACCESS_KEY = ''; // If using Web3Forms, paste your Access Key here (e.g., '48f94d9f-...')
+export const FEEDBACK_ENDPOINT = 'https://api.web3forms.com/submit'; // e.g., 'https://api.web3forms.com/submit' OR 'https://formspree.io/f/your_form_id'
+export const WEB3FORMS_ACCESS_KEY = '60a3f1b6-8745-4a10-bcac-e46877516556'; // If using Web3Forms, paste your Access Key here (e.g., '48f94d9f-...')
 
 export const COLOR_PRESETS = [
   { name: 'Magenta Pink (Classic)', value: '#d946ef' },
