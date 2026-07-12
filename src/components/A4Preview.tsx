@@ -8,9 +8,10 @@ interface A4PreviewProps {
   state: CoverPageState;
   indexRows: IndexRow[];
   activeTab: 'lab' | 'assignment' | 'index';
+  id?: string;
 }
 
-export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTab }) => {
+export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTab, id = 'a4-print-page' }) => {
   // Find the selected font preset
   const selectedFont = FONT_PRESETS.find((f) => f.value === state.fontFamily) || FONT_PRESETS[0];
 
@@ -42,7 +43,7 @@ export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTa
     <div className="flex-1 flex justify-center items-start overflow-auto p-4 md:p-8 no-print select-none">
       {/* Real A4 Paper representation on screen */}
       <div
-        id="a4-print-page"
+        id={id}
         className={`bg-white w-[210mm] h-[297mm] min-w-[210mm] min-h-[297mm] shadow-[0_10px_30px_rgba(0,0,0,0.15)] relative overflow-hidden box-border flex flex-col ${selectedFont.cssClass}`}
         style={{
           printColorAdjust: 'exact',
