@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="/buft-logo.png" alt="BUFT Logo" width="120" />
+  <img src="public/buft-logo.png" alt="BUFT Logo" width="120" />
   <h1>🎓 BUFT Academic HUB</h1>
 </div>
 
