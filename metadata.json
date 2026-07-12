@@ -1,0 +1,6 @@
+{
+  "name": "BUFT Academic HUB",
+  "description": "Create perfectly formatted academic cover pages and indexes for Lab Reports and Assignments with precise double-border alignment.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
