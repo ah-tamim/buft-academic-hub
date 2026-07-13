@@ -336,7 +336,7 @@ export default function App() {
           </div>
 
           <footer className="mt-16 text-center text-slate-400 text-[11px] font-medium border-t border-slate-200/50 pt-6 w-full max-w-5xl">
-            <p>© 2026 BUFT Academic Cover Generator & CGPA Calculator. BGMEA University of Fashion & Technology.</p>
+            <p>© 2026 BUFT Academic HUB.</p>
             <p className="mt-1 text-slate-500 font-semibold flex items-center justify-center gap-1">
               Made with <Heart className="h-3 w-3 text-red-500 fill-red-500 inline" /> for BUFTians | Ahsan Habib Tamim (TE 242)
             </p>
