@@ -327,7 +327,7 @@ export default function App() {
    <main className="flex-1 max-w-5xl mx-auto w-full px-4 lg:px-8 py-10 lg:py-16 flex flex-col items-center no-print animate-fade-in">
     <RoutineViewer />
    </main>
- ) : currentView === 'cgpa' ? (
+          ) : currentView === 'cgpa' ? (
     <main className="flex-1 max-w-5xl mx-auto w-full px-4 lg:px-8 py-10 lg:py-16 flex flex-col items-center no-print animate-fade-in">
           {/* Header section for CGPA Page */}
           <div className="text-center max-w-3xl mb-8">
