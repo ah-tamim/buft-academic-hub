@@ -233,16 +233,7 @@ export default function App() {
           >
             Home
           </a>
-          <a 
-            href="#/pagemaker"
-            onClick={() => {
-              setCurrentView('generator');
-              setActiveTab('assignment');
-            }}
-            className={`text-xs font-bold transition-all cursor-pointer ${currentView === 'generator' && activeTab === 'assignment' ? 'text-emerald-600' : 'text-slate-600 hover:text-slate-900'}`}
-          >
-            Assignment
-          </a>
+          
           <a 
             href="#/pagemaker"
             onClick={() => {
@@ -253,16 +244,7 @@ export default function App() {
           >
             Lab Report
           </a>
-          <a 
-            href="#/pagemaker"
-            onClick={() => {
-              setCurrentView('generator');
-              setActiveTab('index');
-            }}
-            className={`text-xs font-bold transition-all cursor-pointer ${currentView === 'generator' && activeTab === 'index' ? 'text-emerald-600' : 'text-slate-600 hover:text-slate-900'}`}
-          >
-            Index Page
-          </a>
+         
           <a 
             href="#/cgpa"
             onClick={() => setCurrentView('cgpa')}
@@ -270,6 +252,14 @@ export default function App() {
           >
             <Calculator className={`h-3.5 w-3.5 ${currentView === 'cgpa' ? 'text-emerald-600' : 'text-indigo-500'}`} />
             <span>CGPA Calculator</span>
+          </a>
+          <a 
+            href="#/classroutine"
+            onClick={() => setCurrentView('classroutine')}
+            className={`text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${currentView === 'classroutine' ? 'text-emerald-600 font-extrabold' : 'text-slate-600 hover:text-emerald-600'}`}
+          >
+            <BookOpen className="h-3.5 w-3.5 text-emerald-600" />
+            <span>Class Routine</span>
           </a>
           <a 
             href="https://naabilll.github.io/buft-bus-tracker/" 
