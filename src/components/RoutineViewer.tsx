@@ -445,17 +445,17 @@ export default function RoutineViewer() {
           <div className="p-3 bg-nature-badge text-nature-header rounded-xl">
             <GraduationCap className="w-8 h-8" />
           </div>
-          <div>
-            <h1 className="text-2xl font-serif font-normal text-nature-header tracking-tight flex items-center gap-2 flex-wrap">
-              BUFT Class Routine Planner
-              <span className="text-xs px-3 py-1 bg-nature-btn text-white rounded-full font-bold shadow-md tracking-wide">
-                {APP_CONFIG.semester}
-              </span>
-            </h1>
-            <p className="text-sm text-nature-label">
-              BGMEA University of Fashion & Technology • Excellence Through Education
-            </p>
-          </div>
+         <div>
+  <h1 className="text-2xl font-serif font-normal text-nature-header tracking-tight flex items-center gap-2 flex-wrap">
+    BUFT Class Routine Planner
+    <span className="text-xs px-3 py-1 bg-nature-btn text-white rounded-full font-bold shadow-md tracking-wide">
+      {APP_CONFIG.semester}
+    </span>
+  </h1>
+  <p className="text-sm font-medium text-emerald-700 tracking-wide mt-1">
+    Last Update: {APP_CONFIG.lastUpdateDate}
+  </p>
+</div>
         </div>
 
         {/* Tab Controls */}
