@@ -23,19 +23,20 @@ import {
   Check,
   GraduationCap,
   Heart,
-  Github,
-  Mail,
-  Trash,
-  Inbox,
   Calculator
 } from 'lucide-react';
 
 export default function App() {
-  // Current view: 'home' or 'generator' or 'cgpa'
+  // Current view: Reads the URL Hash link directly so bookmarks and link sharing work perfectly!
   const [currentView, setCurrentView] = useState<'home' | 'generator' | 'cgpa'>(() => {
+    const currentHash = window.location.hash;
+    if (currentHash === '#/cgpa') return 'cgpa';
+    if (currentHash === '#/pagemaker') return 'generator';
+    
+    // Legacy support for your old query parameters if anyone uses them
     const params = new URLSearchParams(window.location.search);
-    const viewParam = params.get('view');
-    if (viewParam === 'cgpa') return 'cgpa';
+    if (params.get('view') === 'cgpa') return 'cgpa';
+    
     return 'home';
   });
 
@@ -72,6 +73,23 @@ export default function App() {
     setCoverState(prev => ({ ...prev, coverType: activeTab }));
   }, [activeTab]);
 
+  // Listen for browser navigation changes (if back/forward buttons are pressed)
+  useEffect(() => {
+    const handleHashChange = () => {
+      const currentHash = window.location.hash;
+      if (currentHash === '#/cgpa') {
+        setCurrentView('cgpa');
+      } else if (currentHash === '#/pagemaker') {
+        setCurrentView('generator');
+      } else if (currentHash === '' || currentHash === '#/') {
+        setCurrentView('home');
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
   // Mobile navigation views: 'edit' or 'preview'
   const [mobileView, setMobileView] = useState<'edit' | 'preview'>('edit');
 
@@ -85,15 +103,12 @@ export default function App() {
     return localStorage.getItem('buft_feedback_endpoint') || '';
   });
 
-  const [showClearFeedbacksConfirm, setShowClearFeedbacksConfirm] = useState(false);
-
   // Feedback form state
   const [feedbackName, setFeedbackName] = useState('');
   const [feedbackDept, setFeedbackDept] = useState('');
   const [feedbackEmail, setFeedbackEmail] = useState('');
   const [feedbackText, setFeedbackText] = useState('');
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
-  const [feedbackTab, setFeedbackTab] = useState<'submit' | 'admin'>('submit');
 
   const [feedbacks, setFeedbacks] = useState<any[]>(() => {
     try {
@@ -188,7 +203,8 @@ export default function App() {
       
       {/* GLOBAL NAVBAR */}
       <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-white/75 border-b border-emerald-100/50 px-4 lg:px-8 py-3 flex items-center justify-between shadow-sm no-print">
-        <div 
+        <a 
+          href="#/"
           onClick={() => setCurrentView('home')} 
           className="flex items-center gap-2.5 cursor-pointer select-none group"
         >
@@ -200,16 +216,18 @@ export default function App() {
               BUFT <span className="text-emerald-600">Academic Hub</span>
             </h1>
           </div>
-        </div>
+        </a>
 
         <nav className="hidden md:flex items-center gap-6">
-          <button 
+          <a 
+            href="#/"
             onClick={() => setCurrentView('home')}
             className={`text-xs font-bold transition-all cursor-pointer ${currentView === 'home' ? 'text-emerald-600' : 'text-slate-600 hover:text-slate-900'}`}
           >
             Home
-          </button>
-          <button 
+          </a>
+          <a 
+            href="#/pagemaker"
             onClick={() => {
               setCurrentView('generator');
               setActiveTab('assignment');
@@ -217,8 +235,9 @@ export default function App() {
             className={`text-xs font-bold transition-all cursor-pointer ${currentView === 'generator' && activeTab === 'assignment' ? 'text-emerald-600' : 'text-slate-600 hover:text-slate-900'}`}
           >
             Assignment
-          </button>
-          <button 
+          </a>
+          <a 
+            href="#/pagemaker"
             onClick={() => {
               setCurrentView('generator');
               setActiveTab('lab');
@@ -226,8 +245,9 @@ export default function App() {
             className={`text-xs font-bold transition-all cursor-pointer ${currentView === 'generator' && activeTab === 'lab' ? 'text-emerald-600' : 'text-slate-600 hover:text-slate-900'}`}
           >
             Lab Report
-          </button>
-          <button 
+          </a>
+          <a 
+            href="#/pagemaker"
             onClick={() => {
               setCurrentView('generator');
               setActiveTab('index');
@@ -235,14 +255,15 @@ export default function App() {
             className={`text-xs font-bold transition-all cursor-pointer ${currentView === 'generator' && activeTab === 'index' ? 'text-emerald-600' : 'text-slate-600 hover:text-slate-900'}`}
           >
             Index Page
-          </button>
-          <button 
+          </a>
+          <a 
+            href="#/cgpa"
             onClick={() => setCurrentView('cgpa')}
             className={`text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${currentView === 'cgpa' ? 'text-emerald-600 font-extrabold' : 'text-slate-600 hover:text-indigo-600'}`}
           >
             <Calculator className={`h-3.5 w-3.5 ${currentView === 'cgpa' ? 'text-emerald-600' : 'text-indigo-500'}`} />
             <span>CGPA Calculator</span>
-          </button>
+          </a>
           <a 
             href="https://naabilll.github.io/buft-bus-tracker/" 
             target="_blank" 
@@ -272,19 +293,24 @@ export default function App() {
 
         <div className="flex items-center gap-2">
           {currentView === 'home' ? (
-            <button
-              onClick={() => setCurrentView('generator')}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-lg shadow-emerald-600/10 hover:shadow-emerald-600/20 transition-all cursor-pointer"
+            <a
+              href="#/pagemaker"
+              onClick={() => {
+                setCurrentView('generator');
+                setActiveTab('lab');
+              }}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-lg shadow-emerald-600/10 hover:shadow-emerald-600/20 transition-all cursor-pointer block"
             >
               Start Generating
-            </button>
+            </a>
           ) : (
-            <button
+            <a
+              href="#/"
               onClick={() => setCurrentView('home')}
-              className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs px-4 py-2 rounded-xl transition-all cursor-pointer border border-slate-200/80"
+              className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs px-4 py-2 rounded-xl transition-all cursor-pointer border border-slate-200/80 block"
             >
-              ← Back to Home
-            </button>
+              &larr; Back to Home
+            </a>
           )}
         </div>
       </header>
@@ -332,7 +358,6 @@ export default function App() {
                 alt="BUFT Logo" 
                 className="w-16 h-16 object-contain"
                 onError={(e) => {
-                  // Fallback if image fails to load
                   e.currentTarget.style.display = 'none';
                 }}
               />
@@ -365,7 +390,8 @@ export default function App() {
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-5xl mb-14"
           >
             {/* ASSIGNMENT CARD */}
-            <div 
+            <a 
+              href="#/pagemaker"
               onClick={() => {
                 setCurrentView('generator');
                 setActiveTab('assignment');
@@ -383,12 +409,13 @@ export default function App() {
               </div>
               <div className="mt-6 flex items-center text-xs font-bold text-emerald-600 group-hover:translate-x-1 transition-transform">
                 <span>Start Designing</span>
-                <span className="ml-1">→</span>
+                <span className="ml-1">&rarr;</span>
               </div>
-            </div>
+            </a>
 
             {/* LAB REPORT CARD */}
-            <div 
+            <a 
+              href="#/pagemaker"
               onClick={() => {
                 setCurrentView('generator');
                 setActiveTab('lab');
@@ -406,12 +433,13 @@ export default function App() {
               </div>
               <div className="mt-6 flex items-center text-xs font-bold text-emerald-600 group-hover:translate-x-1 transition-transform">
                 <span>Start Designing</span>
-                <span className="ml-1">→</span>
+                <span className="ml-1">&rarr;</span>
               </div>
-            </div>
+            </a>
 
             {/* INDEX PAGE CARD */}
-            <div 
+            <a 
+              href="#/pagemaker"
               onClick={() => {
                 setCurrentView('generator');
                 setActiveTab('index');
@@ -429,12 +457,13 @@ export default function App() {
               </div>
               <div className="mt-6 flex items-center text-xs font-bold text-emerald-600 group-hover:translate-x-1 transition-transform">
                 <span>Start Designing</span>
-                <span className="ml-1">→</span>
+                <span className="ml-1">&rarr;</span>
               </div>
-            </div>
+            </a>
 
             {/* CGPA CALCULATOR CARD */}
-            <div 
+            <a 
+              href="#/cgpa"
               onClick={() => setCurrentView('cgpa')}
               className="bg-white/80 backdrop-blur-sm border border-slate-100/80 p-6 rounded-3xl hover:border-emerald-300/60 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between"
             >
@@ -449,9 +478,9 @@ export default function App() {
               </div>
               <div className="mt-6 flex items-center text-xs font-bold text-emerald-600 group-hover:translate-x-1 transition-transform">
                 <span>Open Calculator</span>
-                <span className="ml-1">→</span>
+                <span className="ml-1">&rarr;</span>
               </div>
-            </div>
+            </a>
           </motion.div>
 
           {/* BUS TRACKER DEDICATED BLOCK */}
@@ -461,7 +490,6 @@ export default function App() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="w-full max-w-5xl bg-gradient-to-r from-emerald-950 to-slate-900 rounded-3xl p-6 md:p-8 text-white shadow-xl relative overflow-hidden mb-16"
           >
-            {/* Ambient decorative circle */}
             <div className="absolute right-0 top-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
             
             <div className="relative flex flex-col md:flex-row items-center justify-between gap-6">
@@ -497,7 +525,6 @@ export default function App() {
             </div>
           </motion.div>
 
-
           {/* FOOTER */}
           <footer className="mt-16 text-center text-slate-400 text-[11px] font-medium border-t border-slate-200/50 pt-6 w-full max-w-5xl">
             <p>© 2026 BUFT Academic HUB. </p>
@@ -510,7 +537,7 @@ export default function App() {
         /* WORKSPACE GENERATOR VIEW */
         <div className="flex-1 flex flex-col lg:flex-row no-print h-[calc(100vh-3.5rem)] overflow-hidden">
           
-          {/* SIDEBAR EDIT PANEL - Left side, visible by default on desktop, toggled on mobile */}
+          {/* SIDEBAR EDIT PANEL */}
           <div className={`lg:block ${mobileView === 'edit' ? 'block' : 'hidden'} w-full lg:w-auto h-full`}>
             <SidebarControls
               state={coverState}
@@ -522,18 +549,19 @@ export default function App() {
             />
           </div>
 
-          {/* PREVIEW CANVAS - Right side, visible by default on desktop, toggled on mobile */}
+          {/* PREVIEW CANVAS */}
           <div className={`flex-1 flex flex-col h-full overflow-hidden ${mobileView === 'preview' ? 'block' : 'hidden lg:flex'}`}>
             
             {/* DESKTOP/MOBILE WORKSPACE UPPER ACTION BAR */}
             <div className="bg-white border-b border-slate-200/80 px-6 py-3 flex items-center justify-between shadow-sm">
               <div className="flex items-center gap-3">
-                <button
+                <a
+                  href="#/"
                   onClick={() => setCurrentView('home')}
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition cursor-pointer border border-slate-200"
                 >
-                  ← Back to Home
-                </button>
+                  &larr; Back to Home
+                </a>
                 <div className="h-4 w-[1px] bg-slate-200 hidden sm:block"></div>
                 <div className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -551,18 +579,6 @@ export default function App() {
                   <HelpCircle className="h-3.5 w-3.5" />
                   <span className="hidden sm:inline">Printing Guide</span>
                 </button>
-
-               {/* <button
-  onClick={async () => {
-    const filename = `BUFT-${activeTab === 'lab' ? 'Lab-Report' : activeTab === 'assignment' ? 'Assignment' : 'Index'}-${coverState}`;
-    await downloadA4PDF('a4-pdf-capture-page', filename);
-  }}
-  className="flex items-center gap-1.5 px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold tran"
->
-  <Printer className="h-3.5 w-3.5" />
-  <span>Export PDF</span>
-</button> 
-*/}
               </div>
             </div>
 
@@ -570,16 +586,16 @@ export default function App() {
             <div className="flex-1 bg-gradient-to-tr from-slate-200 via-zinc-100 to-indigo-100/30 overflow-y-auto overflow-x-auto flex justify-center items-start p-4 lg:p-8 scrollbar-thin scrollbar-thumb-slate-200">
               <div className="transform scale-[0.62] sm:scale-[0.75] md:scale-[0.88] lg:scale-100 origin-top transition-transform duration-300">
                 <A4Preview
-                id="a4-preview-page"
-                state={coverState}
-                indexRows={indexRows}
-                activeTab={activeTab}
-              />
+                  id="a4-preview-page"
+                  state={coverState}
+                  indexRows={indexRows}
+                  activeTab={activeTab}
+                />
               </div>
             </div>
           </div>
 
-          {/* MOBILE RESPONSIVE FLOATING DOCK - Only displays on small screens (no-print) */}
+          {/* MOBILE RESPONSIVE FLOATING DOCK */}
           <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-white/95 border border-slate-200 p-1.5 rounded-2xl shadow-2xl flex items-center gap-1.5 z-40 backdrop-blur-xl no-print">
             <button
               onClick={() => setMobileView('edit')}
@@ -608,7 +624,7 @@ export default function App() {
         </div>
       )}
 
-      {/* HIGH RES REAL A4 PRINT OUTLET CONTAINER (Visible only in Print Media) */}
+      {/* HIGH RES REAL A4 PRINT OUTLET CONTAINER */}
       <div className="print-only hidden">
         <A4Preview
           id="a4-print-page"
@@ -618,7 +634,7 @@ export default function App() {
         />
       </div>
 
-      {/* Off-screen capture page for html2canvas to avoid CORS, display:none/hidden errors on mobile, and scale blurring */}
+      {/* Off-screen capture page for html2canvas */}
       <div 
         className="fixed left-[-9999px] top-[-9999px] overflow-hidden no-print"
         style={{ width: '210mm', height: '297mm', pointerEvents: 'none' }}
@@ -745,7 +761,7 @@ export default function App() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">Your Email <span className="text-slate-400 font-normal">(Optional, to receive replies)</span></label>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">Your Email <span className="text-slate-400 font-normal">(Optional)</span></label>
                     <input 
                       type="email" 
                       value={feedbackEmail}
@@ -815,17 +831,12 @@ export default function App() {
                   </div>
                   <div className="flex items-start gap-2">
                     <div className="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-bold text-[10px] shrink-0 mt-0.5">4</div>
-                    <p>⚠️ <strong className="text-emerald-600 font-bold">CRITICAL:</strong> Set Margins to <strong className="text-slate-900">"None"</strong> (or "Default" if none is unavailable).</p>
+                    <p>&nbsp; <strong className="text-emerald-600 font-bold">CRITICAL:</strong> Set Margins to <strong className="text-slate-900">"None"</strong> (or "Default" if none is unavailable).</p>
                   </div>
                   <div className="flex items-start gap-2">
                     <div className="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-bold text-[10px] shrink-0 mt-0.5">5</div>
-                    <p>⚠️ <strong className="text-emerald-600 font-bold">CRITICAL:</strong> Enable <strong className="text-slate-900">"Background graphics"</strong> (this ensures color, backgrounds, and custom borders render perfectly!).</p>
+                    <p>&nbsp; <strong className="text-emerald-600 font-bold">CRITICAL:</strong> Enable <strong className="text-slate-900">"Background graphics"</strong>.</p>
                   </div>
-                </div>
-
-                <div className="flex items-center gap-1.5 text-slate-500 text-[11px]">
-                  <Sparkles className="h-3.5 w-3.5 text-emerald-600 animate-pulse" />
-                  <span>The custom alignment slider dynamically prevents empty spacing issues.</span>
                 </div>
               </div>
 
