@@ -15,10 +15,10 @@
 
 export const APP_CONFIG = {
   // Google Spreadsheet URL (Automatic background syncing)
-  sheetUrl: "https://docs.google.com/spreadsheets/d/1P1gMcFFjd9bqIdMF-1Hru5rSlK4EpFoPvE5s2Dv1sWk/edit?usp=sharing",
+  sheetUrl: "https://docs.google.com/spreadsheets/d/1vdPoJPxAwUDKblyyUv5Nd8cchFRxhcqe4FUAuUA-mTs/edit?usp=sharing",
 
   // Last update date shown prominently on the dashboard
-  lastUpdateDate: "13/07/2026",
+  lastUpdateDate: "14/07/2026",
 
   // Academic Semester label shown across the portal and printed in exported PDFs
   semester: "Spring 2026 (261)",
