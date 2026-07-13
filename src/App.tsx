@@ -97,6 +97,9 @@ export default function App() {
   const [showHelp, setShowHelp] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
+  
+  // Floating In-App bottom banner control state
+  const [showBottomNotify, setShowBottomNotify] = useState(true);
 
   // Formspree / Web3Forms Endpoint URL state for static deployment
   const [formEndpoint, setFormEndpoint] = useState(() => {
@@ -404,7 +407,7 @@ export default function App() {
                 </div>
                 <h3 className="font-extrabold text-lg text-slate-900 mb-2">Assignment Cover</h3>
                 <p className="text-xs text-slate-500 leading-relaxed font-medium">
-                  Generate premium, high-contrast assignment layouts for BUfT.
+                  Generate premium, high-contrast assignment layouts for BUFT.
                 </p>
               </div>
               <div className="mt-6 flex items-center text-xs font-bold text-emerald-600 group-hover:translate-x-1 transition-transform">
@@ -428,7 +431,7 @@ export default function App() {
                 </div>
                 <h3 className="font-extrabold text-lg text-slate-900 mb-2">Lab Report Cover</h3>
                 <p className="text-xs text-slate-500 leading-relaxed font-medium">
-                  Create fully structured lab report front for BufT.
+                  Create fully structured lab report front for BUFT.
                 </p>
               </div>
               <div className="mt-6 flex items-center text-xs font-bold text-emerald-600 group-hover:translate-x-1 transition-transform">
@@ -452,7 +455,7 @@ export default function App() {
                 </div>
                 <h3 className="font-extrabold text-lg text-slate-900 mb-2">Index Table Page</h3>
                 <p className="text-xs text-slate-500 leading-relaxed font-medium">
-                  Assemble high-fidelity laboratory index registers for BUfT.
+                  Assemble high-fidelity laboratory index registers for BUFT.
                 </p>
               </div>
               <div className="mt-6 flex items-center text-xs font-bold text-emerald-600 group-hover:translate-x-1 transition-transform">
@@ -848,6 +851,39 @@ export default function App() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* FLOATING BOTTOM IN-APP NOTIFICATION BANNER */}
+      {showBottomNotify && (
+        <div className="fixed bottom-20 sm:bottom-6 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-md bg-slate-900 border border-slate-800 text-white p-4 rounded-2xl shadow-2xl z-50 flex items-start gap-3.5 animate-fade-in no-print">
+          <div className="bg-emerald-500/20 text-emerald-400 p-2 rounded-xl shrink-0 mt-0.5">
+            <Sparkles className="h-5 w-5 animate-pulse" />
+          </div>
+          
+          <div className="flex-1">
+            <h4 className="font-extrabold text-xs text-emerald-400 tracking-tight mb-1">
+              💙 Dear BUFTian, Help Us Improve BUFT Academic Hub!
+            </h4>
+            <p className="text-[11px] text-slate-300 leading-relaxed font-medium">
+              Every report and suggestion helps us improve the BUFT Academic Hub. If you notice any bugs or have ideas for new features, please share them through the Feedback tab. Thank you for helping us grow!
+            </p>
+            <div className="mt-3 flex justify-end">
+              <button 
+                onClick={() => setShowBottomNotify(false)}
+                className="bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-[10px] px-3 py-1.5 rounded-lg transition-all cursor-pointer shadow-md"
+              >
+                Got it, thanks!
+              </button>
+            </div>
+          </div>
+
+          <button 
+            onClick={() => setShowBottomNotify(false)}
+            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition cursor-pointer shrink-0"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
       )}
 
