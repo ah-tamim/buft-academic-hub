@@ -68,4 +68,17 @@
     page-break-inside: avoid !important;
     transform: none !important;
   }
+@theme {
+  --color-nature-bg: #f8fafc;
+  --color-nature-text: #334155;
+  --color-nature-header: #0f172a;
+  --color-nature-card: #ffffff;
+  --color-nature-border: #e2e8f0;
+  --color-nature-control-border: #cbd5e1;
+  --color-nature-label: #64748b;
+  --color-nature-btn: #1e3a8a;
+  --color-nature-btn-hover: #1e40af;
+  --color-nature-badge: #f1f5f9;
+}
+  
 }
