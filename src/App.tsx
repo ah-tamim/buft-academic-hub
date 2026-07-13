@@ -4,7 +4,7 @@ import { INITIAL_COVER_STATE, SAMPLE_INDEX_ROWS, FEEDBACK_ENDPOINT, WEB3FORMS_AC
 import { SidebarControls } from './components/SidebarControls';
 import { A4Preview } from './components/A4Preview';
 import { CgpaCalculator } from './components/CgpaCalculator';
-import { RoutineViewer } from './components/RoutineViewer';
+import RoutineViewer from './components/RoutineViewer';
 import { downloadA4PDF } from './utils/pdfGenerator';
 import { motion } from 'motion/react';
 import { 
