@@ -404,7 +404,7 @@ export default function App() {
                 </div>
                 <h3 className="font-extrabold text-lg text-slate-900 mb-2">Assignment Cover</h3>
                 <p className="text-xs text-slate-500 leading-relaxed font-medium">
-                  Generate premium, high-contrast assignment layouts. Supports custom title decorations, customizable border lines, and teacher-student department information grids.
+                  Generate premium, high-contrast assignment layouts for BUfT.
                 </p>
               </div>
               <div className="mt-6 flex items-center text-xs font-bold text-emerald-600 group-hover:translate-x-1 transition-transform">
@@ -428,7 +428,7 @@ export default function App() {
                 </div>
                 <h3 className="font-extrabold text-lg text-slate-900 mb-2">Lab Report Cover</h3>
                 <p className="text-xs text-slate-500 leading-relaxed font-medium">
-                  Create fully structured laboratory experiment reports with precise experiment indices, dates of performance/submission, and standardized department titles.
+                  Create fully structured lab report front for BufT.
                 </p>
               </div>
               <div className="mt-6 flex items-center text-xs font-bold text-emerald-600 group-hover:translate-x-1 transition-transform">
@@ -452,7 +452,7 @@ export default function App() {
                 </div>
                 <h3 className="font-extrabold text-lg text-slate-900 mb-2">Index Table Page</h3>
                 <p className="text-xs text-slate-500 leading-relaxed font-medium">
-                  Assemble high-fidelity laboratory index registers. Automatically calculates experiment counts and lays out perfect cells for grading and teacher sign-offs.
+                  Assemble high-fidelity laboratory index registers for BUfT.
                 </p>
               </div>
               <div className="mt-6 flex items-center text-xs font-bold text-emerald-600 group-hover:translate-x-1 transition-transform">
@@ -473,7 +473,7 @@ export default function App() {
                 </div>
                 <h3 className="font-extrabold text-lg text-slate-900 mb-2">CGPA Calculator</h3>
                 <p className="text-xs text-slate-500 leading-relaxed font-medium">
-                  Plan and project your academic grades! Easily calculate semester GPAs, track multiple sessions, configure credits, and project target CGPAs.
+                  Plan and project your academic grades! Easily calculate semester GPAs and project target CGPAs.
                 </p>
               </div>
               <div className="mt-6 flex items-center text-xs font-bold text-emerald-600 group-hover:translate-x-1 transition-transform">
