@@ -419,7 +419,7 @@ export default function RoutineViewer() {
           doc.setFontSize(7.5);
           doc.setTextColor(120, 120, 120);
           doc.text(
-            `Page ${data.pageNumber} of ${pageCount} | Generated via BUFT Routine Planner`,
+            `Page ${data.pageNumber} of ${pageCount} | Generated via BUFT Academic HUB.©A.H.T.`,
             148.5,
             200,
             { align: "center" }
