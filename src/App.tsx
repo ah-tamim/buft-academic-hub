@@ -242,7 +242,7 @@ export default function App() {
             }}
             className={`text-xs font-bold transition-all cursor-pointer ${currentView === 'generator' && activeTab === 'lab' ? 'text-emerald-600' : 'text-slate-600 hover:text-slate-900'}`}
           >
-            Lab Report
+            Tools
           </a>
          
           <a 
