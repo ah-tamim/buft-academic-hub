@@ -614,7 +614,7 @@ export default function ExamRoutine() {
             id="tab_seating"
           >
             <Users className="h-4.5 w-4.5" />
-            🔍 Seating & My Routine
+            🔍 Schedule
           </button>
           
           <button
@@ -702,9 +702,9 @@ export default function ExamRoutine() {
                   {/* Selector Card */}
                   <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-sm">
                     <div className="border-b border-slate-100 pb-5 mb-6">
-                      <h2 className="text-xl font-bold text-slate-800">Seating & Individual Schedule Finder</h2>
+                      <h2 className="text-xl font-bold text-slate-800">Exam Schedule</h2>
                       <p className="text-sm text-slate-500 mt-1">
-                        Select your academic department, batch number, and section to filter your exact exam dates, times, and allocated classrooms.
+                        Select your department, batch, and section to filter your exact exam dates, times, and allocated classrooms.
                       </p>
                     </div>
 
@@ -889,6 +889,14 @@ export default function ExamRoutine() {
                               </tbody>
                             </table>
                           </div>
+                        </div>
+
+                        {/* EXAM ROUTINE NOTICE BANNER FOR SEATING VIEW */}
+                        <div className="mt-6 bg-amber-50/60 border border-amber-200/80 rounded-2xl p-4 flex items-start gap-3 text-left shadow-sm max-w-7xl mx-auto w-full">
+                          <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                          <p className="text-xs md:text-sm text-amber-800 leading-relaxed font-medium">
+                            <strong className="font-extrabold text-amber-900">Notice:</strong> The information provided may contain missing or inaccurate data. Please refer to the official PDF file from UCam for confirmation.
+                          </p>
                         </div>
 
                       </div>
@@ -1093,31 +1101,31 @@ export default function ExamRoutine() {
                               );
                             })}
                           </tbody>
-                            </table>
-                          </div>
-                        ) : (
-                          <div className="bg-white p-12 rounded-b-2xl text-center flex flex-col items-center justify-center">
-                            <div className="p-4 bg-slate-50 text-slate-400 rounded-2xl mb-4">
-                              <Search className="h-8 w-8" />
-                            </div>
-                            <h4 className="text-base font-bold text-slate-700">No entries matched search criteria</h4>
-                            <p className="text-slate-500 max-w-sm mt-1 text-sm">
-                              Try adjusting your spelling or reset the dropdown filters to show all scheduled exams.
-                            </p>
-                          </div>
-                        )}
+                        </table>
                       </div>
-
-                      {/* EXAM ROUTINE NOTICE BANNER */}
-                      <div className="mt-6 bg-amber-50/60 border border-amber-200/80 rounded-2xl p-4 flex items-start gap-3 text-left shadow-sm max-w-7xl mx-auto w-full">
-                        <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
-                        <p className="text-xs md:text-sm text-amber-800 leading-relaxed font-medium">
-                          <strong className="font-extrabold text-amber-900">Notice:</strong> The information provided may contain missing or inaccurate data. Please refer to the official Schedule from UCam for confirmation.
+                    ) : (
+                      <div className="bg-white p-12 rounded-b-2xl text-center flex flex-col items-center justify-center">
+                        <div className="p-4 bg-slate-50 text-slate-400 rounded-2xl mb-4">
+                          <Search className="h-8 w-8" />
+                        </div>
+                        <h4 className="text-base font-bold text-slate-700">No entries matched search criteria</h4>
+                        <p className="text-slate-500 max-w-sm mt-1 text-sm">
+                          Try adjusting your spelling or reset the dropdown filters to show all scheduled exams.
                         </p>
                       </div>
+                    )}
+                  </div>
 
-                    </div>
-                  )}
+                  {/* EXAM ROUTINE NOTICE BANNER FOR MASTER VIEW */}
+                  <div className="mt-6 bg-amber-50/60 border border-amber-200/80 rounded-2xl p-4 flex items-start gap-3 text-left shadow-sm max-w-7xl mx-auto w-full">
+                    <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                    <p className="text-xs md:text-sm text-amber-800 leading-relaxed font-medium">
+                      <strong className="font-extrabold text-amber-900">Notice:</strong> The information provided may contain missing or inaccurate data. Please refer to the official Schedule from UCam for confirmation.
+                    </p>
+                  </div>
+
+                </div>
+              )}
 
             </motion.div>
           )}
