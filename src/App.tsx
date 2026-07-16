@@ -5,6 +5,8 @@ import { SidebarControls } from './components/SidebarControls';
 import { A4Preview } from './components/A4Preview';
 import { CgpaCalculator } from './components/CgpaCalculator';
 import RoutineViewer from './components/RoutineViewer';
+import { HashRouter, Routes, Route } from "react-router-dom";
+import ExamRoutine from "./components/ExamRoutine"; // Adjust path as needed
 import { downloadA4PDF } from './utils/pdfGenerator';
 import { motion } from 'motion/react';
 import { 
