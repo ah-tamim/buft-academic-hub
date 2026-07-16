@@ -1093,34 +1093,31 @@ export default function ExamRoutine() {
                               );
                             })}
                           </tbody>
-                        </table>
+                            </table>
+                          </div>
+                        ) : (
+                          <div className="bg-white p-12 rounded-b-2xl text-center flex flex-col items-center justify-center">
+                            <div className="p-4 bg-slate-50 text-slate-400 rounded-2xl mb-4">
+                              <Search className="h-8 w-8" />
+                            </div>
+                            <h4 className="text-base font-bold text-slate-700">No entries matched search criteria</h4>
+                            <p className="text-slate-500 max-w-sm mt-1 text-sm">
+                              Try adjusting your spelling or reset the dropdown filters to show all scheduled exams.
+                            </p>
+                          </div>
+                        )}
                       </div>
 
-{/* EXAM ROUTINE NOTICE BANNER */}
-                    <div className="mt-6 bg-amber-50/60 border border-amber-200/80 rounded-2xl p-4 flex items-start gap-3 text-left shadow-sm max-w-7xl mx-auto w-full">
-                      <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
-                      <p className="text-xs md:text-sm text-amber-800 leading-relaxed font-medium">
-                        <strong className="font-extrabold text-amber-900">Notice:</strong> The information provided may contain missing or inaccurate data. Please refer to the official Schedule from UCam for confirmation.
-                      </p>
-                    </div>
-
-                  </div>
-                  
-                    ) : (
-                      <div className="bg-white p-12 rounded-b-2xl text-center flex flex-col items-center justify-center">
-                        <div className="p-4 bg-slate-50 text-slate-400 rounded-2xl mb-4">
-                          <Search className="h-8 w-8" />
-                        </div>
-                        <h4 className="text-base font-bold text-slate-700">No entries matched search criteria</h4>
-                        <p className="text-slate-500 max-w-sm mt-1 text-sm">
-                          Try adjusting your spelling or reset the dropdown filters to show all scheduled exams.
+                      {/* EXAM ROUTINE NOTICE BANNER */}
+                      <div className="mt-6 bg-amber-50/60 border border-amber-200/80 rounded-2xl p-4 flex items-start gap-3 text-left shadow-sm max-w-7xl mx-auto w-full">
+                        <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                        <p className="text-xs md:text-sm text-amber-800 leading-relaxed font-medium">
+                          <strong className="font-extrabold text-amber-900">Notice:</strong> The information provided may contain missing or inaccurate data. Please refer to the official Schedule from UCam for confirmation.
                         </p>
                       </div>
-                    )}
-                  </div>
 
-                </div>
-              )}
+                    </div>
+                  )}
 
             </motion.div>
           )}
