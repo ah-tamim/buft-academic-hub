@@ -895,7 +895,7 @@ export default function ExamRoutine() {
                         <div className="mt-6 bg-amber-50/60 border border-amber-200/80 rounded-2xl p-4 flex items-start gap-3 text-left shadow-sm max-w-7xl mx-auto w-full">
                           <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
                           <p className="text-xs md:text-sm text-amber-800 leading-relaxed font-medium">
-                            <strong className="font-extrabold text-amber-900">Notice:</strong> The information provided may contain missing or inaccurate data. Please refer to the official PDF file from UCam for confirmation.
+                            <strong className="font-extrabold text-amber-900">Notice:</strong> The information provided may contain missing or inaccurate data. Please refer to the official Schedule from UCam for confirmation.
                           </p>
                         </div>
 
