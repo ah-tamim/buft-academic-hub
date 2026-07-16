@@ -36,6 +36,7 @@ export default function App() {
     if (currentHash === '#/cgpa') return 'cgpa';
     if (currentHash === '#/pagemaker') return 'generator';
     if (currentHash === '#/classroutine') return 'classroutine';
+    if (currentHash === '#/examroutine') return 'examroutine';
     
     // Legacy support for your old query parameters if anyone uses them
     const params = new URLSearchParams(window.location.search);
@@ -87,6 +88,8 @@ export default function App() {
         setCurrentView('generator');
         } else if (currentHash === '#/classroutine') { 
         setCurrentView('classroutine');
+        } else if (currentHash === '#/examroutine') { 
+      setCurrentView('examroutine');
       } else if (currentHash === '' || currentHash === '#/') {
         setCurrentView('home');
       }
@@ -264,6 +267,14 @@ export default function App() {
             <span>Class Routine</span>
           </a>
           <a 
+  href="#/examroutine"
+  onClick={() => setCurrentView('examroutine')}
+  className={`text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${currentView === 'examroutine' ? 'text-emerald-600 font-extrabold' : 'text-slate-600 hover:text-emerald-600'}`}
+>
+  <FileText className="h-3.5 w-3.5 text-emerald-600" />
+  <span>Exam Routine</span>
+</a>
+          <a 
             href="https://naabilll.github.io/buft-bus-tracker/" 
             target="_blank" 
             rel="noopener noreferrer" 
@@ -319,6 +330,10 @@ export default function App() {
    <main className="flex-1 max-w-5xl mx-auto w-full px-4 lg:px-8 py-10 lg:py-16 flex flex-col items-center no-print animate-fade-in">
     <RoutineViewer />
    </main>
+      ) : currentView === 'examroutine' ? 
+  <main className="flex-1 max-w-6xl mx-auto w-full px-4 lg:px-8 py-10 lg:py-16 flex flex-col items-center no-print animate-fade-in">
+    <ExamRoutine />
+  </main>
           ) : currentView === 'cgpa' ? (
     <main className="flex-1 max-w-5xl mx-auto w-full px-4 lg:px-8 py-10 lg:py-16 flex flex-col items-center no-print animate-fade-in">
           {/* Header section for CGPA Page */}
@@ -504,6 +519,27 @@ export default function App() {
                 <span className="ml-1">&rarr;</span>
               </div>
             </a>
+
+            {/* EXAM ROUTINE CARD */}
+<a 
+  href="#/examroutine"
+  onClick={() => setCurrentView('examroutine')}
+  className="bg-white/80 backdrop-blur-sm border border-slate-100/80 p-6 rounded-3xl hover:border-emerald-300/60 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between"
+>
+  <div>
+    <div className="bg-emerald-100 text-emerald-700 p-3 rounded-2xl w-fit mb-5 group-hover:scale-110 transition-transform">
+      <FileText className="h-6 w-6" />
+    </div>
+    <h3 className="font-extrabold text-lg text-slate-900 mb-2">Exam Routine</h3>
+    <p className="text-xs text-slate-500 leading-relaxed font-medium">
+      Check exam schedules.
+    </p>
+  </div>
+  <div className="mt-6 flex items-center text-xs font-bold text-emerald-600 group-hover:translate-x-1 transition-transform">
+    <span>View Exam Routine</span>
+    <span className="ml-1">&rarr;</span>
+  </div>
+</a>
 
             
           </motion.div>
