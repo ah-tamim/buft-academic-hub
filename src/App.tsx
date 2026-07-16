@@ -325,17 +325,17 @@ export default function App() {
         </div>
       </header>
 
-      {/* RENDER VIEW: CGPA, HOME, OR GENERATOR */}
-       {currentView === 'classroutine' ? (
-   <main className="flex-1 max-w-5xl mx-auto w-full px-4 lg:px-8 py-10 lg:py-16 flex flex-col items-center no-print animate-fade-in">
-    <RoutineViewer />
-   </main>
-      ) : currentView === 'examroutine' ? 
-  <main className="flex-1 max-w-6xl mx-auto w-full px-4 lg:px-8 py-10 lg:py-16 flex flex-col items-center no-print animate-fade-in">
-    <ExamRoutine />
-  </main>
-          ) : currentView === 'cgpa' ? (
-    <main className="flex-1 max-w-5xl mx-auto w-full px-4 lg:px-8 py-10 lg:py-16 flex flex-col items-center no-print animate-fade-in">
+     {/* RENDER VIEW: CGPA, HOME, OR GENERATOR */}
+      {currentView === 'classroutine' ? (
+        <main className="flex-1 max-w-5xl mx-auto w-full px-4 lg:px-8 py-10 lg:py-16 flex flex-col items-center no-print animate-fade-in">
+          <RoutineViewer />
+        </main>
+      ) : currentView === 'examroutine' ? (
+        <main className="flex-1 max-w-6xl mx-auto w-full px-4 lg:px-8 py-10 lg:py-16 flex flex-col items-center no-print animate-fade-in">
+          <ExamRoutine />
+        </main>
+      ) : currentView === 'cgpa' ? (
+        <main className="flex-1 max-w-5xl mx-auto w-full px-4 lg:px-8 py-10 lg:py-16 flex flex-col items-center no-print animate-fade-in">
           {/* Header section for CGPA Page */}
           <div className="text-center max-w-3xl mb-8">
             <div className="mx-auto bg-gradient-to-tr from-pink-500 to-indigo-500 p-3.5 rounded-3xl text-white shadow-lg w-fit mb-4">
