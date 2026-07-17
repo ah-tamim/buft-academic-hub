@@ -302,50 +302,51 @@ export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTa
   </div>
 
   {/* Index Metadata Block: Beautifully formatted compact side-by-side grids */}
-  <div 
-    className="w-full text-[11px] text-slate-800 mb-2 border rounded-md text-left px-4 py-2 flex flex-col gap-1.5"
-    style={{ borderColor: state.borderColor }}
-  >
-    {/* Row 1: Course Code (Left) & Course Title (Right aligns under the batch and section column) */}
-    <div className="grid grid-cols-12 w-full items-center">
-      <div className="col-span-8 flex items-center text-left">
-        <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">Course Code:</span>
-        <span className="font-extrabold text-slate-900 truncate max-w-[280px]">{state.courseCode || ''}</span>
-      </div>
-      <div className="col-span-4 flex items-center text-left pl-2">
-        <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">Course Title:</span>
-        <span className="font-extrabold text-slate-900 truncate max-w-[150px]" title={state.courseTitle}>{state.courseTitle || ''}</span>
-      </div>
+  {/* STUDENT & COURSE INFORMATION CARD */}
+<div
+  className="w-full text-[11px] text-slate-800 mb-2 border rounded-md text-left px-4 py-2 flex flex-col gap-1.5"
+  style={{ borderColor: state.borderColor }}
+>
+  {/* Row 1: Course Code (Left) & Course Title (Right) */}
+  <div className="grid grid-cols-12 w-full items-center">
+    <div className="col-span-8 flex items-center text-left">
+      <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">Course Code:</span>
+      <span className="font-extrabold text-slate-900 truncate max-w-[280px]">{state.courseCode || ''}</span>
     </div>
-    
-    {/* Row 2: Name (Left) | ID (Middle) | Section (Right aligned) */}
-    <div className="grid grid-cols-12 w-full items-center border-t border-slate-100 pt-1.5">
-      <div className="col-span-5 flex items-center text-left">
-        <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">Name:</span>
-        <span className="font-extrabold text-slate-900 truncate max-w-[180px]" title={state.studentName}>{state.studentName || ''}</span>
-      </div>
-      <div className="col-span-3 flex items-center justify-center text-center">
-        <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">ID:</span>
-        <span className="font-extrabold text-slate-900">{state.studentId || ''}</span>
-      </div>
-      <div className="col-span-4 flex items-center text-left pl-2">
-        <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">Section:</span>
-        <span className="font-extrabold text-slate-900">{state.studentSection || ''}</span>
-      </div>
-    </div>
-
-    {/* Row 3: Department (Left) | Batch (Right aligned) */}
-    <div className="grid grid-cols-12 w-full items-center border-t border-slate-100 pt-1.5">
-      <div className="col-span-8 flex items-center text-left">
-        <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">Department:</span>
-        <span className="font-extrabold text-slate-900 truncate max-w-[340px]">{state.studentDept || ''}</span>
-      </div>
-      <div className="col-span-4 flex items-center text-left pl-2">
-        <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">Batch:</span>
-        <span className="font-extrabold text-slate-900">{state.studentBatch || ''}</span>
-      </div>
+    <div className="col-span-4 flex items-center justify-end text-right">
+      <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">Course Title:</span>
+      <span className="font-extrabold text-slate-900 truncate max-w-[150px]" title={state.courseTitle}>{state.courseTitle || ''}</span>
     </div>
   </div>
+  
+  {/* Row 2: Name (Left) | ID (Middle) | Section (Right) */}
+  <div className="grid grid-cols-12 w-full items-center border-t border-slate-100 pt-1.5">
+    <div className="col-span-5 flex items-center text-left">
+      <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">Name:</span>
+      <span className="font-extrabold text-slate-900 truncate max-w-[180px]" title={state.studentName}>{state.studentName || ''}</span>
+    </div>
+    <div className="col-span-3 flex items-center justify-center text-center">
+      <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">ID:</span>
+      <span className="font-extrabold text-slate-900">{state.studentId || ''}</span>
+    </div>
+    <div className="col-span-4 flex items-center justify-end text-right">
+      <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">Section:</span>
+      <span className="font-extrabold text-slate-900">{state.studentSection || ''}</span>
+    </div>
+  </div>
+
+  {/* Row 3: Department (Left) | Batch (Right) */}
+  <div className="grid grid-cols-12 w-full items-center border-t border-slate-100 pt-1.5">
+    <div className="col-span-8 flex items-center text-left">
+      <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">Department:</span>
+      <span className="font-extrabold text-slate-900 truncate max-w-[340px]">{state.studentDept || ''}</span>
+    </div>
+    <div className="col-span-4 flex items-center justify-end text-right">
+      <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">Batch:</span>
+      <span className="font-extrabold text-slate-900">{state.studentBatch || ''}</span>
+    </div>
+  </div>
+</div>
 
   {/* High-Resolution Index Table with Applied Font Styles */}
   <div className={`w-full overflow-hidden flex-1 flex flex-col ${selectedFont.cssClass}`}>
@@ -366,59 +367,58 @@ export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTa
           <th className="p-2.5 text-center w-[10%] border font-bold" style={{ borderColor: state.borderColor }}>Remarks</th>
         </tr>
       </thead>
-      <tbody className="text-slate-900">
-        {/* Render filled active rows (height locked to exactly 54px for ~3 lines) */}
-        {indexRows.map((row, index) => (
-          <tr 
-            key={row.id} 
-            className="hover:bg-slate-50 transition border-b"
-            style={{ borderBottomColor: state.borderColor, height: '54px' }}
-          >
-            <td 
-              className="p-1.5 text-center font-bold border text-slate-700"
-              style={{ borderColor: state.borderColor }}
-            >
-              {row.no || String(index + 1).padStart(2, '0')}
-            </td>
-            <td 
-              className="p-1.5 font-semibold text-slate-800 border text-xs leading-tight text-left pl-3"
-              style={{ borderColor: state.borderColor }}
-            >
-              {row.name}
-            </td>
-            <td 
-              className="p-1.5 text-center text-xs font-semibold text-slate-700 border whitespace-nowrap"
-              style={{ borderColor: state.borderColor }}
-            >
-              {row.submissionDate || ''}
-            </td>
-            <td 
-              className="p-1.5 text-center text-slate-600 font-semibold border text-xs"
-              style={{ borderColor: state.borderColor }}
-            >
-              {/* Optional verification signature/remarks field */}
-            </td>
-          </tr>
-        ))}
-        
-        {/* Render exactly 11 minus active rows to keep the aesthetic A4 page structure */}
-        {Array.from({ length: Math.max(0, 11 - indexRows.length) }).map((_, i) => {
-          const rowIndex = indexRows.length + i + 1;
-          return (
-            <tr key={`empty-${i}`} style={{ height: '54px' }}>
-              <td 
-                className="border text-center text-slate-400 font-mono text-[9px] select-none"
-                style={{ borderColor: state.borderColor }}
-              >
-                {String(rowIndex).padStart(2, '0')}
-              </td>
-              <td className="border text-left pl-3 text-xs" style={{ borderColor: state.borderColor }}></td>
-              <td className="border text-center text-xs" style={{ borderColor: state.borderColor }}></td>
-              <td className="border text-center text-xs" style={{ borderColor: state.borderColor }}></td>
-            </tr>
-          );
-        })}
-      </tbody>
+      <tbody>
+  {indexRows.map((row, index) => (
+    <tr 
+      key={row.id} 
+      className="hover:bg-slate-50 transition border-b"
+      style={{ borderBottomColor: state.borderColor, height: '54px' }}
+    >
+      <td 
+        className="p-1.5 text-center font-bold border text-slate-700"
+        style={{ borderColor: state.borderColor, width: '10%' }}
+      >
+        {row.no || String(index + 1).padStart(2, '0')}
+      </td>
+      <td 
+        className="p-1.5 font-semibold text-slate-800 border text-xs leading-tight text-left pl-3"
+        style={{ borderColor: state.borderColor }}
+      >
+        {row.name}
+      </td>
+      <td 
+        className="p-1.5 text-center border text-slate-700 text-xs"
+        style={{ borderColor: state.borderColor }}
+      >
+        {row.dateOfSubmission ? formatDate(row.dateOfSubmission) : ''}
+      </td>
+      <td 
+        className="p-1.5 text-center border text-slate-700 text-xs"
+        style={{ borderColor: state.borderColor }}
+      >
+        {row.remarks}
+      </td>
+    </tr>
+  ))}
+  
+  {/* Empty Rows Filler customized for exactly 4 columns & exactly 11 max rows */}
+  {Array.from({ length: Math.max(0, 11 - indexRows.length) }).map((_, i) => {
+    const rowIndex = indexRows.length + i + 1;
+    return (
+      <tr key={`empty-${i}`} style={{ height: '54px' }}>
+        <td 
+          className="border text-center text-slate-400 font-mono text-[9px] select-none"
+          style={{ borderColor: state.borderColor }}
+        >
+          {String(rowIndex).padStart(2, '0')}
+        </td>
+        <td className="border text-left pl-3 text-xs" style={{ borderColor: state.borderColor }}></td>
+        <td className="border text-center text-xs" style={{ borderColor: state.borderColor }}></td>
+        <td className="border text-center text-xs" style={{ borderColor: state.borderColor }}></td>
+      </tr>
+    );
+  })}
+</tbody>
     </table>
   </div>
 </div>
