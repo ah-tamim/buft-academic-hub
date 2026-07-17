@@ -301,52 +301,51 @@ export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTa
     </span>
   </div>
 
-  {/* Index Metadata Block: Beautifully formatted compact side-by-side grids */}
-  {/* STUDENT & COURSE INFORMATION CARD */}
-<div
-  className="w-full text-[11px] text-slate-800 mb-2 border rounded-md text-left px-4 py-2 flex flex-col gap-1.5"
-  style={{ borderColor: state.borderColor }}
->
-  {/* Row 1: Course Code (Left) & Course Title (Right) */}
-  <div className="grid grid-cols-12 w-full items-center">
-    <div className="col-span-8 flex items-center text-left">
-      <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">Course Code:</span>
-      <span className="font-extrabold text-slate-900 truncate max-w-[280px]">{state.courseCode || ''}</span>
-    </div>
-    <div className="col-span-4 flex items-center justify-end text-right">
-      <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">Course Title:</span>
-      <span className="font-extrabold text-slate-900 truncate max-w-[150px]" title={state.courseTitle}>{state.courseTitle || ''}</span>
-    </div>
-  </div>
-  
-  {/* Row 2: Name (Left) | ID (Middle) | Section (Right) */}
-  <div className="grid grid-cols-12 w-full items-center border-t border-slate-100 pt-1.5">
-    <div className="col-span-5 flex items-center text-left">
-      <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">Name:</span>
-      <span className="font-extrabold text-slate-900 truncate max-w-[180px]" title={state.studentName}>{state.studentName || ''}</span>
-    </div>
-    <div className="col-span-3 flex items-center justify-center text-center">
-      <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">ID:</span>
-      <span className="font-extrabold text-slate-900">{state.studentId || ''}</span>
-    </div>
-    <div className="col-span-4 flex items-center justify-end text-right">
-      <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">Section:</span>
-      <span className="font-extrabold text-slate-900">{state.studentSection || ''}</span>
-    </div>
-  </div>
+  {/* Index Metadata - Centered Course Title and Right-aligned fixed student info */}
+                  <div 
+                    className="w-full text-[11px] text-slate-800 mb-2 border rounded-md text-left px-4 py-2 flex flex-col gap-1.5"
+                    style={{ borderColor: state.borderColor }}
+                  >
+                    {/* Row 1: Course Code (Left) | Course Title (Middle Center) | Student ID (Right) */}
+                    <div className="grid grid-cols-12 w-full items-center">
+                      <div className="col-span-4 flex items-center text-left">
+                        <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">Course Code:</span>
+                        <span className="font-extrabold text-slate-900 truncate max-w-[150px]">{state.courseCode || ''}</span>
+                      </div>
+                      <div className="col-span-5 flex items-center justify-center text-center">
+                        <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">Course Title:</span>
+                        <span className="font-extrabold text-slate-900 truncate max-w-[220px]" title={state.courseTitle}>{state.courseTitle || ''}</span>
+                      </div>
+                      <div className="col-span-3 flex items-center justify-end text-right">
+                        <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">ID:</span>
+                        <span className="font-extrabold text-slate-900 truncate max-w-[110px]">{state.studentId || ''}</span>
+                      </div>
+                    </div>
+                    
+                    {/* Row 2: Name (Spans Left/Middle) | Section (Right) */}
+                    <div className="grid grid-cols-12 w-full items-center border-t border-slate-100 pt-1.5">
+                      <div className="col-span-9 flex items-center text-left">
+                        <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">Name:</span>
+                        <span className="font-extrabold text-slate-900 truncate max-w-[380px]" title={state.studentName}>{state.studentName || ''}</span>
+                      </div>
+                      <div className="col-span-3 flex items-center justify-end text-right">
+                        <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">Section:</span>
+                        <span className="font-extrabold text-slate-900 truncate max-w-[80px]">{state.studentSection || ''}</span>
+                      </div>
+                    </div>
 
-  {/* Row 3: Department (Left) | Batch (Right) */}
-  <div className="grid grid-cols-12 w-full items-center border-t border-slate-100 pt-1.5">
-    <div className="col-span-8 flex items-center text-left">
-      <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">Department:</span>
-      <span className="font-extrabold text-slate-900 truncate max-w-[340px]">{state.studentDept || ''}</span>
-    </div>
-    <div className="col-span-4 flex items-center justify-end text-right">
-      <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">Batch:</span>
-      <span className="font-extrabold text-slate-900">{state.studentBatch || ''}</span>
-    </div>
-  </div>
-</div>
+                    {/* Row 3: Department (Spans Left/Middle) | Batch (Right) */}
+                    <div className="grid grid-cols-12 w-full items-center border-t border-slate-100 pt-1.5">
+                      <div className="col-span-9 flex items-center text-left">
+                        <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">Department:</span>
+                        <span className="font-extrabold text-slate-900 truncate max-w-[380px]" title={state.studentDept}>{state.studentDept || ''}</span>
+                      </div>
+                      <div className="col-span-3 flex items-center justify-end text-right">
+                        <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">Batch:</span>
+                        <span className="font-extrabold text-slate-900 truncate max-w-[80px]">{state.studentBatch || ''}</span>
+                      </div>
+                    </div>
+                  </div>
 
   {/* High-Resolution Index Table with Applied Font Styles */}
   <div className={`w-full overflow-hidden flex-1 flex flex-col ${selectedFont.cssClass}`}>
