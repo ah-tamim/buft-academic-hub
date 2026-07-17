@@ -301,48 +301,48 @@ export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTa
     </span>
   </div>
 
-  {/* Index Metadata - Centered Course Title and Right-aligned fixed student info */}
+  {/* Index Metadata - Beautifully formatted side-by-side compact details */}
                   <div 
                     className="w-full text-[11px] text-slate-800 mb-2 border rounded-md text-left px-4 py-2 flex flex-col gap-1.5"
                     style={{ borderColor: state.borderColor }}
                   >
-                    {/* Row 1: Course Code (Left) | Course Title (Middle Center) | Student ID (Right) */}
+                    {/* Row 1: Course Code (Left) & Course Title (Middle) */}
                     <div className="grid grid-cols-12 w-full items-center">
-                      <div className="col-span-4 flex items-center text-left">
+                      <div className="col-span-5 flex items-center text-left">
                         <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">Course Code:</span>
-                        <span className="font-extrabold text-slate-900 truncate max-w-[150px]">{state.courseCode || ''}</span>
+                        <span className="font-extrabold text-slate-900 truncate">{state.courseCode || ''}</span>
                       </div>
-                      <div className="col-span-5 flex items-center justify-center text-center">
+                      <div className="col-span-7 flex items-center text-left">
                         <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">Course Title:</span>
-                        <span className="font-extrabold text-slate-900 truncate max-w-[220px]" title={state.courseTitle}>{state.courseTitle || ''}</span>
-                      </div>
-                      <div className="col-span-3 flex items-center justify-end text-right">
-                        <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">ID:</span>
-                        <span className="font-extrabold text-slate-900 truncate max-w-[110px]">{state.studentId || ''}</span>
+                        <span className="font-extrabold text-slate-900 truncate" title={state.courseTitle}>{state.courseTitle || ''}</span>
                       </div>
                     </div>
                     
-                    {/* Row 2: Name (Spans Left/Middle) | Section (Right) */}
+                    {/* Row 2: Name (Left) | Student ID (Middle) | Section (Right-offset) */}
                     <div className="grid grid-cols-12 w-full items-center border-t border-slate-100 pt-1.5">
-                      <div className="col-span-9 flex items-center text-left">
+                      <div className="col-span-5 flex items-center text-left">
                         <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">Name:</span>
-                        <span className="font-extrabold text-slate-900 truncate max-w-[380px]" title={state.studentName}>{state.studentName || ''}</span>
+                        <span className="font-extrabold text-slate-900 truncate" title={state.studentName}>{state.studentName || ''}</span>
                       </div>
-                      <div className="col-span-3 flex items-center justify-end text-right">
+                      <div className="col-span-4 flex items-center text-left">
+                        <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">ID:</span>
+                        <span className="font-extrabold text-slate-900 truncate">{state.studentId || ''}</span>
+                      </div>
+                      <div className="col-span-3 flex items-center text-left">
                         <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">Section:</span>
-                        <span className="font-extrabold text-slate-900 truncate max-w-[80px]">{state.studentSection || ''}</span>
+                        <span className="font-extrabold text-slate-900 truncate">{state.studentSection || ''}</span>
                       </div>
                     </div>
 
-                    {/* Row 3: Department (Spans Left/Middle) | Batch (Right) */}
+                    {/* Row 3: Department (Left) | Batch (Right-offset aligned under Section) */}
                     <div className="grid grid-cols-12 w-full items-center border-t border-slate-100 pt-1.5">
                       <div className="col-span-9 flex items-center text-left">
                         <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">Department:</span>
-                        <span className="font-extrabold text-slate-900 truncate max-w-[380px]" title={state.studentDept}>{state.studentDept || ''}</span>
+                        <span className="font-extrabold text-slate-900 truncate" title={state.studentDept}>{state.studentDept || ''}</span>
                       </div>
-                      <div className="col-span-3 flex items-center justify-end text-right">
+                      <div className="col-span-3 flex items-center text-left">
                         <span className="font-bold text-slate-600 uppercase tracking-wider mr-1.5 shrink-0">Batch:</span>
-                        <span className="font-extrabold text-slate-900 truncate max-w-[80px]">{state.studentBatch || ''}</span>
+                        <span className="font-extrabold text-slate-900 truncate">{state.studentBatch || ''}</span>
                       </div>
                     </div>
                   </div>
