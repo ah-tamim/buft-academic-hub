@@ -60,11 +60,11 @@ export const INITIAL_COVER_STATE: CoverPageState = {
   universityName: 'BGMEA UNIVERSITY OF FASHION & TECHNOLOGY',
   logoUrl: 'https://buft.edu.bd/logo-326x329.png',
   coverType: 'lab',
-  courseCode: 'TEx 07232206',
-  courseTitle: 'Wet Processing-I',
-  experimentNo: '04',
-  experimentName: 'Study on the pre-treatment and dyeing of 100% cotton knit fabric with reactive dyes.',
-  assignmentTopic: 'Application of Smart Textiles in Modern Sustainable Apparel Design',
+  courseCode: '',
+  courseTitle: '',
+  experimentNo: '',
+  experimentName: '',
+  assignmentTopic: '',
   
   // Submitted To
   teacherName: 'Dr. Md. Mostafizur Rahman',
@@ -72,13 +72,13 @@ export const INITIAL_COVER_STATE: CoverPageState = {
   teacherDept: 'Textile Engineering',
   
   // Submitted By
-  studentName: 'Ahsan Tamim',
-  studentId: '242-520-801',
-  studentSection: '3A',
-  studentDept: 'Textile Engineering',
-  studentBatch: '221 (35th)',
-  studentSession: '2021-2022',
-  studentSemester: '6th Semester',
+  studentName: '',
+  studentId: '',
+  studentSection: '',
+  studentDept: '',
+  studentBatch: '',
+  studentSession: '',
+  studentSemester: 'r',
   
   // Dates
   submissionDate: new Date().toLocaleDateString('en-GB'),
@@ -108,23 +108,6 @@ export const SAMPLE_INDEX_ROWS: IndexRow[] = [
     submissionDate: '22/05/2026',
     pageNo: '01-05',
     remarks: ''
-  },
-  {
-    id: '2',
-    no: '02',
-    name: 'Study on the single-jersey weft knitted structures and their properties.',
-    performanceDate: '29/05/2026',
-    submissionDate: '05/06/2026',
-    pageNo: '06-12',
-    remarks: ''
-  },
-  {
-    id: '3',
-    no: '03',
-    name: 'Dyeing of cotton knit fabric with direct dyes and assessment of color fastness.',
-    performanceDate: '12/06/2026',
-    submissionDate: '19/06/2026',
-    pageNo: '13-20',
-    remarks: ''
   }
+  
 ];
