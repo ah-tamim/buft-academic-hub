@@ -251,82 +251,41 @@ export const SidebarControls: React.FC<SidebarControlsProps> = ({
       <div className="flex-1 overflow-y-auto px-5 py-3 space-y-3 scrollbar-thin scrollbar-thumb-slate-200">
         
         {/* SECTION 1: COVER DETAILS & INDEX METADATA */}
-<div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm">
-  <button
-    onClick={() => toggleSection('document')}
-    className="w-full flex items-center justify-between p-3.5 text-xs font-bold text-left hover:bg-slate-50 transition text-slate-700 uppercase tracking-wider cursor-pointer"
-  >
-    <div className="flex items-center gap-2">
-      <BookOpen className="h-4 w-4 text-pink-500" />
-      <span>1. {activeTab === 'index' ? 'Index Page Metadata' : 'Cover Page Content'}</span>
-    </div>
-    <ChevronDown className={`h-4 w-4 transition-transform text-slate-400 ${openSection === 'document' ? 'rotate-180' : ''}`} />
-  </button>
-
-  {openSection === 'document' && (
-    <div className="p-4 border-t border-slate-100 space-y-3.5 bg-slate-50/40">
-      <div>
-        <label className="block text-[11px] font-bold text-slate-500 mb-1">Course Code</label>
-        <input
-          type="text"
-          value={state.courseCode}
-          onChange={(e) => onChange({ courseCode: e.target.value.toUpperCase() })}
-          placeholder="e.g. TEX 07232206"
-          className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition shadow-sm placeholder-slate-400"
-        />
-      </div>
-
-      <div>
-        <label className="block text-[11px] font-bold text-slate-500 mb-1">Course Title</label>
-        <input
-          type="text"
-          value={state.courseTitle}
-          onChange={(e) => onChange({ courseTitle: e.target.value })}
-          placeholder="e.g. Wet Processing Engineering-I"
-          className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition shadow-sm placeholder-slate-400"
-        />
-      </div>
-
-      {/* --- ADDED FIELDS FOR THE INDEX TAB --- */}
-      {activeTab === 'index' && (
-        <>
-          <div>
-            <label className="block text-[11px] font-bold text-slate-500 mb-1">Full Name</label>
-            <input
-              type="text"
-              value={state.studentName}
-              onChange={(e) => onChange({ studentName: e.target.value })}
-              placeholder="e.g. John Doe"
-              className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition shadow-sm placeholder-slate-400"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="block text-[11px] font-bold text-slate-500 mb-1">ID</label>
-              <input
-                type="text"
-                value={state.studentId}
-                onChange={(e) => onChange({ studentId: e.target.value })}
-                placeholder="e.g. 211-15-4000"
-                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition shadow-sm placeholder-slate-400"
-              />
+        <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm">
+          <button
+            onClick={() => toggleSection('document')}
+            className="w-full flex items-center justify-between p-3.5 text-xs font-bold text-left hover:bg-slate-50 transition text-slate-700 uppercase tracking-wider cursor-pointer"
+          >
+            <div className="flex items-center gap-2">
+              <BookOpen className="h-4 w-4 text-pink-500" />
+              <span>1. {activeTab === 'index' ? 'Index Page Metadata' : 'Cover Page Content'}</span>
             </div>
+            <ChevronDown className={`h-4 w-4 transition-transform text-slate-400 ${openSection === 'document' ? 'rotate-180' : ''}`} />
+          </button>
 
-            <div>
-              <label className="block text-[11px] font-bold text-slate-500 mb-1">Department</label>
-              <input
-                type="text"
-                list="student-depts"
-                value={state.studentDept}
-                onChange={(e) => onChange({ studentDept: e.target.value })}
-                placeholder="e.g. Computer Science"
-                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition shadow-sm placeholder-slate-400"
-              />
-            </div>
-          </div>
-        </>
-      )}
+          {openSection === 'document' && (
+            <div className="p-4 border-t border-slate-100 space-y-3.5 bg-slate-50/40">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 mb-1">Course Code</label>
+                <input
+                  type="text"
+                  value={state.courseCode}
+                  onChange={(e) => onChange({ courseCode: e.target.value.toUpperCase() })}
+                  placeholder="e.g. TEX 07232206"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition shadow-sm placeholder-slate-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 mb-1">Course Title</label>
+                <input
+                  type="text"
+                  value={state.courseTitle}
+                  onChange={(e) => onChange({ courseTitle: e.target.value })}
+                  placeholder="e.g. Wet Processing Engineering-I"
+                  className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition shadow-sm placeholder-slate-400"
+                />
+              </div>
 
               {activeTab === 'lab' && (
                 <>
@@ -369,6 +328,74 @@ export const SidebarControls: React.FC<SidebarControlsProps> = ({
               )}
             </div>
           )}
+{/* 1. INDEX TAB STUDENT CREDENTIALS FORM */}
+{activeTab === 'index' && (
+  <div className="space-y-3.5 pt-3.5 border-t border-slate-200/60">
+    <div>
+      <label className="block text-[11px] font-bold text-slate-500 mb-1">Full Name</label>
+      <input
+        type="text"
+        value={state.studentName}
+        onChange={(e) => onChange({ studentName: e.target.value })}
+        placeholder="Your Name"
+        className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition shadow-sm placeholder-slate-400"
+      />
+    </div>
+
+    <div className="grid grid-cols-2 gap-2">
+      <div>
+        <label className="block text-[11px] font-bold text-slate-500 mb-1">ID</label>
+        <input
+          type="text"
+          value={state.studentId}
+          onChange={(e) => onChange({ studentId: e.target.value })}
+          placeholder="e.g. 242-520-801"
+          className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition shadow-sm placeholder-slate-400"
+        />
+      </div>
+      <div>
+        <label className="block text-[11px] font-bold text-slate-500 mb-1">Section</label>
+        <input
+          type="text"
+          value={state.studentSection}
+          onChange={(e) => onChange({ studentSection: e.target.value })}
+          placeholder="e.g. 5A"
+          className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition shadow-sm placeholder-slate-400"
+        />
+      </div>
+    </div>
+
+    <div className="grid grid-cols-2 gap-2">
+      <div>
+        <label className="block text-[11px] font-bold text-slate-500 mb-1">Batch</label>
+        <input
+          type="text"
+          value={state.studentBatch}
+          onChange={(e) => onChange({ studentBatch: e.target.value })}
+          placeholder="e.g. 242"
+          className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition shadow-sm placeholder-slate-400"
+        />
+      </div>
+      <div>
+        <label className="block text-[11px] font-bold text-slate-500 mb-1">Department</label>
+        <input
+          type="text"
+          list="index-student-depts"
+          value={state.studentDept}
+          onChange={(e) => onChange({ studentDept: e.target.value })}
+          placeholder="e.g. Textile Engineering"
+          className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition shadow-sm placeholder-slate-400"
+        />
+        <datalist id="index-student-depts">
+          {DEPARTMENTS.map(d => (
+            <option key={d} value={d} />
+          ))}
+        </datalist>
+      </div>
+    </div>
+  </div>
+)}
+          
         </div>
 
         {/* SECTION 2: SUBMITTED TO (TEACHER) */}
