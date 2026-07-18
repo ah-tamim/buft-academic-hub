@@ -901,9 +901,10 @@ export const SidebarControls: React.FC<SidebarControlsProps> = ({
         
         <button
           onClick={() => window.print()}
-          className="w-full py-2 border border-slate-200 hover:border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-800 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer"
+          className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-extrabold rounded-xl text-xs uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/15 hover:shadow-blue-500/25 cursor-pointer active:scale-[0.98]"
         >
-          <span> Print & Save</span>
+          <Printer className="h-4 w-4" />
+          <span>Print & Save Page</span>
         </button>
 
         <div className="mt-2 text-[10px] text-slate-400 text-center leading-relaxed">
