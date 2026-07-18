@@ -36,14 +36,14 @@ export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTa
   return (
     <div className="flex-1 flex justify-center items-start overflow-auto p-4 md:p-8 select-none">
       {/* Real A4 Paper representation on screen */}
-      <div
-        id={id}
-        className={`bg-white w-[210mm] h-[297mm] min-w-[210mm] min-h-[297mm] shadow-[0_10px_30px_rgba(0,0,0,0.15)] relative overflow-hidden box-border flex flex-col ${selectedFont.cssClass}`}
-        style={{
-          printColorAdjust: 'exact',
-          WebkitPrintColorAdjust: 'exact',
-        }}
-      >
+     <div
+  id={id}
+  className={`bg-white w-[210mm] h-[297mm] min-w-[210mm] min-h-[297mm] shadow-[0_10px_30px_rgba(0,0,0,0.15)] relative overflow-hidden box-border flex flex-col ${selectedFont.cssClass} lining-nums`}
+  style={{
+    printColorAdjust: 'exact',
+    WebkitPrintColorAdjust: 'exact',
+  }}
+>
         {/* Outer Boundary Frame - Styled precisely as a double-bordered page from the 2nd picture */}
         <div
           className="w-full h-full flex flex-col box-border relative"
