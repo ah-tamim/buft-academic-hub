@@ -24,7 +24,7 @@ export const COLOR_PRESETS = [
 ];
 
 export const FONT_PRESETS = [
-  { name: 'Standard Academic (Times New Roman Style)', value: 'serif', cssClass: 'font-serif' },
+  { name: 'Standard Academic (Times New Roman Style)', value: 'serif', cssClass: 'font-times' },
   { name: 'Clean Modern (Inter / Arial Style)', value: 'sans', cssClass: 'font-sans' },
   { name: 'Georgia Elegant', value: 'georgia', cssClass: 'font-[Georgia,serif]' },
   { name: 'Editorial Display (Playfair Style)', value: 'playfair', cssClass: 'font-["Playfair_Display",serif]' },
