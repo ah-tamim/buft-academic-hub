@@ -640,11 +640,39 @@ export default function App() {
                   <HelpCircle className="h-3.5 w-3.5" />
                   <span className="hidden sm:inline">Printing Guide</span>
                 </button>
+                <button
+  onClick={() => window.print()}
+  className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg text-xs font-bold transition cursor-pointer shadow-md shadow-blue-500/10 active:scale-95"
+>
+  <Printer className="h-3.5 w-3.5" />
+  <span>Print & Save Page</span>
+</button>
               </div>
             </div>
 
             {/* ACTIVE PAPER PREVIEW FRAME */}
             <div className="flex-1 bg-gradient-to-tr from-slate-200 via-zinc-100 to-indigo-100/30 overflow-y-auto overflow-x-auto flex justify-center items-start p-4 lg:p-8 scrollbar-thin scrollbar-thumb-slate-200">
+               {/* ➕ ENCAPSULATED WITH A VERTICAL FLEX CONTAINER TO STACK FLOATING ACTION BAR ABOVE PREVIEW */}
+  <div className="flex flex-col items-center gap-5 my-auto">
+    
+    {/* ➕ ADDED FLOATING QUICK ACTION BAR (WITH 'no-print' TO ENSURE IT'S HIDDEN IN PDF) */}
+    <div className="bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-slate-200/80 shadow-lg flex items-center gap-3.5 no-print animate-fade-in">
+      <div className="flex items-center gap-2">
+        <span className="relative flex h-2 w-2">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+        </span>
+        <span className="text-xs font-bold text-slate-700">Ready to save?</span>
+      </div>
+      <div className="h-4 w-[1px] bg-slate-200"></div>
+      <button
+        onClick={() => window.print()}
+        className="flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-extrabold rounded-xl text-xs shadow-md shadow-blue-500/10 transition cursor-pointer hover:shadow-blue-500/20 active:scale-95"
+      >
+        <Printer className="h-3.5 w-3.5" />
+        <span>Print & Save Page</span>
+      </button>
+    </div>
               <div className="transform scale-[0.62] sm:scale-[0.75] md:scale-[0.88] lg:scale-100 origin-top transition-transform duration-300">
                 <A4Preview
                   id="a4-preview-page"
