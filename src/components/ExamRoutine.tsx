@@ -263,18 +263,10 @@ export default function ExamRoutine() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Tab State: "seating" | "master"
-  const [activeTab, setActiveTab] = useState<"seating" | "master">("seating");
-
   // Dynamic Dropdown Filter States for Seating Search
   const [selectedDept, setSelectedDept] = useState<string>("");
   const [selectedBatch, setSelectedBatch] = useState<string>("");
   const [selectedSection, setSelectedSection] = useState<string>("");
-
-  // Master Schedule Filter States
-  const [masterSearch, setMasterSearch] = useState<string>("");
-  const [masterDeptFilter, setMasterDeptFilter] = useState<string>("all");
-  const [masterSessionFilter, setMasterSessionFilter] = useState<string>("all");
 
   // Fetch Spreadsheet Helper
   const fetchData = async () => {
@@ -401,28 +393,6 @@ export default function ExamRoutine() {
     );
   }, [exams, selectedDept, selectedBatch, selectedSection]);
 
-  // Filtered exams for Master Schedule
-  const filteredMasterExams = useMemo(() => {
-    return exams.filter(e => {
-      const matchesSearch = 
-        masterSearch === "" ||
-        e.courseTitle.toLowerCase().includes(masterSearch.toLowerCase()) ||
-        e.courseCode.toLowerCase().includes(masterSearch.toLowerCase()) ||
-        e.teacher.toLowerCase().includes(masterSearch.toLowerCase()) ||
-        e.sectionCode.toLowerCase().includes(masterSearch.toLowerCase());
-
-      const matchesDept = 
-        masterDeptFilter === "all" || 
-        e.program === masterDeptFilter;
-
-      const matchesSession = 
-        masterSessionFilter === "all" || 
-        e.session === masterSessionFilter;
-
-      return matchesSearch && matchesDept && matchesSession;
-    });
-  }, [exams, masterSearch, masterDeptFilter, masterSessionFilter]);
-
   // Download filtered individual routine as a PDF
   const handleDownloadSeatingPDF = () => {
     if (filteredSeatingExams.length === 0) return;
@@ -490,86 +460,7 @@ export default function ExamRoutine() {
     doc.save(fileName);
   };
 
-  // Download filtered Master Schedule as a PDF
-  const handleDownloadMasterPDF = () => {
-    if (filteredMasterExams.length === 0) return;
-    const doc = new jsPDF("landscape");
-    const pageWidth = doc.internal.pageSize.width;
-    
-    // Header title
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(16);
-    doc.setTextColor(13, 148, 136); // Teal-600
-    doc.text("BUFT Academic HUB — Master Exam Schedule", pageWidth / 2, 20, { align: "center" });
-    
-    doc.setFontSize(10);
-    doc.setFont("Helvetica", "normal");
-    doc.setTextColor(100, 116, 139); // Slate-500
-    doc.text(`${config.examName} — ${config.semester}`, pageWidth / 2, 26, { align: "center" });
-    
-    let subtitle = "Full Exam Schedule";
-    if (masterSearch || masterDeptFilter !== "all" || masterSessionFilter !== "all") {
-      const filters = [];
-      if (masterSearch) filters.push(`Search: "${masterSearch}"`);
-      if (masterDeptFilter !== "all") filters.push(`Dept: ${masterDeptFilter}`);
-      if (masterSessionFilter !== "all") filters.push(`Session: ${masterSessionFilter}`);
-      subtitle = `Filtered Master Schedule (${filters.join(", ")})`;
-    }
-    
-    doc.setFont("Helvetica", "bold");
-    doc.setFontSize(11);
-    doc.setTextColor(15, 23, 42); // Slate-900
-    doc.text(subtitle, pageWidth / 2, 34, { align: "center" });
-    
-    const headers = [["Date & Day", "Session / Time", "Dept / Batch", "Sec", "Course Details", "Rooms Allocation"]];
-    
-    const tableData = filteredMasterExams.map(exam => {
-      const roomsText: string[] = [];
-      if (exam.room1) {
-        roomsText.push(`Room ${exam.room1}${exam.seating1 ? ` (${exam.seating1})` : ''}`);
-      }
-      if (exam.room2) {
-        roomsText.push(`Room ${exam.room2}${exam.seating2 ? ` (${exam.seating2})` : ''}`);
-      }
-      const roomsStr = roomsText.length > 0 ? roomsText.join("\n") : "No Room Allocated";
 
-      const dateStr = `${exam.date}\n(${exam.day})`;
-      const sessionStr = `${exam.session}\n${exam.time}`;
-      const deptStr = `${exam.program}\nBatch ${exam.batch}`;
-      const sectionStr = exam.sectionCode || "N/A";
-      const courseStr = exam.courseTitle;
-
-      return [dateStr, sessionStr, deptStr, sectionStr, courseStr, roomsStr];
-    });
-
-    autoTable(doc, {
-      startY: 40,
-      head: headers,
-      body: tableData,
-      theme: "striped",
-      headStyles: { fillColor: [13, 148, 136], textColor: [255, 255, 255], fontStyle: "bold" },
-      styles: { fontSize: 8.5, cellPadding: 3.5, overflow: "linebreak" },
-      columnStyles: {
-        0: { cellWidth: 35 },
-        1: { cellWidth: 40 },
-        2: { cellWidth: 35 },
-        3: { cellWidth: 20 },
-        4: { cellWidth: 85 },
-        5: { cellWidth: 55 }
-      },
-      didDrawPage: (data: any) => {
-        const pageCount = (doc as any).internal.getNumberOfPages();
-        doc.setFontSize(8);
-        doc.setFont("Helvetica", "normal");
-        doc.setTextColor(148, 163, 184); // Slate-400
-        doc.text(`Page ${data.pageNumber} of ${pageCount} | Generated on ${new Date().toLocaleDateString()}`, 14, doc.internal.pageSize.height - 10);
-        doc.text("©BUFT Academic HUB", doc.internal.pageSize.width - 14, doc.internal.pageSize.height - 10, { align: "right" });
-      }
-    });
-
-    const fileName = `Master_Exam_Schedule_${new Date().toISOString().split("T")[0]}.pdf`;
-    doc.save(fileName);
-  };
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans antialiased" id="main_container">
@@ -602,34 +493,7 @@ export default function ExamRoutine() {
       {/* Main Content Workspace */}
       <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8" id="workspace_container">
         
-        {/* Tab Controls */}
-        <div className="flex border-b border-slate-200 mb-8 overflow-x-auto whitespace-nowrap scrollbar-none" id="tab_controls">
-          <button
-            onClick={() => setActiveTab("seating")}
-            className={`py-3.5 px-6 font-semibold text-sm border-b-2 transition-all duration-200 flex items-center gap-2 cursor-pointer ${
-              activeTab === "seating"
-                ? "border-teal-600 text-teal-700 bg-teal-50/40"
-                : "border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300"
-            }`}
-            id="tab_seating"
-          >
-            <Users className="h-4.5 w-4.5" />
-            🔍 Schedule
-          </button>
-          
-          <button
-            onClick={() => setActiveTab("master")}
-            className={`py-3.5 px-6 font-semibold text-sm border-b-2 transition-all duration-200 flex items-center gap-2 cursor-pointer ${
-              activeTab === "master"
-                ? "border-teal-600 text-teal-700 bg-teal-50/40"
-                : "border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300"
-            }`}
-            id="tab_master"
-          >
-            <Calendar className="h-4.5 w-4.5" />
-            📅 Master Exam Schedule
-          </button>
-        </div>
+
 
         {/* State rendering: Loading, Error, Content */}
         <AnimatePresence mode="wait">
@@ -693,11 +557,9 @@ export default function ExamRoutine() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
+              className="space-y-8"
+              id="seating_tab_view"
             >
-              
-              {/* TAB 1: SEATING SEARCH */}
-              {activeTab === "seating" && (
-                <div className="space-y-8" id="seating_tab_view">
                   
                   {/* Selector Card */}
                   <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-sm">
@@ -798,8 +660,80 @@ export default function ExamRoutine() {
                           </div>
                         </div>
 
-                        {/* Seating Routine Table */}
-                        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        {/* Responsive Exam Routine Layout */}
+                        {/* Mobile List View (visible on small devices) */}
+                        <div className="block md:hidden space-y-4">
+                          {filteredSeatingExams.map((exam, idx) => {
+                            const isMorning = exam.session === "Morning";
+                            return (
+                              <div key={idx} className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:border-teal-500/40 transition duration-150">
+                                <div className="flex items-center justify-between gap-2 pb-3.5 border-b border-slate-100 mb-3.5">
+                                  <div className="flex items-center gap-2">
+                                    <Calendar className="h-5 w-5 text-teal-600 shrink-0" />
+                                    <div>
+                                      <span className="font-bold text-slate-800 text-sm">{exam.date}</span>
+                                      <span className="text-xs text-slate-400 block font-medium mt-0.5">{exam.day}</span>
+                                    </div>
+                                  </div>
+                                  <span className={`text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded border ${
+                                    isMorning 
+                                      ? "bg-amber-50 text-amber-800 border-amber-200/50" 
+                                      : "bg-indigo-50 text-indigo-800 border-indigo-200/50"
+                                  }`}>
+                                    {exam.session}
+                                  </span>
+                                </div>
+
+                                <div className="space-y-3.5">
+                                  <div>
+                                    <h4 className="font-bold text-slate-900 text-sm leading-snug">
+                                      {exam.courseTitle}
+                                    </h4>
+                                    <div className="text-xs text-slate-500 font-mono mt-1.5 flex flex-wrap items-center gap-x-2">
+                                      <span>Code: {exam.courseCode}</span>
+                                      {exam.teacher && (
+                                        <>
+                                          <span className="text-slate-300">•</span>
+                                          <span>Teacher: {exam.teacher}</span>
+                                        </>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
+                                    <Clock className="h-4 w-4 text-teal-600/80 shrink-0" />
+                                    <span>{exam.time}</span>
+                                  </div>
+
+                                  <div className="pt-2 border-t border-slate-100 flex flex-col gap-1.5">
+                                    {exam.room1 && (
+                                      <div className="px-3 py-1 bg-teal-50 text-teal-800 font-bold text-xs rounded-xl border border-teal-100/80 inline-flex items-center gap-1.5 self-start">
+                                        🚪 Room {exam.room1} {exam.seating1 ? `(${exam.seating1})` : ''}
+                                      </div>
+                                    )}
+                                    {exam.room2 && (
+                                      <div className="px-3 py-1 bg-indigo-50 text-indigo-800 font-bold text-xs rounded-xl border border-indigo-100/80 inline-flex items-center gap-1.5 self-start">
+                                        🚪 Room {exam.room2} {exam.seating2 ? `(${exam.seating2})` : ''}
+                                      </div>
+                                    )}
+                                    {!exam.room1 && !exam.room2 && (
+                                      <span className="text-xs text-slate-400 italic">No Room Allocated</span>
+                                    )}
+                                  </div>
+
+                                  {exam.totalStudents && (
+                                    <div className="text-[10px] text-slate-400 font-semibold pt-1">
+                                      Students: {exam.totalStudents} {exam.credits ? `• Credits: ${exam.credits}` : ""}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Desktop Table View (visible on medium & larger devices) */}
+                        <div className="hidden md:block bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                           <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                               <thead>
@@ -912,220 +846,6 @@ export default function ExamRoutine() {
                       </div>
                     )}
                   </div>
-
-                </div>
-              )}
-
-              {/* TAB 2: MASTER SCHEDULE */}
-              {activeTab === "master" && (
-                <div className="space-y-6" id="master_tab_view">
-                  
-                  {/* Search and Filter Panel */}
-                  <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                      
-                      {/* Live Text Search */}
-                      <div className="relative flex-1">
-                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
-                        <input
-                          type="text"
-                          placeholder="Search course title, code, teacher, or section..."
-                          value={masterSearch}
-                          onChange={(e) => setMasterSearch(e.target.value)}
-                          className="w-full bg-slate-50 border border-slate-200 hover:border-slate-300 focus:border-teal-500 focus:bg-white text-slate-800 rounded-xl py-3 pl-11 pr-4 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-teal-100/80"
-                        />
-                      </div>
-
-                      {/* Dropdown Filters */}
-                      <div className="flex flex-wrap items-center gap-3">
-                        
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Dept</span>
-                          <select
-                            value={masterDeptFilter}
-                            onChange={(e) => setMasterDeptFilter(e.target.value)}
-                            className="bg-slate-50 border border-slate-200 text-slate-700 font-semibold text-xs rounded-lg p-2.5 hover:border-slate-300 cursor-pointer"
-                          >
-                            <option value="all">All Departments</option>
-                            {departments.map(dept => (
-                              <option key={dept} value={dept}>{dept}</option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Session</span>
-                          <select
-                            value={masterSessionFilter}
-                            onChange={(e) => setMasterSessionFilter(e.target.value)}
-                            className="bg-slate-50 border border-slate-200 text-slate-700 font-semibold text-xs rounded-lg p-2.5 hover:border-slate-300 cursor-pointer"
-                          >
-                            <option value="all">All Sessions</option>
-                            <option value="Morning">Morning</option>
-                            <option value="Afternoon">Afternoon</option>
-                          </select>
-                        </div>
-
-                        {/* Reset Filter Button */}
-                        {(masterSearch || masterDeptFilter !== "all" || masterSessionFilter !== "all") && (
-                          <button
-                            onClick={() => {
-                              setMasterSearch("");
-                              setMasterDeptFilter("all");
-                              setMasterSessionFilter("all");
-                            }}
-                            className="text-xs text-red-600 hover:text-red-700 font-bold px-3 py-2 bg-red-50 hover:bg-red-100/80 rounded-lg border border-red-200/50 transition cursor-pointer"
-                          >
-                            Reset
-                          </button>
-                        )}
-
-                      </div>
-
-                    </div>
-                  </div>
-
-                  {/* Schedule Table */}
-                  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" id="master_schedule_card">
-                    <div className="px-6 py-4.5 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div>
-                        <h3 className="font-bold text-slate-800">Master Schedule Listing</h3>
-                        <p className="text-xs text-slate-400 mt-0.5">Showing all parsed exams chronologically.</p>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-3">
-                        <span className="text-xs font-bold text-teal-700 bg-teal-50 px-3 py-1.5 rounded-full border border-teal-100">
-                          {filteredMasterExams.length} entries matched
-                        </span>
-                        <button
-                          onClick={handleDownloadMasterPDF}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white font-bold text-xs rounded-full border border-teal-500/30 transition-all duration-150 cursor-pointer shadow-sm hover:shadow text-center"
-                          id="download_master_pdf"
-                          title="Download master schedule as PDF"
-                        >
-                          <Download className="h-3.5 w-3.5" />
-                          Download PDF
-                        </button>
-                      </div>
-                    </div>
-
-                    {filteredMasterExams.length > 0 ? (
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                          <thead>
-                            <tr className="bg-slate-50/50 text-[11px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200/80">
-                              <th className="py-4 px-6">Date & Day</th>
-                              <th className="py-4 px-4">Session / Time</th>
-                              <th className="py-4 px-4">Dept / Batch</th>
-                              <th className="py-4 px-4">Section Code</th>
-                              <th className="py-4 px-6">Course Details</th>
-                              <th className="py-4 px-6">Rooms Allocation</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-100 text-sm">
-                            {filteredMasterExams.map((exam, idx) => {
-                              const isMorning = exam.session === "Morning";
-
-                              return (
-                                <tr key={idx} className="hover:bg-slate-50/60 transition duration-150">
-                                  {/* Date Column */}
-                                  <td className="py-4.5 px-6 font-semibold text-slate-800 whitespace-nowrap">
-                                    <div className="flex items-center gap-2">
-                                      <Calendar className="h-4.5 w-4.5 text-slate-400 shrink-0" />
-                                      <div>
-                                        <span>{exam.date}</span>
-                                        <span className="text-xs text-slate-400 block font-normal mt-0.5">{exam.day}</span>
-                                      </div>
-                                    </div>
-                                  </td>
-
-                                  {/* Session/Time Column */}
-                                  <td className="py-4.5 px-4 whitespace-nowrap">
-                                    <span className={`text-[10px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded border ${
-                                      isMorning 
-                                        ? "bg-amber-50 text-amber-800 border-amber-200/50" 
-                                        : "bg-indigo-50 text-indigo-800 border-indigo-200/50"
-                                    }`}>
-                                      {exam.session}
-                                    </span>
-                                    <span className="text-xs font-medium text-slate-600 block mt-1.5 font-sans">
-                                      {exam.time}
-                                    </span>
-                                  </td>
-
-                                  {/* Department & Batch Column */}
-                                  <td className="py-4.5 px-4 font-semibold text-slate-700 whitespace-nowrap">
-                                    <div className="flex flex-col">
-                                      <span>{exam.program}</span>
-                                      <span className="text-xs text-slate-400 font-normal mt-0.5">Batch {exam.batch}</span>
-                                    </div>
-                                  </td>
-
-                                  {/* Section Code Column */}
-                                  <td className="py-4.5 px-4 font-mono text-xs text-slate-500 whitespace-nowrap">
-                                    {exam.sectionCode}
-                                  </td>
-
-                                  {/* Course Details Column */}
-                                  <td className="py-4.5 px-6">
-                                    <div className="font-semibold text-slate-800 leading-snug">{exam.courseTitle}</div>
-                                    <div className="text-[11px] text-slate-400 font-mono mt-0.5 flex flex-wrap items-center gap-x-1.5">
-                                      <span>Code: {exam.courseCode}</span>
-                                      {exam.teacher && (
-                                        <>
-                                          <span className="text-slate-300">•</span>
-                                          <span>Teacher: {exam.teacher}</span>
-                                        </>
-                                      )}
-                                    </div>
-                                  </td>
-
-                                  {/* Rooms Allocation Column */}
-                                  <td className="py-4.5 px-6">
-                                    <div className="flex flex-col gap-1">
-                                      {exam.room1 && (
-                                        <span className="text-xs font-semibold text-slate-700">
-                                          🚪 Room {exam.room1} {exam.seating1 ? `(${exam.seating1})` : ''}
-                                        </span>
-                                      )}
-                                      {exam.room2 && (
-                                        <span className="text-xs font-semibold text-slate-700">
-                                          🚪 Room {exam.room2} {exam.seating2 ? `(${exam.seating2})` : ''}
-                                        </span>
-                                      )}
-                                      {!exam.room1 && !exam.room2 && (
-                                        <span className="text-xs text-slate-400 italic">No Room Allocated</span>
-                                      )}
-                                    </div>
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
-                    ) : (
-                      <div className="bg-white p-12 rounded-b-2xl text-center flex flex-col items-center justify-center">
-                        <div className="p-4 bg-slate-50 text-slate-400 rounded-2xl mb-4">
-                          <Search className="h-8 w-8" />
-                        </div>
-                        <h4 className="text-base font-bold text-slate-700">No entries matched search criteria</h4>
-                        <p className="text-slate-500 max-w-sm mt-1 text-sm">
-                          Try adjusting your spelling or reset the dropdown filters to show all scheduled exams.
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* EXAM ROUTINE NOTICE BANNER FOR MASTER VIEW */}
-                  <div className="mt-6 bg-amber-50/60 border border-amber-200/80 rounded-2xl p-4 flex items-start gap-3 text-left shadow-sm max-w-7xl mx-auto w-full">
-                    <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
-                    <p className="text-xs md:text-sm text-amber-800 leading-relaxed font-medium">
-                      <strong className="font-extrabold text-amber-900">Notice:</strong> The information provided may contain missing or inaccurate data. Please refer to the official Schedule from UCam for confirmation.
-                    </p>
-                  </div>
-
-                </div>
-              )}
 
             </motion.div>
           )}
