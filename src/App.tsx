@@ -683,6 +683,7 @@ export default function App() {
               </div>
             </div>
           </div>
+            </div>
 
           {/* MOBILE RESPONSIVE FLOATING DOCK */}
           <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-white/95 border border-slate-200 p-1.5 rounded-2xl shadow-2xl flex items-center gap-1.5 z-40 backdrop-blur-xl no-print">
