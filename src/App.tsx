@@ -8,7 +8,7 @@ import RoutineViewer from './components/RoutineViewer';
 import { HashRouter, Routes, Route } from "react-router-dom";
 import ExamRoutine from "./components/ExamRoutine"; // Adjust path as needed
 import { downloadA4PDF } from './utils/pdfGenerator';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   Eye, 
   Settings2, 
@@ -26,7 +26,9 @@ import {
   Check,
   GraduationCap,
   Heart,
-  Calculator
+  Calculator,
+  Home,
+  Menu
 } from 'lucide-react';
 
 export default function App() {
@@ -154,6 +156,7 @@ export default function App() {
   const [showHelp, setShowHelp] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   // Floating In-App bottom banner control state
   const [showBottomNotify, setShowBottomNotify] = useState(true);
@@ -263,25 +266,28 @@ export default function App() {
       
       {/* GLOBAL NAVBAR */}
       <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-white/75 border-b border-emerald-100/50 px-4 lg:px-8 py-3 flex items-center justify-between shadow-sm no-print">
-        <a 
-          href="#/"
-          onClick={(e) => {
-            e.preventDefault();
-            setCurrentView('home');
-            window.location.hash = '#/';
-          }} 
-          className="flex items-center gap-2.5 cursor-pointer select-none group"
-        >
-          <div className="bg-emerald-600 p-1.5 rounded-xl text-white shadow-md shadow-emerald-600/10 group-hover:scale-105 transition-transform">
-            <GraduationCap className="h-5 w-5" />
-          </div>
-          <div>
-            <h1 className="font-extrabold text-sm tracking-tight text-slate-950 flex items-center gap-1.5">
-              BUFT <span className="text-emerald-600">Academic Hub</span>
-            </h1>
-          </div>
-        </a>
+        <div className="flex items-center gap-2.5">
+          <a 
+            href="#/"
+            onClick={(e) => {
+              e.preventDefault();
+              setCurrentView('home');
+              window.location.hash = '#/';
+            }} 
+            className="flex items-center gap-2 cursor-pointer select-none group"
+          >
+            <div className="bg-emerald-600 p-1.5 rounded-xl text-white shadow-md shadow-emerald-600/10 group-hover:scale-105 transition-transform">
+              <GraduationCap className="h-5 w-5" />
+            </div>
+            <div>
+              <h1 className="font-extrabold text-sm tracking-tight text-slate-950 flex items-center gap-1.5">
+                BUFT <span className="text-emerald-600">Academic Hub</span>
+              </h1>
+            </div>
+          </a>
+        </div>
 
+        {/* Desktop Nav: Automatically appears on PC (md:flex) */}
         <nav className="hidden md:flex items-center gap-6">
           <a 
             href="#/"
@@ -372,36 +378,186 @@ export default function App() {
         </nav>
 
         <div className="flex items-center gap-2">
-          {currentView === 'home' ? (
-            <a
-              href="#/pagemaker"
-              key="start-generating-btn"
-              onClick={(e) => {
-                e.preventDefault();
-                setCurrentView('generator');
-                setActiveTab('lab');
-                window.location.hash = '#/pagemaker';
-              }}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-lg shadow-emerald-600/10 hover:shadow-emerald-600/20 transition-all cursor-pointer block animate-fade-in"
+          {/* Mobile elements container: Feedback & About on the left, followed by three-line button on the right */}
+          <div className="flex md:hidden items-center gap-1 select-none mr-1">
+            <button 
+              onClick={() => setShowFeedback(true)}
+              className="p-1.5 text-slate-600 hover:text-emerald-600 hover:bg-slate-50 rounded-xl transition cursor-pointer"
+              title="Feedback"
+              aria-label="Feedback"
             >
-              Start Generating
-            </a>
-          ) : (
-            <a
-              href="#/"
-              key="back-to-home-btn"
-              onClick={(e) => {
-                e.preventDefault();
-                setCurrentView('home');
-                window.location.hash = '#/';
-              }}
-              className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs px-4 py-2 rounded-xl transition-all cursor-pointer border border-slate-200/80 block animate-fade-in"
+              <MessageSquare className="h-4.5 w-4.5" />
+            </button>
+            <button 
+              onClick={() => setShowAbout(true)}
+              className="p-1.5 text-slate-600 hover:text-emerald-600 hover:bg-slate-50 rounded-xl transition cursor-pointer"
+              title="About"
+              aria-label="About"
             >
-              &larr; Back to Home
-            </a>
-          )}
+              <Award className="h-4.5 w-4.5" />
+            </button>
+            <button 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-1.5 ml-1 text-slate-600 hover:text-emerald-600 hover:bg-slate-50 rounded-xl transition cursor-pointer"
+              title="Menu"
+              aria-label="Toggle Menu"
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
+
+          {/* Desktop Right Side items */}
+          <div className="hidden md:block">
+            {currentView === 'home' ? (
+              <a
+                href="#/pagemaker"
+                key="start-generating-btn"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setCurrentView('generator');
+                  setActiveTab('lab');
+                  window.location.hash = '#/pagemaker';
+                }}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-lg shadow-emerald-600/10 hover:shadow-emerald-600/20 transition-all cursor-pointer block animate-fade-in"
+              >
+                Start Generating
+              </a>
+            ) : (
+              <a
+                href="#/"
+                key="back-to-home-btn"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setCurrentView('home');
+                  window.location.hash = '#/';
+                }}
+                className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs px-4 py-2 rounded-xl transition-all cursor-pointer border border-slate-200/80 block animate-fade-in"
+              >
+                &larr; Back to Home
+              </a>
+            )}
+          </div>
         </div>
       </header>
+
+      {/* MOBILE EXPANDABLE MENU (Three-line button dropdown) */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            className="md:hidden border-b border-emerald-100/50 bg-white/95 backdrop-blur-md no-print overflow-hidden shadow-lg z-30 sticky top-[53px]"
+          >
+            <div className="px-4 py-3 space-y-2 flex flex-col">
+              <a 
+                href="#/"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setCurrentView('home');
+                  setMobileMenuOpen(false);
+                  window.location.hash = '#/';
+                }}
+                className={`flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                  currentView === 'home'
+                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/40 shadow-sm'
+                    : 'text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                <Home className="h-4 w-4 text-emerald-600" />
+                <span>Home</span>
+              </a>
+
+              <a 
+                href="#/pagemaker"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setCurrentView('generator');
+                  setActiveTab('lab');
+                  setMobileMenuOpen(false);
+                  window.location.hash = '#/pagemaker';
+                }}
+                className={`flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                  currentView === 'generator'
+                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/40 shadow-sm'
+                    : 'text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                <Sparkles className="h-4 w-4 text-emerald-600" />
+                <span>Tools & Cover Page Maker</span>
+              </a>
+
+              <a 
+                href="#/cgpa"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setCurrentView('cgpa');
+                  setMobileMenuOpen(false);
+                  window.location.hash = '#/cgpa';
+                }}
+                className={`flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                  currentView === 'cgpa'
+                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/40 shadow-sm'
+                    : 'text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                <Calculator className="h-4 w-4 text-indigo-500" />
+                <span>CGPA Calculator</span>
+              </a>
+
+              <a 
+                href="#/classroutine"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setCurrentView('classroutine');
+                  setMobileMenuOpen(false);
+                  window.location.hash = '#/classroutine';
+                }}
+                className={`flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                  currentView === 'classroutine'
+                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/40 shadow-sm'
+                    : 'text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                <BookOpen className="h-4 w-4 text-emerald-600" />
+                <span>Class Routine</span>
+              </a>
+
+              <a 
+                href="#/examroutine"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setCurrentView('examroutine');
+                  setMobileMenuOpen(false);
+                  window.location.hash = '#/examroutine';
+                }}
+                className={`flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                  currentView === 'examroutine'
+                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/40 shadow-sm'
+                    : 'text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                <FileText className="h-4 w-4 text-emerald-600" />
+                <span>Exam Routine</span>
+              </a>
+
+              <a 
+                href="https://naabilll.github.io/buft-bus-tracker/" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="flex items-center justify-between px-4 py-2.5 text-xs font-bold rounded-xl text-slate-600 hover:bg-slate-50 transition-all cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Bus className="h-4 w-4 text-emerald-600 animate-pulse" />
+                  <span>BUFT Bus Tracker</span>
+                </div>
+                <ExternalLink className="h-3 w-3 opacity-60" />
+              </a>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
      {/* RENDER VIEW: CGPA, HOME, OR GENERATOR */}
       {currentView === 'classroutine' ? (
