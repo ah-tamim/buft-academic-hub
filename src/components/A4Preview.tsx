@@ -3,6 +3,10 @@ import { CoverPageState, IndexRow } from '../types';
 import { FONT_PRESETS } from '../data';
 // @ts-ignore
 
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return '';
+  return dateStr;
+};
 
 export interface A4PreviewProps {
   state: CoverPageState;
@@ -386,11 +390,11 @@ export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTa
         {row.name}
       </td>
       <td 
-        className="p-1.5 text-center border text-slate-700 text-xs"
-        style={{ borderColor: state.borderColor }}
-      >
-        {row.dateOfSubmission ? formatDate(row.dateOfSubmission) : ''}
-      </td>
+  className="p-1.5 text-center border text-slate-700 text-xs"
+  style={{ borderColor: state.borderColor }}
+>
+  {row.submissionDate ? formatDate(row.submissionDate) : ''}
+</td>
       <td 
         className="p-1.5 text-center border text-slate-700 text-xs"
         style={{ borderColor: state.borderColor }}
