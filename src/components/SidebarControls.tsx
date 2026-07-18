@@ -326,9 +326,7 @@ export const SidebarControls: React.FC<SidebarControlsProps> = ({
                   />
                 </div>
               )}
-            </div>
-          )}
-        </div>
+            
          {activeTab === 'index' && (
                 <div className="space-y-3.5 pt-3.5 border-t border-slate-200/60">
                   <div>
@@ -395,6 +393,9 @@ export const SidebarControls: React.FC<SidebarControlsProps> = ({
                   </div>
                 </div>
               )}
+              </div>
+          )}
+        </div>
 
         {/* SECTION 2: SUBMITTED TO (TEACHER) */}
         {activeTab !== 'index' && (
