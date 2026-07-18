@@ -162,10 +162,37 @@ export function parseSheetData(csvRows: string[][], session: "Morning" | "Aftern
     const credits = row[5] ? row[5].trim() : "";
     const teacher = row[6] ? row[6].trim() : "";
     const totalStudents = row[7] ? row[7].trim() : "";
-    const room1 = row[8] ? row[8].trim() : "";
-    const seating1 = row[9] ? row[9].trim() : "";
-    const room2 = row[10] ? row[10].trim() : "";
-    const seating2 = row[11] ? row[11].trim() : "";
+    const rawRoom1 = row[8] ? row[8].trim() : "";
+    const rawSeating1 = row[9] ? row[9].trim() : "";
+    const rawRoom2 = row[10] ? row[10].trim() : "";
+    const rawSeating2 = row[11] ? row[11].trim() : "";
+
+    let room1 = rawRoom1;
+    let seating1 = rawSeating1;
+    let room2 = rawRoom2;
+    let seating2 = rawSeating2;
+
+    const getSeatingStart = (seating: string): number => {
+      if (!seating) return Infinity;
+      const match = seating.match(/\d+/);
+      return match ? parseInt(match[0], 10) : Infinity;
+    };
+
+    if (rawRoom1 && rawRoom2) {
+      const start1 = getSeatingStart(rawSeating1);
+      const start2 = getSeatingStart(rawSeating2);
+      if (start2 < start1) {
+        room1 = rawRoom2;
+        seating1 = rawSeating2;
+        room2 = rawRoom1;
+        seating2 = rawSeating1;
+      }
+    } else if (!rawRoom1 && rawRoom2) {
+      room1 = rawRoom2;
+      seating1 = rawSeating2;
+      room2 = "";
+      seating2 = "";
+    }
 
     exams.push({
       date: currentDate || "N/A",
