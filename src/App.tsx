@@ -31,7 +31,7 @@ import {
 
 export default function App() {
   // Current view: Reads the URL Hash link directly so bookmarks and link sharing work perfectly!
-  const [currentView, setCurrentView] = useState<'home' | 'generator' | 'cgpa'>(() => {
+  const [currentView, setCurrentView] = useState<'home' | 'generator' | 'cgpa' | 'classroutine' | 'examroutine'>(() => {
     const currentHash = window.location.hash;
     if (currentHash === '#/cgpa') return 'cgpa';
     if (currentHash === '#/pagemaker') return 'generator';
@@ -265,7 +265,11 @@ export default function App() {
       <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-white/75 border-b border-emerald-100/50 px-4 lg:px-8 py-3 flex items-center justify-between shadow-sm no-print">
         <a 
           href="#/"
-          onClick={() => setCurrentView('home')} 
+          onClick={(e) => {
+            e.preventDefault();
+            setCurrentView('home');
+            window.location.hash = '#/';
+          }} 
           className="flex items-center gap-2.5 cursor-pointer select-none group"
         >
           <div className="bg-emerald-600 p-1.5 rounded-xl text-white shadow-md shadow-emerald-600/10 group-hover:scale-105 transition-transform">
@@ -281,7 +285,11 @@ export default function App() {
         <nav className="hidden md:flex items-center gap-6">
           <a 
             href="#/"
-            onClick={() => setCurrentView('home')}
+            onClick={(e) => {
+              e.preventDefault();
+              setCurrentView('home');
+              window.location.hash = '#/';
+            }}
             className={`text-xs font-bold transition-all cursor-pointer ${currentView === 'home' ? 'text-emerald-600' : 'text-slate-600 hover:text-slate-900'}`}
           >
             Home
@@ -289,9 +297,11 @@ export default function App() {
           
           <a 
             href="#/pagemaker"
-            onClick={() => {
+            onClick={(e) => {
+              e.preventDefault();
               setCurrentView('generator');
               setActiveTab('lab');
+              window.location.hash = '#/pagemaker';
             }}
             className={`text-xs font-bold transition-all cursor-pointer ${currentView === 'generator' && activeTab === 'lab' ? 'text-emerald-600' : 'text-slate-600 hover:text-slate-900'}`}
           >
@@ -300,7 +310,11 @@ export default function App() {
          
           <a 
             href="#/cgpa"
-            onClick={() => setCurrentView('cgpa')}
+            onClick={(e) => {
+              e.preventDefault();
+              setCurrentView('cgpa');
+              window.location.hash = '#/cgpa';
+            }}
             className={`text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${currentView === 'cgpa' ? 'text-emerald-600 font-extrabold' : 'text-slate-600 hover:text-indigo-600'}`}
           >
             <Calculator className={`h-3.5 w-3.5 ${currentView === 'cgpa' ? 'text-emerald-600' : 'text-indigo-500'}`} />
@@ -308,20 +322,28 @@ export default function App() {
           </a>
           <a 
             href="#/classroutine"
-            onClick={() => setCurrentView('classroutine')}
+            onClick={(e) => {
+              e.preventDefault();
+              setCurrentView('classroutine');
+              window.location.hash = '#/classroutine';
+            }}
             className={`text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${currentView === 'classroutine' ? 'text-emerald-600 font-extrabold' : 'text-slate-600 hover:text-emerald-600'}`}
           >
             <BookOpen className="h-3.5 w-3.5 text-emerald-600" />
             <span>Class Routine</span>
           </a>
           <a 
-  href="#/examroutine"
-  onClick={() => setCurrentView('examroutine')}
-  className={`text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${currentView === 'examroutine' ? 'text-emerald-600 font-extrabold' : 'text-slate-600 hover:text-emerald-600'}`}
->
-  <FileText className="h-3.5 w-3.5 text-emerald-600" />
-  <span>Exam Routine</span>
-</a>
+            href="#/examroutine"
+            onClick={(e) => {
+              e.preventDefault();
+              setCurrentView('examroutine');
+              window.location.hash = '#/examroutine';
+            }}
+            className={`text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${currentView === 'examroutine' ? 'text-emerald-600 font-extrabold' : 'text-slate-600 hover:text-emerald-600'}`}
+          >
+            <FileText className="h-3.5 w-3.5 text-emerald-600" />
+            <span>Exam Routine</span>
+          </a>
           <a 
             href="https://naabilll.github.io/buft-bus-tracker/" 
             target="_blank" 
@@ -353,19 +375,27 @@ export default function App() {
           {currentView === 'home' ? (
             <a
               href="#/pagemaker"
-              onClick={() => {
+              key="start-generating-btn"
+              onClick={(e) => {
+                e.preventDefault();
                 setCurrentView('generator');
                 setActiveTab('lab');
+                window.location.hash = '#/pagemaker';
               }}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-lg shadow-emerald-600/10 hover:shadow-emerald-600/20 transition-all cursor-pointer block"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-lg shadow-emerald-600/10 hover:shadow-emerald-600/20 transition-all cursor-pointer block animate-fade-in"
             >
               Start Generating
             </a>
           ) : (
             <a
               href="#/"
-              onClick={() => setCurrentView('home')}
-              className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs px-4 py-2 rounded-xl transition-all cursor-pointer border border-slate-200/80 block"
+              key="back-to-home-btn"
+              onClick={(e) => {
+                e.preventDefault();
+                setCurrentView('home');
+                window.location.hash = '#/';
+              }}
+              className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs px-4 py-2 rounded-xl transition-all cursor-pointer border border-slate-200/80 block animate-fade-in"
             >
               &larr; Back to Home
             </a>
@@ -458,9 +488,11 @@ export default function App() {
             {/* ASSIGNMENT CARD */}
             <a 
               href="#/pagemaker"
-              onClick={() => {
+              onClick={(e) => {
+                e.preventDefault();
                 setCurrentView('generator');
                 setActiveTab('assignment');
+                window.location.hash = '#/pagemaker';
               }}
               className="bg-white/80 backdrop-blur-sm border border-slate-100/80 p-6 rounded-3xl hover:border-emerald-300/60 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between"
             >
@@ -482,9 +514,11 @@ export default function App() {
             {/* LAB REPORT CARD */}
             <a 
               href="#/pagemaker"
-              onClick={() => {
+              onClick={(e) => {
+                e.preventDefault();
                 setCurrentView('generator');
                 setActiveTab('lab');
+                window.location.hash = '#/pagemaker';
               }}
               className="bg-white/80 backdrop-blur-sm border border-slate-100/80 p-6 rounded-3xl hover:border-emerald-300/60 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between"
             >
@@ -506,9 +540,11 @@ export default function App() {
             {/* INDEX PAGE CARD */}
             <a 
               href="#/pagemaker"
-              onClick={() => {
+              onClick={(e) => {
+                e.preventDefault();
                 setCurrentView('generator');
                 setActiveTab('index');
+                window.location.hash = '#/pagemaker';
               }}
               className="bg-white/80 backdrop-blur-sm border border-slate-100/80 p-6 rounded-3xl hover:border-emerald-300/60 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between"
             >
@@ -530,7 +566,11 @@ export default function App() {
             {/* CGPA CALCULATOR CARD */}
             <a 
               href="#/cgpa"
-              onClick={() => setCurrentView('cgpa')}
+              onClick={(e) => {
+                e.preventDefault();
+                setCurrentView('cgpa');
+                window.location.hash = '#/cgpa';
+              }}
               className="bg-white/80 backdrop-blur-sm border border-slate-100/80 p-6 rounded-3xl hover:border-emerald-300/60 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between"
             >
               <div>
@@ -550,7 +590,11 @@ export default function App() {
         {/* CLASS ROUTINE CARD */}
             <a 
               href="#/classroutine"
-              onClick={() => setCurrentView('classroutine')}
+              onClick={(e) => {
+                e.preventDefault();
+                setCurrentView('classroutine');
+                window.location.hash = '#/classroutine';
+              }}
               className="bg-white/80 backdrop-blur-sm border border-slate-100/80 p-6 rounded-3xl hover:border-emerald-300/60 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between"
             >
               <div>
@@ -569,11 +613,15 @@ export default function App() {
             </a>
 
             {/* EXAM ROUTINE CARD */}
-<a 
-  href="#/examroutine"
-  onClick={() => setCurrentView('examroutine')}
-  className="bg-white/80 backdrop-blur-sm border border-slate-100/80 p-6 rounded-3xl hover:border-emerald-300/60 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between"
->
+            <a 
+              href="#/examroutine"
+              onClick={(e) => {
+                e.preventDefault();
+                setCurrentView('examroutine');
+                window.location.hash = '#/examroutine';
+              }}
+              className="bg-white/80 backdrop-blur-sm border border-slate-100/80 p-6 rounded-3xl hover:border-emerald-300/60 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between"
+            >
   <div>
     <div className="bg-emerald-100 text-emerald-700 p-3 rounded-2xl w-fit mb-5 group-hover:scale-110 transition-transform">
       <FileText className="h-6 w-6" />
@@ -666,7 +714,11 @@ export default function App() {
               <div className="flex items-center gap-3">
                 <a
                   href="#/"
-                  onClick={() => setCurrentView('home')}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setCurrentView('home');
+                    window.location.hash = '#/';
+                  }}
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition cursor-pointer border border-slate-200"
                 >
                   &larr; Back to Home
