@@ -69,6 +69,7 @@
     transform: none !important;
   }
 @theme {
+  --font-times: "Times New Roman", Times, Georgia, serif;
   --color-nature-bg: #f8fafc;
   --color-nature-text: #334155;
   --color-nature-header: #0f172a;
