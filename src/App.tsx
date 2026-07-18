@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CoverPageState, IndexRow } from './types';
 import { INITIAL_COVER_STATE, SAMPLE_INDEX_ROWS, FEEDBACK_ENDPOINT, WEB3FORMS_ACCESS_KEY } from './data';
 import { SidebarControls } from './components/SidebarControls';
@@ -101,6 +101,54 @@ export default function App() {
 
   // Mobile navigation views: 'edit' or 'preview'
   const [mobileView, setMobileView] = useState<'edit' | 'preview'>('edit');
+
+  // Dynamic scaling for A4 Preview across all devices (PC, tablet, mobile)
+  const [previewScale, setPreviewScale] = useState<number>(1);
+  const previewContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (!previewContainerRef.current) return;
+      
+      let containerWidth = previewContainerRef.current.clientWidth;
+      
+      // Fallback calculation if element is hidden during rendering/tab switching
+      if (containerWidth === 0) {
+        const isMobile = window.innerWidth < 1024;
+        containerWidth = isMobile ? window.innerWidth : (window.innerWidth - 380);
+      }
+      
+      // Provide a small margin (padding) so document is not flush with container boundaries
+      const padding = window.innerWidth < 640 ? 16 : 48;
+      const availableWidth = containerWidth - padding;
+      
+      // Base full A4 preview width including typical padding (approx 826px)
+      const calculatedScale = Math.max(0.3, Math.min(1, availableWidth / 826));
+      setPreviewScale(calculatedScale);
+    };
+
+    // Initial run
+    handleResize();
+
+    // Use ResizeObserver for accurate sizing on element width changes (e.g. sidebar open/close)
+    const resizeObserver = new ResizeObserver(() => {
+      handleResize();
+    });
+    if (previewContainerRef.current) {
+      resizeObserver.observe(previewContainerRef.current);
+    }
+
+    window.addEventListener('resize', handleResize);
+
+    // Run handleResize on a small timeout to guarantee latest layout styles are evaluated
+    const timeoutId = setTimeout(handleResize, 50);
+
+    return () => {
+      clearTimeout(timeoutId);
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [currentView, mobileView]); // re-run if view or mobile navigation tabs toggle
 
   // Dialog Modals
   const [showHelp, setShowHelp] = useState(false);
@@ -611,7 +659,7 @@ export default function App() {
           </div>
 
           {/* PREVIEW CANVAS */}
-          <div className={`flex-1 flex flex-col h-full overflow-hidden ${mobileView === 'preview' ? 'block' : 'hidden lg:flex'}`}>
+          <div className={`flex-1 flex-col h-full overflow-hidden ${mobileView === 'preview' ? 'flex' : 'hidden lg:flex'}`}>
             
             {/* DESKTOP/MOBILE WORKSPACE UPPER ACTION BAR */}
             <div className="bg-white border-b border-slate-200/80 px-6 py-3 flex items-center justify-between shadow-sm">
@@ -640,50 +688,68 @@ export default function App() {
                   <HelpCircle className="h-3.5 w-3.5" />
                   <span className="hidden sm:inline">Printing Guide</span>
                 </button>
+                
                 <button
-  onClick={() => window.print()}
-  className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg text-xs font-bold transition cursor-pointer shadow-md shadow-blue-500/10 active:scale-95"
->
-  <Printer className="h-3.5 w-3.5" />
-  <span>Print & Save Page</span>
-</button>
+                  onClick={() => window.print()}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg text-xs font-bold transition cursor-pointer shadow-md shadow-blue-500/10 active:scale-95"
+                >
+                  <Printer className="h-3.5 w-3.5" />
+                  <span>Print & Save Page</span>
+                </button>
               </div>
             </div>
 
             {/* ACTIVE PAPER PREVIEW FRAME */}
-            <div className="flex-1 bg-gradient-to-tr from-slate-200 via-zinc-100 to-indigo-100/30 overflow-y-auto overflow-x-auto flex justify-center items-start p-4 lg:p-8 scrollbar-thin scrollbar-thumb-slate-200">
-               {/* ➕ ENCAPSULATED WITH A VERTICAL FLEX CONTAINER TO STACK FLOATING ACTION BAR ABOVE PREVIEW */}
-  <div className="flex flex-col items-center gap-5 my-auto">
-    
-    {/* ➕ ADDED FLOATING QUICK ACTION BAR (WITH 'no-print' TO ENSURE IT'S HIDDEN IN PDF) */}
-    <div className="bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-slate-200/80 shadow-lg flex items-center gap-3.5 no-print animate-fade-in">
-      <div className="flex items-center gap-2">
-        <span className="relative flex h-2 w-2">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-        </span>
-        <span className="text-xs font-bold text-slate-700">Ready to save?</span>
-      </div>
-      <div className="h-4 w-[1px] bg-slate-200"></div>
-      <button
-        onClick={() => window.print()}
-        className="flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-extrabold rounded-xl text-xs shadow-md shadow-blue-500/10 transition cursor-pointer hover:shadow-blue-500/20 active:scale-95"
-      >
-        <Printer className="h-3.5 w-3.5" />
-        <span>Print & Save Page</span>
-      </button>
-    </div>
-              <div className="transform scale-[0.62] sm:scale-[0.75] md:scale-[0.88] lg:scale-100 origin-top transition-transform duration-300">
-                <A4Preview
-                  id="a4-preview-page"
-                  state={coverState}
-                  indexRows={indexRows}
-                  activeTab={activeTab}
-                />
+            <div 
+              ref={previewContainerRef}
+              className="flex-1 bg-gradient-to-tr from-slate-200 via-zinc-100 to-indigo-100/30 overflow-y-auto overflow-x-auto flex justify-center items-start p-4 lg:p-8 scrollbar-thin scrollbar-thumb-slate-200"
+            >
+              <div className="flex flex-col items-center gap-5 w-full">
+                {/* Floating quick action bar above preview */}
+                <div className="bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-slate-200/80 shadow-lg flex items-center gap-3.5 no-print animate-fade-in">
+                  <div className="flex items-center gap-2">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                    </span>
+                    <span className="text-xs font-bold text-slate-700">Ready to save?</span>
+                  </div>
+                  <div className="h-4 w-[1px] bg-slate-200"></div>
+                  <button
+                    onClick={() => window.print()}
+                    className="flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-extrabold rounded-xl text-xs shadow-md shadow-blue-500/10 transition cursor-pointer hover:shadow-blue-500/20 active:scale-95"
+                  >
+                    <Printer className="h-3.5 w-3.5" />
+                    <span>Print & Save Page</span>
+                  </button>
+                </div>
+
+                <div 
+                  className="overflow-visible flex items-start justify-start transition-all duration-300 ease-out"
+                  style={{ 
+                    width: `${826 * previewScale}px`, 
+                    height: `${1155 * previewScale}px` 
+                  }}
+                >
+                  <div 
+                    className="origin-top-left"
+                    style={{ 
+                      transform: `scale(${previewScale})`,
+                      width: '826px',
+                      height: '1155px'
+                    }}
+                  >
+                    <A4Preview
+                      id="a4-preview-page"
+                      state={coverState}
+                      indexRows={indexRows}
+                      activeTab={activeTab}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-            </div>
 
           {/* MOBILE RESPONSIVE FLOATING DOCK */}
           <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-white/95 border border-slate-200 p-1.5 rounded-2xl shadow-2xl flex items-center gap-1.5 z-40 backdrop-blur-xl no-print">
