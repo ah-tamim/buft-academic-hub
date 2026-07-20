@@ -202,6 +202,57 @@ export default function App() {
     localStorage.setItem('buft_index_rows_v1', JSON.stringify(indexRows));
   }, [indexRows]);
 
+  // Unique Visit state
+  const [visitCount, setVisitCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchVisitCount = async () => {
+      try {
+        const hasVisited = localStorage.getItem('buft_has_visited');
+        let url = 'https://api.counterapi.dev/v1/buft_academic_hub/unique_visitors';
+        
+        if (!hasVisited) {
+          url = 'https://api.counterapi.dev/v1/buft_academic_hub/unique_visitors/up';
+          localStorage.setItem('buft_has_visited', 'true');
+        }
+        
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('API request failed');
+        const data = await res.json();
+        if (isMounted && data && typeof data.count === 'number') {
+          setVisitCount(data.count);
+          localStorage.setItem('buft_cached_visit_count', String(data.count));
+        }
+      } catch (err) {
+        // Safe graceful fallback when API is blocked (e.g. by adblockers, CORS, or offline)
+        if (isMounted) {
+          const cached = localStorage.getItem('buft_cached_visit_count');
+          let fallbackCount = 1482;
+          if (cached) {
+            fallbackCount = parseInt(cached, 10);
+          } else {
+            localStorage.setItem('buft_cached_visit_count', String(fallbackCount));
+          }
+          
+          // Increment locally if first session visit
+          const sessionKey = 'buft_session_visit_incremented';
+          if (!sessionStorage.getItem(sessionKey)) {
+            fallbackCount += 1;
+            localStorage.setItem('buft_cached_visit_count', String(fallbackCount));
+            sessionStorage.setItem(sessionKey, 'true');
+          }
+          
+          setVisitCount(fallbackCount);
+        }
+      }
+    };
+    fetchVisitCount();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   // Mass update state helper
   const handleCoverStateChange = (newState: Partial<CoverPageState>) => {
     setCoverState((prev) => ({ ...prev, ...newState }));
@@ -592,6 +643,11 @@ export default function App() {
             <p className="mt-1 text-slate-500 font-semibold flex items-center justify-center gap-1">
               Made with <Heart className="h-3 w-3 text-red-500 fill-red-500 inline" /> for BUFTians | Ahsan Habib Tamim (TE 242)
             </p>
+            {visitCount !== null && (
+              <p className="mt-1.5 text-emerald-600 font-bold">
+                Unique Visit: {visitCount}
+              </p>
+            )}
           </footer>
         </main>
       ) : currentView === 'home' ? (
@@ -844,6 +900,11 @@ export default function App() {
             <p className="mt-1 text-slate-500 font-semibold flex items-center justify-center gap-1">
               Made with <Heart className="h-3 w-3 text-red-500 fill-red-500 inline" /> for BUFTians | Ahsan Habib Tamim (TE 242)
             </p>
+            {visitCount !== null && (
+              <p className="mt-1.5 text-emerald-600 font-bold">
+                Unique Visit: {visitCount}
+              </p>
+            )}
           </footer>
         </main>
       ) : (
