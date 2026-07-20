@@ -170,7 +170,7 @@ export const SidebarControls: React.FC<SidebarControlsProps> = ({
               BUFT ACADEMIC HUB
             </h1>
             <p className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
-              Cover Generating Hub
+              Cover Page Generating Tool
             </p>
           </div>
         </div>
@@ -265,6 +265,270 @@ export const SidebarControls: React.FC<SidebarControlsProps> = ({
 
           {openSection === 'document' && (
             <div className="p-4 border-t border-slate-100 space-y-3.5 bg-slate-50/40">
+              {activeTab === 'lab' && (
+                <div className="bg-gradient-to-r from-pink-500/10 to-indigo-500/10 p-3 rounded-xl border border-pink-100/50 mb-3 flex flex-col gap-1.5">
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-pink-700">Lab Report Format Style</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => onChange({ labFormat: 'plain' })}
+                      className={`py-1.5 px-2 rounded-lg text-xs font-bold transition border cursor-pointer text-center ${
+                        state.labFormat !== 'obe'
+                          ? 'bg-pink-600 text-white border-pink-600'
+                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                      }`}
+                    >
+                      Plain Format
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onChange({ labFormat: 'obe' })}
+                      className={`py-1.5 px-2 rounded-lg text-xs font-bold transition border cursor-pointer text-center ${
+                        state.labFormat === 'obe'
+                          ? 'bg-pink-600 text-white border-pink-600'
+                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                      }`}
+                    >
+                      OBE Format
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'lab' && state.labFormat === 'obe' && (
+                <div className="bg-white/80 p-3.5 rounded-xl border border-slate-200 space-y-3">
+                  <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">OBE Custom Fields</div>
+                  
+                  {/* Department Custom Fields (Unsynchronized) */}
+                  <div className="space-y-3.5">
+                    {/* Full Department Name */}
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-500 mb-1">Full Department Name (Top Header)</label>
+                      <select
+                        value={
+                          ['Textile Engineering', 'Textile Engineering & Management', 'Apparel Manufacturing & Technology', 'Apparel Merchandising & Management', 'Fashion Design & Technology'].includes(state.studentDept || '')
+                            ? state.studentDept
+                            : 'custom'
+                        }
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val !== 'custom') {
+                            onChange({ 
+                              studentDept: val,
+                              teacherDept: val
+                            });
+                          }
+                        }}
+                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-pink-500 transition cursor-pointer shadow-sm mb-1.5"
+                      >
+                        <option value="Textile Engineering">Textile Engineering</option>
+                        <option value="Textile Engineering & Management">Textile Engineering & Management</option>
+                        <option value="Apparel Manufacturing & Technology">Apparel Manufacturing & Technology</option>
+                        <option value="Apparel Merchandising & Management">Apparel Merchandising & Management</option>
+                        <option value="Fashion Design & Technology">Fashion Design & Technology</option>
+                        <option value="custom">✍️ Write Custom Full Name...</option>
+                      </select>
+                      
+                      <input
+                        type="text"
+                        value={state.studentDept || ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          onChange({ 
+                            studentDept: val,
+                            teacherDept: val
+                          });
+                        }}
+                        placeholder="Write full department name"
+                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-pink-500 transition shadow-sm placeholder-slate-400"
+                      />
+                    </div>
+
+                    {/* Department Short Form */}
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-500 mb-1">Department Short Form (Table Cell)</label>
+                      <select
+                        value={
+                          ['TE', 'TEM', 'AMT', 'AMM', 'FDT'].includes(state.obeShortDept || '')
+                            ? state.obeShortDept
+                            : 'custom'
+                        }
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val !== 'custom') {
+                            onChange({ obeShortDept: val });
+                          }
+                        }}
+                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-pink-500 transition cursor-pointer shadow-sm mb-1.5"
+                      >
+                        <option value="TE">TE</option>
+                        <option value="TEM">TEM</option>
+                        <option value="AMT">AMT</option>
+                        <option value="AMM">AMM</option>
+                        <option value="FDT">FDT</option>
+                        <option value="custom">✍️ Write Custom Short Form...</option>
+                      </select>
+
+                      <input
+                        type="text"
+                        value={state.obeShortDept || ''}
+                        onChange={(e) => {
+                          onChange({ obeShortDept: e.target.value.toUpperCase() });
+                        }}
+                        placeholder="Write short form (e.g. TE)"
+                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-pink-500 transition shadow-sm placeholder-slate-400 font-mono font-bold"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Semester selection */}
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-500 mb-1">Semester</label>
+                    <select
+                      value={state.obeSemester || 'Spring 2026'}
+                      onChange={(e) => onChange({ obeSemester: e.target.value })}
+                      className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-pink-500 transition cursor-pointer shadow-sm"
+                    >
+                      <option value="Spring 2026">Spring 2026</option>
+                      <option value="Fall 2026">Fall 2026</option>
+                      <option value="Spring 2027">Spring 2027</option>
+                      <option value="Fall 2027">Fall 2027</option>
+                      <option value="Spring 2028">Spring 2028</option>
+                      <option value="Fall 2028">Fall 2028</option>
+                      <option value="Spring 2029">Spring 2029</option>
+                      <option value="Fall 2029">Fall 2029</option>
+                      <option value="Spring 2030">Spring 2030</option>
+                      <option value="Fall 2030">Fall 2030</option>
+                    </select>
+                    <input
+                      type="text"
+                      value={state.obeSemester || ''}
+                      onChange={(e) => onChange({ obeSemester: e.target.value })}
+                      placeholder="Or write custom semester"
+                      className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-pink-500 transition mt-1.5 shadow-sm placeholder-slate-400"
+                    />
+                  </div>
+
+                  {/* Course Supervisor */}
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-500 mb-1">Course Supervisor (Teacher)</label>
+                    <input
+                      type="text"
+                      value={state.obeSupervisor || ''}
+                      onChange={(e) => {
+                        onChange({ 
+                          obeSupervisor: e.target.value,
+                          teacherName: e.target.value // Sync for standard fields compatibility
+                        });
+                      }}
+                      placeholder="e.g. Dr. Md. Mostafizur Rahman"
+                      className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-pink-500 transition shadow-sm placeholder-slate-400"
+                    />
+                  </div>
+
+                  {/* Category & Level/Term */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-500 mb-1">Category</label>
+                      <input
+                        type="text"
+                        value={state.obeCategory || ''}
+                        onChange={(e) => onChange({ obeCategory: e.target.value })}
+                        placeholder="e.g. Major"
+                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-pink-500 transition shadow-sm placeholder-slate-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-500 mb-1">Level & Term</label>
+                      <input
+                        type="text"
+                        value={state.obeLevelTerm || ''}
+                        onChange={(e) => onChange({ obeLevelTerm: e.target.value })}
+                        placeholder="e.g. L2 T2"
+                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-pink-500 transition shadow-sm placeholder-slate-400"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Contact Hours L-T-P-C */}
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-500 mb-1">Contact Hours / Week (L - T - P - C)</label>
+                    <div className="grid grid-cols-4 gap-2">
+                      <div>
+                        <span className="text-[10px] text-slate-400 block text-center mb-0.5">L</span>
+                        <input
+                          type="text"
+                          value={state.obeL || ''}
+                          onChange={(e) => onChange({ obeL: e.target.value })}
+                          className="w-full text-center bg-white border border-slate-200 rounded-lg py-1 text-xs text-slate-800 focus:outline-none focus:border-pink-500 transition shadow-sm"
+                        />
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 block text-center mb-0.5">T</span>
+                        <input
+                          type="text"
+                          value={state.obeT || ''}
+                          onChange={(e) => onChange({ obeT: e.target.value })}
+                          className="w-full text-center bg-white border border-slate-200 rounded-lg py-1 text-xs text-slate-800 focus:outline-none focus:border-pink-500 transition shadow-sm"
+                        />
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 block text-center mb-0.5">P</span>
+                        <input
+                          type="text"
+                          value={state.obeP || ''}
+                          onChange={(e) => onChange({ obeP: e.target.value })}
+                          className="w-full text-center bg-white border border-slate-200 rounded-lg py-1 text-xs text-slate-800 focus:outline-none focus:border-pink-500 transition shadow-sm"
+                        />
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 block text-center mb-0.5">C</span>
+                        <input
+                          type="text"
+                          value={state.obeC || ''}
+                          onChange={(e) => onChange({ obeC: e.target.value })}
+                          className="w-full text-center bg-white border border-slate-200 rounded-lg py-1 text-xs text-slate-800 focus:outline-none focus:border-pink-500 transition shadow-sm font-bold text-pink-600"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* CLO / PLO / C-Level */}
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-500 mb-1">CLO</label>
+                      <input
+                        type="text"
+                        value={state.obeClo || ''}
+                        onChange={(e) => onChange({ obeClo: e.target.value })}
+                        placeholder="e.g. CLO1"
+                        className="w-full text-center bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-800 focus:outline-none focus:border-pink-500 transition shadow-sm placeholder-slate-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-500 mb-1">PLO</label>
+                      <input
+                        type="text"
+                        value={state.obePlo || ''}
+                        onChange={(e) => onChange({ obePlo: e.target.value })}
+                        placeholder="e.g. PLO2"
+                        className="w-full text-center bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-800 focus:outline-none focus:border-pink-500 transition shadow-sm placeholder-slate-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-500 mb-1">C-Level</label>
+                      <input
+                        type="text"
+                        value={state.obeClevel || ''}
+                        onChange={(e) => onChange({ obeClevel: e.target.value })}
+                        placeholder="e.g. C3"
+                        className="w-full text-center bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-800 focus:outline-none focus:border-pink-500 transition shadow-sm placeholder-slate-400"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label className="block text-[11px] font-bold text-slate-500 mb-1">Course Code</label>
                 <input
@@ -398,7 +662,7 @@ export const SidebarControls: React.FC<SidebarControlsProps> = ({
         </div>
 
         {/* SECTION 2: SUBMITTED TO (TEACHER) */}
-        {activeTab !== 'index' && (
+        {activeTab !== 'index' && !(activeTab === 'lab' && state.labFormat === 'obe') && (
           <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm">
             <button
               onClick={() => toggleSection('teacher')}
@@ -606,134 +870,136 @@ export const SidebarControls: React.FC<SidebarControlsProps> = ({
         )}
 
         {/* SECTION 5: CUSTOM DOUBLE BORDER & SPACING ENGINE */}
-        <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm">
-          <button
-            onClick={() => toggleSection('layout')}
-            className="w-full flex items-center justify-between p-3.5 text-xs font-bold text-left hover:bg-slate-50 transition text-slate-700 uppercase tracking-wider cursor-pointer font-sans"
-          >
-            <div className="flex items-center gap-2">
-              <Sliders className="h-4 w-4 text-pink-500" />
-              <span>{activeTab === 'index' ? '1. Index Layout Design' : '5. Custom Borders & Spacing'}</span>
-            </div>
-            <ChevronDown className={`h-4 w-4 transition-transform text-slate-400 ${openSection === 'layout' ? 'rotate-180' : ''}`} />
-          </button>
-
-          {openSection === 'layout' && (
-            <div className="p-4 border-t border-slate-100 space-y-4 bg-slate-50/40 text-xs text-slate-700">
-              
-              {/* Border Color Preset Row */}
-              <div>
-                <label className="block text-[11px] font-bold text-slate-500 mb-2">Border Color (Image style is Magenta/Pink)</label>
-                <div className="grid grid-cols-7 gap-1.5 mb-3">
-                  {COLOR_PRESETS.map((color) => (
-                    <button
-                      key={color.value}
-                      onClick={() => onChange({ borderColor: color.value })}
-                      className="h-7 rounded-lg border border-slate-200 relative cursor-pointer transition active:scale-95 group shadow-sm"
-                      style={{ backgroundColor: color.value }}
-                      title={color.name}
-                    >
-                      {state.borderColor === color.value && (
-                        <CheckCircle2 className="h-3.5 w-3.5 text-white absolute inset-0 m-auto filter drop-shadow" />
-                      )}
-                    </button>
-                  ))}
-                </div>
-                {/* Custom Hex Color Picker */}
-                <div className="flex items-center gap-2 bg-white border border-slate-200 p-2 rounded-xl shadow-sm">
-                  <span className="text-[10px] text-slate-500 font-extrabold uppercase">Custom Hex:</span>
-                  <input
-                    type="color"
-                    value={state.borderColor}
-                    onChange={(e) => onChange({ borderColor: e.target.value })}
-                    className="h-6 w-10 bg-transparent border-none outline-none cursor-pointer"
-                  />
-                  <input
-                    type="text"
-                    value={state.borderColor}
-                    onChange={(e) => onChange({ borderColor: e.target.value })}
-                    placeholder="#d946ef"
-                    className="bg-slate-100 text-[11px] text-slate-800 font-mono rounded px-2 py-0.5 w-20 text-center focus:outline-none focus:ring-1 focus:ring-pink-500 border border-slate-200"
-                  />
-                </div>
+        {!(activeTab === 'lab' && state.labFormat === 'obe') && (
+          <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm">
+            <button
+              onClick={() => toggleSection('layout')}
+              className="w-full flex items-center justify-between p-3.5 text-xs font-bold text-left hover:bg-slate-50 transition text-slate-700 uppercase tracking-wider cursor-pointer font-sans"
+            >
+              <div className="flex items-center gap-2">
+                <Sliders className="h-4 w-4 text-pink-500" />
+                <span>{activeTab === 'index' ? '1. Index Layout Design' : '5. Custom Borders & Spacing'}</span>
               </div>
+              <ChevronDown className={`h-4 w-4 transition-transform text-slate-400 ${openSection === 'layout' ? 'rotate-180' : ''}`} />
+            </button>
 
-              {/* Fonts Family Selector */}
-              <div>
-                <label className="block text-[11px] font-bold text-slate-500 mb-1.5">Document Typography</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {FONT_PRESETS.map((font) => (
-                    <button
-                      key={font.value}
-                      onClick={() => onChange({ fontFamily: font.value as any })}
-                      className={`p-2 rounded-xl border text-left transition text-[11px] font-extrabold cursor-pointer ${
-                        state.fontFamily === font.value
-                          ? 'border-pink-500 bg-pink-50 text-pink-700 shadow-sm'
-                          : 'border-slate-200 bg-white text-slate-500 hover:text-slate-800 hover:bg-slate-50'
-                      }`}
-                    >
-                      <span className={font.cssClass}>{font.name}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* CRITICAL FEATURE: "RISE UP" SUBMISSION BOX SLIDER */}
-              {activeTab !== 'index' && (
+            {openSection === 'layout' && (
+              <div className="p-4 border-t border-slate-100 space-y-4 bg-slate-50/40 text-xs text-slate-700">
+                
+                {/* Border Color Preset Row */}
                 <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <div className="flex items-center gap-1">
-                      <Sparkles className="h-3.5 w-3.5 text-pink-500 animate-pulse" />
-                      <label className="block text-[11px] font-bold text-pink-600">Submission Box Position (Rise Up)</label>
-                    </div>
-                    <span className="text-[10px] font-extrabold text-pink-600 bg-pink-50 px-1.5 py-0.5 rounded">{state.submissionBoxPosition}px rise</span>
+                  <label className="block text-[11px] font-bold text-slate-500 mb-2">Border Color (Image style is Magenta/Pink)</label>
+                  <div className="grid grid-cols-7 gap-1.5 mb-3">
+                    {COLOR_PRESETS.map((color) => (
+                      <button
+                        key={color.value}
+                        onClick={() => onChange({ borderColor: color.value })}
+                        className="h-7 rounded-lg border border-slate-200 relative cursor-pointer transition active:scale-95 group shadow-sm"
+                        style={{ backgroundColor: color.value }}
+                        title={color.name}
+                      >
+                        {state.borderColor === color.value && (
+                          <CheckCircle2 className="h-3.5 w-3.5 text-white absolute inset-0 m-auto filter drop-shadow" />
+                        )}
+                      </button>
+                    ))}
                   </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="140"
-                    value={state.submissionBoxPosition}
-                    onChange={(e) => onChange({ submissionBoxPosition: parseInt(e.target.value) })}
-                    className="w-full accent-pink-500 cursor-pointer h-1.5 bg-slate-200 rounded-lg appearance-none transition"
-                  />
-                  <p className="text-[9px] text-slate-400 mt-1 leading-relaxed">
-                    Adjust this slider to make the teacher & student info cards "rise up" perfectly. Avoids excessive white space!
-                  </p>
+                  {/* Custom Hex Color Picker */}
+                  <div className="flex items-center gap-2 bg-white border border-slate-200 p-2 rounded-xl shadow-sm">
+                    <span className="text-[10px] text-slate-500 font-extrabold uppercase">Custom Hex:</span>
+                    <input
+                      type="color"
+                      value={state.borderColor}
+                      onChange={(e) => onChange({ borderColor: e.target.value })}
+                      className="h-6 w-10 bg-transparent border-none outline-none cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={state.borderColor}
+                      onChange={(e) => onChange({ borderColor: e.target.value })}
+                      placeholder="#d946ef"
+                      className="bg-slate-100 text-[11px] text-slate-800 font-mono rounded px-2 py-0.5 w-20 text-center focus:outline-none focus:ring-1 focus:ring-pink-500 border border-slate-200"
+                    />
+                  </div>
                 </div>
-              )}
 
-              {/* Title styling block & Submission style */}
-              {activeTab !== 'index' && (
-                <div className="grid grid-cols-2 gap-2 pt-1">
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-500 mb-1">Title Box Accent</label>
-                    <select
-                      value={state.titleBoxStyle}
-                      onChange={(e) => onChange({ titleBoxStyle: e.target.value as any })}
-                      className="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-2 text-xs text-slate-800 focus:outline-none focus:border-pink-500 cursor-pointer"
-                    >
-                      <option value="bordered">Single Box</option>
-                      <option value="double">Double Box</option>
-                      <option value="solid">Solid Block</option>
-                      <option value="clean">Minimal Clean</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-500 mb-1">Submission Boxes</label>
-                    <select
-                      value={state.submissionBoxStyle}
-                      onChange={(e) => onChange({ submissionBoxStyle: e.target.value as any })}
-                      className="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-2 text-xs text-slate-800 focus:outline-none focus:border-pink-500 cursor-pointer"
-                    >
-                      <option value="outlined-cards">Bordered Cards</option>
-                      <option value="minimal">Minimalist Line</option>
-                    </select>
+                {/* Fonts Family Selector */}
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 mb-1.5">Document Typography</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {FONT_PRESETS.map((font) => (
+                      <button
+                        key={font.value}
+                        onClick={() => onChange({ fontFamily: font.value as any })}
+                        className={`p-2 rounded-xl border text-left transition text-[11px] font-extrabold cursor-pointer ${
+                          state.fontFamily === font.value
+                            ? 'border-pink-500 bg-pink-50 text-pink-700 shadow-sm'
+                            : 'border-slate-200 bg-white text-slate-500 hover:text-slate-800 hover:bg-slate-50'
+                        }`}
+                      >
+                        <span className={font.cssClass}>{font.name}</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
-              )}
-            </div>
-          )}
-        </div>
+
+                {/* CRITICAL FEATURE: "RISE UP" SUBMISSION BOX SLIDER */}
+                {activeTab !== 'index' && (
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center gap-1">
+                        <Sparkles className="h-3.5 w-3.5 text-pink-500 animate-pulse" />
+                        <label className="block text-[11px] font-bold text-pink-600">Submission Box Position (Rise Up)</label>
+                      </div>
+                      <span className="text-[10px] font-extrabold text-pink-600 bg-pink-50 px-1.5 py-0.5 rounded">{state.submissionBoxPosition}px rise</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="140"
+                      value={state.submissionBoxPosition}
+                      onChange={(e) => onChange({ submissionBoxPosition: parseInt(e.target.value) })}
+                      className="w-full accent-pink-500 cursor-pointer h-1.5 bg-slate-200 rounded-lg appearance-none transition"
+                    />
+                    <p className="text-[9px] text-slate-400 mt-1 leading-relaxed">
+                      Adjust this slider to make the teacher & student info cards "rise up" perfectly. Avoids excessive white space!
+                    </p>
+                  </div>
+                )}
+
+                {/* Title styling block & Submission style */}
+                {activeTab !== 'index' && (
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-500 mb-1">Title Box Accent</label>
+                      <select
+                        value={state.titleBoxStyle}
+                        onChange={(e) => onChange({ titleBoxStyle: e.target.value as any })}
+                        className="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-2 text-xs text-slate-800 focus:outline-none focus:border-pink-500 cursor-pointer"
+                      >
+                        <option value="bordered">Single Box</option>
+                        <option value="double">Double Box</option>
+                        <option value="solid">Solid Block</option>
+                        <option value="clean">Minimal Clean</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-500 mb-1">Submission Boxes</label>
+                      <select
+                        value={state.submissionBoxStyle}
+                        onChange={(e) => onChange({ submissionBoxStyle: e.target.value as any })}
+                        className="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-2 text-xs text-slate-800 focus:outline-none focus:border-pink-500 cursor-pointer"
+                      >
+                        <option value="outlined-cards">Bordered Cards</option>
+                        <option value="minimal">Minimalist Line</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* SECTION 6: INDEX SHEET ROW MANAGER */}
         {activeTab === 'index' && (
