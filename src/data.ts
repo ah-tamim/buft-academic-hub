@@ -97,6 +97,21 @@ export const INITIAL_COVER_STATE: CoverPageState = {
   customLogo: null,
   titleBoxStyle: 'bordered',
   submissionBoxStyle: 'minimal',
+  
+  // OBE Format default extensions
+  labFormat: 'plain',
+  obeShortDept: 'TE',
+  obeSupervisor: 'Mizanur Rahman',
+  obeSemester: 'Spring 2026',
+  obeCategory: 'Major',
+  obeLevelTerm: 'L2 T2',
+  obeL: '3',
+  obeT: '0',
+  obeP: '0',
+  obeC: '2',
+  obeClo: '--',
+  obePlo: '--',
+  obeClevel: '--',
 };
 
 export const SAMPLE_INDEX_ROWS: IndexRow[] = [
