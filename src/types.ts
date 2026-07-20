@@ -39,6 +39,21 @@ export interface CoverPageState {
   customLogo: string | null;
   titleBoxStyle: 'bordered' | 'solid' | 'double' | 'clean';
   submissionBoxStyle: 'grid' | 'stacked' | 'outlined-cards' | 'minimal';
+
+  // OBE Format optional extensions
+  labFormat?: string;
+  obeShortDept?: string;
+  obeSupervisor?: string;
+  obeSemester?: string;
+  obeCategory?: string;
+  obeLevelTerm?: string;
+  obeL?: string;
+  obeT?: string;
+  obeP?: string;
+  obeC?: string;
+  obeClo?: string;
+  obePlo?: string;
+  obeClevel?: string;
 }
 
 export interface IndexRow {
