@@ -128,6 +128,7 @@ export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTa
   const bs = getBorderStyle();
   const spacingMultiplier = state.verticalSpacing * 0.25;
   const logoSrc = state.customLogo || '/buft-logo.png';
+  const isIndexWithMarks = activeTab === 'index' && state.indexFormat === 'with_marks';
 
   return (
     <div className="flex-1 flex justify-center items-start overflow-auto p-4 md:p-8 select-none">
@@ -146,27 +147,29 @@ export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTa
         <div
           className="w-full h-full flex flex-col box-border relative"
           style={{
-            padding: activeTab === 'lab' && state.labFormat === 'obe' 
-              ? '0.6in 0.82in 0.5in 0.82in' 
-              : activeTab === 'lab' && state.labFormat === 'box'
-                ? '0.5in 0.64in 0.5in 0.64in'
-                : bs.padding,
+            padding: isIndexWithMarks
+              ? '0.6in 0.6in 0.5in 0.6in'
+              : activeTab === 'lab' && state.labFormat === 'obe' 
+                ? '0.6in 0.82in 0.5in 0.82in' 
+                : activeTab === 'lab' && state.labFormat === 'box'
+                  ? '0.5in 0.64in 0.5in 0.64in'
+                  : bs.padding,
           }}
         >
           {/* Double line mimic: Outer Line Container */}
           <div
             className="w-full h-full flex flex-col box-border relative"
             style={{
-              border: activeTab === 'lab' && (state.labFormat === 'obe' || state.labFormat === 'box') ? 'none' : `${bs.thickness} solid ${forceHex(bs.borderColor)}`,
-              padding: activeTab === 'lab' && (state.labFormat === 'obe' || state.labFormat === 'box') ? '0' : bs.gap,
+              border: (activeTab === 'lab' && (state.labFormat === 'obe' || state.labFormat === 'box')) || isIndexWithMarks ? 'none' : `${bs.thickness} solid ${forceHex(bs.borderColor)}`,
+              padding: (activeTab === 'lab' && (state.labFormat === 'obe' || state.labFormat === 'box')) || isIndexWithMarks ? '0' : bs.gap,
             }}
           >
             {/* Inner Line Container completing the premium academic border effect */}
             <div
               className="w-full h-full flex flex-col items-center box-border relative"
               style={{
-                border: activeTab === 'lab' && (state.labFormat === 'obe' || state.labFormat === 'box') ? 'none' : `${bs.thickness} solid ${forceHex(bs.borderColor)}`,
-                padding: activeTab === 'lab' && (state.labFormat === 'obe' || state.labFormat === 'box') ? '0px' : '2.5rem 1.8rem',
+                border: (activeTab === 'lab' && (state.labFormat === 'obe' || state.labFormat === 'box')) || isIndexWithMarks ? 'none' : `${bs.thickness} solid ${forceHex(bs.borderColor)}`,
+                padding: (activeTab === 'lab' && (state.labFormat === 'obe' || state.labFormat === 'box')) || isIndexWithMarks ? '0px' : '2.5rem 1.8rem',
               }}
             >
               {activeTab === 'lab' && state.labFormat === 'obe' ? (
@@ -539,14 +542,14 @@ export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTa
                   </div>
 
                   {/* Course Code & Course Title Spaced out */}
-                  <div className="w-full flex justify-between items-center font-bold px-1" style={{ fontSize: '12pt', marginBottom: '1rem' }}>
-                    <div>
+                  <div className="w-full flex font-bold px-1" style={{ fontSize: '12pt', marginBottom: '1rem' }}>
+                    <div className="text-left shrink-0" style={{ width: '3.0in' }}>
                       <span>Course Code: </span>
-                      <span className="font-bold">{state.courseCode || 'CSE06111102'}</span>
+                      <span className="font-bold">{state.courseCode || ''}</span>
                     </div>
-                    <div className="text-right max-w-[65%]">
+                    <div className="text-left flex-1">
                       <span>Course Title: </span>
-                      <span className="font-bold">{state.courseTitle || 'Elements of Electrical Engineering & Electronics'}</span>
+                      <span className="font-bold">{state.courseTitle || ''}</span>
                     </div>
                   </div>
 
@@ -561,7 +564,7 @@ export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTa
                           Experiment No.
                         </td>
                         <td className="text-left px-3 bg-white" style={{ width: '5.62in', minWidth: '5.62in', maxWidth: '5.62in', verticalAlign: 'middle', height: '0.24in', padding: '0px 12px' }}>
-                          {state.experimentNo || '01'}
+                          {state.experimentNo || ''}
                         </td>
                       </tr>
                       <tr style={{ height: '0.63in' }}>
@@ -572,7 +575,7 @@ export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTa
                           Experiment Name
                         </td>
                         <td className="text-left font-bold bg-white leading-tight" style={{ width: '5.62in', minWidth: '5.62in', maxWidth: '5.62in', verticalAlign: 'middle', height: '0.63in', padding: '4px 12px' }}>
-                          {state.experimentName || 'Determination of While and For Logic Problem and Solving them'}
+                          {state.experimentName || ''}
                         </td>
                       </tr>
                     </tbody>
@@ -821,7 +824,7 @@ export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTa
                                 className="text-center font-bold px-2 bg-white text-[14pt]" 
                                 style={{ width: '0.96in', minWidth: '0.96in', maxWidth: '0.96in', verticalAlign: 'middle', height: '0.55in' }}
                               >
-                                {state.labRoomNo || '910'}
+                                {state.labRoomNo || ''}
                               </td>
                             </tr>
                           </tbody>
@@ -841,7 +844,7 @@ export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTa
                                 Student Name:
                               </td>
                               <td className="text-center font-bold px-2 bg-white text-[14pt]" style={{ verticalAlign: 'middle' }}>
-                                {state.studentName || 'Mottakin'}
+                                {state.studentName || ''}
                               </td>
                             </tr>
                             <tr style={{ borderBottom: '1.5px solid black', height: '30px' }}>
@@ -852,7 +855,7 @@ export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTa
                                 Student ID:
                               </td>
                               <td className="text-center font-bold px-2 bg-white text-[14pt]" style={{ verticalAlign: 'middle' }}>
-                                {state.studentId || '242-520-801'}
+                                {state.studentId || ''}
                               </td>
                             </tr>
                             <tr style={{ height: '0.55in' }}>
@@ -863,8 +866,8 @@ export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTa
                                 Department, Batch & Section:
                               </td>
                               <td className="text-center font-bold px-1.5 bg-white leading-tight text-[14pt]" style={{ verticalAlign: 'middle', height: '0.55in' }}>
-                                <div>{getDeptShortForm(state.studentDept) || 'TE'} – {state.studentBatch || '242'}</div>
-                                <div>Section – {state.studentSection || '6B'}</div>
+                                <div>{getDeptShortForm(state.studentDept) || ''} – {state.studentBatch || ''}</div>
+                                <div>Section – {state.studentSection || ''}</div>
                               </td>
                             </tr>
                           </tbody>
@@ -879,41 +882,43 @@ export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTa
                 // =========================================================================
                 <>
                   {/* UNIVERSITY HEADER BANNER */}
-                  <div className="w-full text-center flex flex-col items-center z-10">
-                    <h1 
-                      className="font-bold tracking-wide text-center uppercase"
-                      style={{
-                        color: forceHex(state.borderColor === '#1e293b' ? '#0f172a' : state.borderColor),
-                        fontSize: '22px',
-                        lineHeight: '1.2',
-                        fontFamily: state.fontFamily === 'serif' ? 'Times New Roman, Georgia, serif' : undefined,
-                      }}
-                    >
-                      {state.universityName}
-                    </h1>
-                    
-                    {/* Logo is permanently visible */}
-                    {logoSrc && (
-                      <div 
-                        className="flex justify-center items-center my-4 transition-all"
+                  {!isIndexWithMarks && (
+                    <div className="w-full text-center flex flex-col items-center z-10">
+                      <h1 
+                        className="font-bold tracking-wide text-center uppercase"
                         style={{
-                          height: `${45 + state.verticalSpacing * 6}px`,
-                          marginTop: `${8 * spacingMultiplier}px`,
-                          marginBottom: `${10 * spacingMultiplier}px`,
+                          color: forceHex(state.borderColor === '#1e293b' ? '#0f172a' : state.borderColor),
+                          fontSize: '22px',
+                          lineHeight: '1.2',
+                          fontFamily: state.fontFamily === 'serif' ? 'Times New Roman, Georgia, serif' : undefined,
                         }}
                       >
-                        <img
-                          src={logoSrc}
-                          alt="University Crest"
-                          crossOrigin="anonymous" 
-                          className="h-full w-auto object-contain mix-blend-multiply"
-                          onError={(e) => {
-                            (e.target as HTMLElement).style.display = 'none';
+                        {state.universityName}
+                      </h1>
+                      
+                      {/* Logo is permanently visible */}
+                      {logoSrc && (
+                        <div 
+                          className="flex justify-center items-center my-4 transition-all"
+                          style={{
+                            height: `${45 + state.verticalSpacing * 6}px`,
+                            marginTop: `${8 * spacingMultiplier}px`,
+                            marginBottom: `${10 * spacingMultiplier}px`,
                           }}
-                        />
-                      </div>
-                    )}
-                  </div>
+                        >
+                          <img
+                            src={logoSrc}
+                            alt="University Crest"
+                            crossOrigin="anonymous" 
+                            className="h-full w-auto object-contain mix-blend-multiply"
+                            onError={(e) => {
+                              (e.target as HTMLElement).style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* COVER PAGE CONTENT - LAB REPORT OR ASSIGNMENT */}
                   {activeTab !== 'index' ? (
@@ -1087,6 +1092,190 @@ export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTa
                           <span className="text-slate-900 font-bold border-b border-slate-300 pb-0.5 px-1 min-w-[120px] text-center">
                             {state.submissionDate || '—'}
                           </span>
+                        </div>
+                      </div>
+                    </div>
+                  ) : state.indexFormat === 'with_marks' ? (
+                    // =========================================================================
+                    // NEW HIGH-FIDELITY "WITH MARKS" INDEX PAGE LAYOUT 
+                    // =========================================================================
+                    <div className="w-full h-full flex flex-col relative box-border mt-0 text-black select-text justify-between">
+                      <div>
+                        {/* HEADER SECTION: Logo left, Underlined university title right */}
+                        <div className="w-full flex items-center justify-start gap-4 mb-5">
+                          <img 
+                            src={logoSrc} 
+                            alt="BUFT Logo" 
+                            className="w-16 h-16 object-contain shrink-0 mix-blend-multiply"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                          <div className="flex-1 flex items-center justify-center pt-2 text-center">
+                            <h1 
+                              className="font-extrabold uppercase tracking-normal underline decoration-1 underline-offset-[5px] text-black text-center"
+                              style={{ fontFamily: 'Cambria, Georgia, serif', fontSize: '22px' }}
+                            >
+                              BGMEA UNIVERSITY OF FASHION & TECHNOLOGY (BUFT)
+                            </h1>
+                          </div>
+                        </div>
+
+                        {/* INFORMATION GRID (STUDENT & COURSE DETAILS IN TABLE BOX) */}
+                        <table className="w-full border-collapse border border-black text-black mb-5 table-fixed">
+                          <tbody>
+                            {/* Row 1: Department & Program */}
+                            <tr className="border-b border-black">
+                              <td className="w-1/2 p-2 border-r border-black text-left leading-relaxed">
+                                <div className="flex items-start">
+                                  <span className="shrink-0 text-[#c00000] w-[100px]" style={{ fontFamily: 'Bahnschrift, "Segoe UI Semibold", sans-serif', fontSize: '14px', fontWeight: 600 }}>Department:</span>
+                                  <span className="text-black font-bold flex-1" style={{ fontFamily: 'Arial, sans-serif', fontSize: '14px' }}>{state.studentDept || ''}</span>
+                                </div>
+                              </td>
+                              <td className="w-1/2 p-2 text-left leading-relaxed">
+                                <div className="flex items-start">
+                                  <span className="shrink-0 text-[#c00000] w-[100px]" style={{ fontFamily: 'Bahnschrift, "Segoe UI Semibold", sans-serif', fontSize: '14px', fontWeight: 600 }}>Program:</span>
+                                  <span className="text-black font-bold flex-1" style={{ fontFamily: 'Arial, sans-serif', fontSize: '14px' }}>{state.program || ''}</span>
+                                </div>
+                              </td>
+                            </tr>
+                            {/* Row 2: Course Code & Course Title */}
+                            <tr className="border-b border-black">
+                              <td className="w-1/2 p-2 border-r border-black text-left leading-relaxed">
+                                <div className="flex items-start">
+                                  <span className="shrink-0 text-[#c00000] w-[100px]" style={{ fontFamily: 'Bahnschrift, "Segoe UI Semibold", sans-serif', fontSize: '14px', fontWeight: 600 }}>Course Code:</span>
+                                  <span className="text-black font-bold flex-1" style={{ fontFamily: 'Arial, sans-serif', fontSize: '14px' }}>{state.courseCode || ''}</span>
+                                </div>
+                              </td>
+                              <td className="w-1/2 p-2 text-left leading-relaxed">
+                                <div className="flex items-start">
+                                  <span className="shrink-0 text-[#c00000] w-[100px]" style={{ fontFamily: 'Bahnschrift, "Segoe UI Semibold", sans-serif', fontSize: '14px', fontWeight: 600 }}>Course Title:</span>
+                                  <span className="text-black font-bold flex-1" style={{ fontFamily: 'Arial, sans-serif', fontSize: '14px' }}>{state.courseTitle || ''}</span>
+                                </div>
+                              </td>
+                            </tr>
+                            {/* Row 3: Batch & Section */}
+                            <tr className="border-b border-black">
+                              <td className="w-1/2 p-2 border-r border-black text-left leading-relaxed">
+                                <div className="flex items-start">
+                                  <span className="shrink-0 text-black w-[100px]" style={{ fontFamily: 'Bahnschrift, "Segoe UI Semibold", sans-serif', fontSize: '14px', fontWeight: 600 }}>Batch:</span>
+                                  <span className="text-[#2f5597] font-bold flex-1" style={{ fontFamily: 'Arial, sans-serif', fontSize: '14px' }}>{state.studentBatch || ''}</span>
+                                </div>
+                              </td>
+                              <td className="w-1/2 p-2 text-left leading-relaxed">
+                                <div className="flex items-start">
+                                  <span className="shrink-0 text-black w-[100px]" style={{ fontFamily: 'Bahnschrift, "Segoe UI Semibold", sans-serif', fontSize: '14px', fontWeight: 600 }}>Section:</span>
+                                  <span className="text-[#2f5597] font-bold flex-1" style={{ fontFamily: 'Arial, sans-serif', fontSize: '14px' }}>{state.studentSection || ''}</span>
+                                </div>
+                              </td>
+                            </tr>
+                            {/* Row 4: Name & Student ID */}
+                            <tr>
+                              <td className="w-1/2 p-2 border-r border-black text-left leading-relaxed">
+                                <div className="flex items-start">
+                                  <span className="shrink-0 text-black w-[100px]" style={{ fontFamily: 'Bahnschrift, "Segoe UI Semibold", sans-serif', fontSize: '14px', fontWeight: 600 }}>Name:</span>
+                                  <span className="text-[#2f5597] font-bold flex-1" style={{ fontFamily: 'Arial, sans-serif', fontSize: '14px' }}>{state.studentName || ''}</span>
+                                </div>
+                              </td>
+                              <td className="w-1/2 p-2 text-left leading-relaxed">
+                                <div className="flex items-start">
+                                  <span className="shrink-0 text-black w-[100px]" style={{ fontFamily: 'Bahnschrift, "Segoe UI Semibold", sans-serif', fontSize: '14px', fontWeight: 600 }}>ID:</span>
+                                  <span className="text-[#2f5597] font-bold flex-1" style={{ fontFamily: 'Arial, sans-serif', fontSize: '14px' }}>{state.studentId || ''}</span>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+
+                        {/* CENTERED HEADING: INDEX */}
+                        <div className="w-full text-center mb-4">
+                          <h2 
+                            className="text-center font-bold tracking-widest uppercase underline decoration-1 underline-offset-[5px] text-black"
+                            style={{ fontFamily: 'Arial, sans-serif', fontSize: '16px' }}
+                          >
+                            INDEX
+                          </h2>
+                        </div>
+
+                        {/* MAIN INDEX TABLE */}
+                        <div className="w-full overflow-hidden">
+                          <table className="w-full border-collapse border border-black text-left table-fixed">
+                            <thead>
+                              <tr className="border-b border-black bg-slate-50/20">
+                                <th 
+                                  className="p-2 border-r border-black text-center font-bold uppercase tracking-wider text-[#7030a0] w-[20%]"
+                                  style={{ fontFamily: 'Arial, sans-serif', fontSize: '14px' }}
+                                >
+                                  Experiment No.
+                                </th>
+                                <th 
+                                  className="p-2 border-r border-black text-center font-bold uppercase tracking-wider text-[#2f5597] w-[65%]"
+                                  style={{ fontFamily: 'Arial, sans-serif', fontSize: '14px' }}
+                                >
+                                  Experiment Name
+                                </th>
+                                <th 
+                                  className="p-2 text-center font-bold uppercase tracking-wider text-[#31859c] w-[15%]"
+                                  style={{ fontFamily: 'Arial, sans-serif', fontSize: '14px' }}
+                                >
+                                  Marks
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {/* Render exact list of rows up to exactly 11 rows total */}
+                              {Array.from({ length: 11 }).map((_, i) => {
+                                const row = indexRows[i];
+                                return (
+                                  <tr 
+                                    key={row?.id || `empty-${i}`} 
+                                    className="border-b border-black overflow-hidden"
+                                    style={{ height: '54px' }}
+                                  >
+                                    {/* Experiment No cell */}
+                                    <td 
+                                      className="p-1 text-center font-bold border-r border-black text-[#7030a0] w-[20%]"
+                                      style={{ fontFamily: 'Arial, sans-serif', fontSize: '14px' }}
+                                    >
+                                      {row ? (row.no || String(i + 1).padStart(2, '0')) : ''}
+                                    </td>
+                                    {/* Experiment Name cell with fixed height 3 lines */}
+                                    <td 
+                                      className="p-1 pl-4 font-bold border-r border-black text-[#2f5597] w-[65%] text-left"
+                                      style={{ fontFamily: 'Arial, sans-serif', fontSize: '14px', height: '54px' }}
+                                    >
+                                      <div className="line-clamp-3 overflow-hidden leading-snug max-w-[450px]" style={{ height: '42px', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
+                                        {row ? row.name : ''}
+                                      </div>
+                                    </td>
+                                    {/* Marks cell (blank as in image) */}
+                                    <td 
+                                      className="p-1 text-center text-slate-700 w-[15%]"
+                                      style={{ fontFamily: 'Arial, sans-serif', fontSize: '14px' }}
+                                    >
+                                      {/* Marks is empty */}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                      {/* FOOTER SECTION: Thick horizontal line + Contact info below */}
+                      <div className="w-full pt-4 flex flex-col items-center">
+                        <div className="w-full border-t-2 border-black mb-1.5"></div>
+                        <div 
+                          className="text-center leading-relaxed text-black font-medium space-y-0.5"
+                          style={{ fontFamily: 'Cambria, Georgia, serif', fontSize: '11px' }}
+                        >
+                          <p>
+                            Nishatnagar, Turag, Dhaka 1230, Bangladesh, P: 09606 950535, 09606 808080, 09606 950986-87
+                          </p>
+                          <p>
+                            E: <span className="text-black">info@buft.edu.bd</span>, W: <span className="text-black">www.buft.edu.bd</span>
+                          </p>
                         </div>
                       </div>
                     </div>
