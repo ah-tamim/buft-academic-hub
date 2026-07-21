@@ -112,6 +112,21 @@ export const INITIAL_COVER_STATE: CoverPageState = {
   obeClo: '--',
   obePlo: '--',
   obeClevel: '--',
+
+  // Box Format default extensions
+  facultyInitials: '',
+  gtaInitials: '',
+  labRoomNo: '999',
+  boxSubStyle: '20',
+  colorMode: 'colored',
+  boxCriteriaType: 'cse',
+  boxGradingType: 'vgood',
+  customCriteriaList: [
+    { no: '1.', text: 'Custom Criterion 1', marks: 5 },
+    { no: '2.', text: 'Custom Criterion 2', marks: 5 },
+    { no: '3.', text: 'Custom Criterion 3', marks: 5 },
+    { no: '4.', text: 'Custom Criterion 4', marks: 5 },
+  ],
 };
 
 export const SAMPLE_INDEX_ROWS: IndexRow[] = [
