@@ -48,6 +48,17 @@ export const SidebarControls: React.FC<SidebarControlsProps> = ({
   // Collapsible accordion state tracker
   const [openSection, setOpenSection] = useState<string>('document');
 
+  const customList = state.customCriteriaList || [
+    { no: '1.', text: 'Custom Criterion 1', marks: 5 },
+    { no: '2.', text: 'Custom Criterion 2', marks: 5 },
+    { no: '3.', text: 'Custom Criterion 3', marks: 5 },
+    { no: '4.', text: 'Custom Criterion 4', marks: 5 },
+  ];
+
+  const totalMarksSum = customList.reduce((sum, item) => sum + item.marks, 0);
+  const targetMarks = state.boxSubStyle === '10' ? 10 : 20;
+  const marksMatch = totalMarksSum === targetMarks;
+
   // Local state for index table input row
   const [newRowNo, setNewRowNo] = useState('');
   const [newRowName, setNewRowName] = useState('');
@@ -265,32 +276,329 @@ export const SidebarControls: React.FC<SidebarControlsProps> = ({
 
           {openSection === 'document' && (
             <div className="p-4 border-t border-slate-100 space-y-3.5 bg-slate-50/40">
-              {activeTab === 'lab' && (
+               {activeTab === 'lab' && (
                 <div className="bg-gradient-to-r from-pink-500/10 to-indigo-500/10 p-3 rounded-xl border border-pink-100/50 mb-3 flex flex-col gap-1.5">
                   <span className="text-[10px] uppercase font-bold tracking-wider text-pink-700">Lab Report Format Style</span>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-3 gap-2">
                     <button
                       type="button"
                       onClick={() => onChange({ labFormat: 'plain' })}
-                      className={`py-1.5 px-2 rounded-lg text-xs font-bold transition border cursor-pointer text-center ${
-                        state.labFormat !== 'obe'
+                      className={`py-1.5 px-1 rounded-lg text-[11px] font-bold transition border cursor-pointer text-center ${
+                        state.labFormat !== 'obe' && state.labFormat !== 'box'
                           ? 'bg-pink-600 text-white border-pink-600'
                           : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                       }`}
                     >
-                      Plain Format
+                      Plain
                     </button>
                     <button
                       type="button"
                       onClick={() => onChange({ labFormat: 'obe' })}
-                      className={`py-1.5 px-2 rounded-lg text-xs font-bold transition border cursor-pointer text-center ${
+                      className={`py-1.5 px-1 rounded-lg text-[11px] font-bold transition border cursor-pointer text-center ${
                         state.labFormat === 'obe'
                           ? 'bg-pink-600 text-white border-pink-600'
                           : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                       }`}
                     >
-                      OBE Format
+                      OBE
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => onChange({ labFormat: 'box' })}
+                      className={`py-1.5 px-1 rounded-lg text-[11px] font-bold transition border cursor-pointer text-center ${
+                        state.labFormat === 'box'
+                          ? 'bg-pink-600 text-white border-pink-600'
+                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                      }`}
+                    >
+                      Box
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'lab' && state.labFormat === 'box' && (
+                <div className="bg-gradient-to-r from-teal-500/10 to-emerald-500/10 p-3 rounded-xl border border-teal-100/50 mb-3 flex flex-col gap-1.5">
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-700">Document Color Theme</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => onChange({ colorMode: 'colored' })}
+                      className={`py-1.5 px-1 rounded-lg text-[11.5px] font-bold transition border cursor-pointer text-center flex items-center justify-center gap-1 ${
+                        state.colorMode !== 'bw'
+                          ? 'bg-emerald-600 text-white border-emerald-600'
+                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                      }`}
+                    >
+                      🌈 Colored
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onChange({ colorMode: 'bw' })}
+                      className={`py-1.5 px-1 rounded-lg text-[11.5px] font-bold transition border cursor-pointer text-center flex items-center justify-center gap-1 ${
+                        state.colorMode === 'bw'
+                          ? 'bg-emerald-600 text-white border-emerald-600'
+                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                      }`}
+                    >
+                      ⚫ B & W
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'lab' && state.labFormat === 'box' && (
+                <div className="bg-white/80 p-3.5 rounded-xl border border-slate-200 space-y-3 mb-3">
+                  <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Box Format Custom Fields</div>
+                  <div className="space-y-3.5">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-500 mb-1">Faculty Initials</label>
+                      <input
+                        type="text"
+                        value={state.facultyInitials || ''}
+                        onChange={(e) => onChange({ facultyInitials: e.target.value.toUpperCase() })}
+                        placeholder="e.g. AHT"
+                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-pink-500 transition shadow-sm placeholder-slate-400 font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-500 mb-1">GTA Initials</label>
+                      <input
+                        type="text"
+                        value={state.gtaInitials || ''}
+                        onChange={(e) => onChange({ gtaInitials: e.target.value.toUpperCase() })}
+                        placeholder="e.g. MIS"
+                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-pink-500 transition shadow-sm placeholder-slate-400 font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-500 mb-1">Lab Room No</label>
+                      <input
+                        type="text"
+                        value={state.labRoomNo || ''}
+                        onChange={(e) => onChange({ labRoomNo: e.target.value })}
+                        placeholder="e.g. 910"
+                        className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-pink-500 transition shadow-sm placeholder-slate-400 font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-500 mb-1.5">Evaluation Marks Style</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => onChange({ boxSubStyle: '10', boxCriteriaType: 'workshop' })}
+                          className={`py-1.5 rounded-lg text-xs font-bold transition border cursor-pointer text-center ${
+                            state.boxSubStyle === '10'
+                              ? 'bg-pink-600 text-white border-pink-600'
+                              : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                          }`}
+                        >
+                          For 10 Marks
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onChange({ boxSubStyle: '20', boxCriteriaType: 'cse' })}
+                          className={`py-1.5 rounded-lg text-xs font-bold transition border cursor-pointer text-center ${
+                            state.boxSubStyle !== '10'
+                              ? 'bg-pink-600 text-white border-pink-600'
+                              : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                          }`}
+                        >
+                          For 20 Marks
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-500 mb-1.5">Evaluation Criteria Presets</label>
+                      {state.boxSubStyle === '10' ? (
+                        <div className="grid grid-cols-3 gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => onChange({ boxCriteriaType: 'workshop' })}
+                            className={`py-2 px-1 rounded-lg text-[10px] font-bold transition border cursor-pointer text-center flex flex-col justify-center items-center ${
+                              state.boxCriteriaType === 'workshop' || (state.boxCriteriaType !== 'eee' && state.boxCriteriaType !== 'custom')
+                                ? 'bg-pink-600 text-white border-pink-600'
+                                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                            }`}
+                          >
+                            <span>🛠️ Workshop</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => onChange({ boxCriteriaType: 'eee' })}
+                            className={`py-2 px-1 rounded-lg text-[10px] font-bold transition border cursor-pointer text-center flex flex-col justify-center items-center ${
+                              state.boxCriteriaType === 'eee'
+                                ? 'bg-pink-600 text-white border-pink-600'
+                                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                            }`}
+                          >
+                            <span>⚡ EEE Type</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => onChange({ boxCriteriaType: 'custom' })}
+                            className={`py-2 px-1 rounded-lg text-[10px] font-bold transition border cursor-pointer text-center flex flex-col justify-center items-center ${
+                              state.boxCriteriaType === 'custom'
+                                ? 'bg-pink-600 text-white border-pink-600'
+                                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                            }`}
+                          >
+                            <span>⚙️ Custom</span>
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-3 gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => onChange({ boxCriteriaType: 'cse' })}
+                            className={`py-2 px-1 rounded-lg text-[10px] font-bold transition border cursor-pointer text-center flex flex-col justify-center items-center ${
+                              state.boxCriteriaType === 'cse' || (state.boxCriteriaType !== 'mechanical' && state.boxCriteriaType !== 'custom')
+                                ? 'bg-pink-600 text-white border-pink-600'
+                                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                            }`}
+                          >
+                            <span>💻 CSE Type</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => onChange({ boxCriteriaType: 'mechanical' })}
+                            className={`py-2 px-1 rounded-lg text-[10px] font-bold transition border cursor-pointer text-center flex flex-col justify-center items-center ${
+                              state.boxCriteriaType === 'mechanical'
+                                ? 'bg-pink-600 text-white border-pink-600'
+                                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                            }`}
+                          >
+                            <span>🔧 Mechanical</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => onChange({ boxCriteriaType: 'custom' })}
+                            className={`py-2 px-1 rounded-lg text-[10px] font-bold transition border cursor-pointer text-center flex flex-col justify-center items-center ${
+                              state.boxCriteriaType === 'custom'
+                                ? 'bg-pink-600 text-white border-pink-600'
+                                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                            }`}
+                          >
+                            <span>⚙️ Custom</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-500 mb-1.5">Evaluation Grading Style</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => onChange({ boxGradingType: 'fail' })}
+                          className={`py-1.5 rounded-lg text-xs font-bold transition border cursor-pointer text-center flex flex-col justify-center items-center ${
+                            state.boxGradingType === 'fail'
+                              ? 'bg-pink-600 text-white border-pink-600'
+                              : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                          }`}
+                        >
+                          <span className="text-[10px]">Fail Column Style</span>
+                          <span className="text-[8px] font-normal opacity-85">Exc, Good, Fair, Poor, Fail</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onChange({ boxGradingType: 'vgood' })}
+                          className={`py-1.5 rounded-lg text-xs font-bold transition border cursor-pointer text-center flex flex-col justify-center items-center ${
+                            state.boxGradingType !== 'fail'
+                              ? 'bg-pink-600 text-white border-pink-600'
+                              : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                          }`}
+                        >
+                          <span className="text-[10px]">V. Good Column Style</span>
+                          <span className="text-[8px] font-normal opacity-85">Exc, V.Good, Good, Fair, Poor</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {state.boxCriteriaType === 'custom' && (
+                      <div className="mt-3 p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Custom Criteria Settings</span>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${marksMatch ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
+                            Total Marks: {totalMarksSum} / {targetMarks}
+                          </span>
+                        </div>
+
+                        <div className="space-y-2">
+                          {customList.map((crit, idx) => (
+                            <div key={idx} className="flex items-center gap-1.5 bg-white p-2 rounded-lg border border-slate-100 shadow-sm">
+                              <span className="text-[11px] font-mono font-semibold text-slate-400 w-4 text-center">{crit.no}</span>
+                              
+                              <input
+                                type="text"
+                                value={crit.text}
+                                onChange={(e) => {
+                                  const newList = [...customList];
+                                  newList[idx] = { ...newList[idx], text: e.target.value };
+                                  onChange({ customCriteriaList: newList });
+                                }}
+                                placeholder={`Criterion ${idx + 1}`}
+                                className="flex-1 bg-slate-50 border border-slate-200 rounded px-2 py-1 text-[11px] text-slate-800 focus:outline-none focus:border-pink-500 font-medium"
+                              />
+
+                              <input
+                                type="number"
+                                value={crit.marks}
+                                onChange={(e) => {
+                                  const val = Math.max(0, parseInt(e.target.value) || 0);
+                                  const newList = [...customList];
+                                  newList[idx] = { ...newList[idx], marks: val };
+                                  onChange({ customCriteriaList: newList });
+                                }}
+                                className="w-12 bg-slate-50 border border-slate-200 rounded px-1.5 py-1 text-[11px] text-slate-800 focus:outline-none focus:border-pink-500 font-bold text-center"
+                              />
+
+                              <button
+                                type="button"
+                                disabled={customList.length <= 3}
+                                onClick={() => {
+                                  if (customList.length <= 3) return;
+                                  const newList = customList.filter((_, i) => i !== idx).map((item, i) => ({
+                                    ...item,
+                                    no: `${i + 1}.`
+                                  }));
+                                  onChange({ customCriteriaList: newList });
+                                }}
+                                className="p-1 text-slate-400 hover:text-rose-500 disabled:opacity-30 disabled:hover:text-slate-400 cursor-pointer"
+                                title="Remove Criterion"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            disabled={customList.length >= 4}
+                            onClick={() => {
+                              if (customList.length >= 4) return;
+                              const newList = [
+                                ...customList,
+                                { no: `${customList.length + 1}.`, text: `New Criterion`, marks: Math.max(0, targetMarks - totalMarksSum) || 5 }
+                              ];
+                              onChange({ customCriteriaList: newList });
+                            }}
+                            className="flex-1 py-1.5 px-2 bg-slate-100 hover:bg-slate-200 disabled:opacity-40 disabled:hover:bg-slate-100 text-[10px] font-bold text-slate-700 rounded-lg transition flex items-center justify-center gap-1 cursor-pointer"
+                          >
+                            <Plus className="w-3 h-3" /> Add Criterion (Max 4)
+                          </button>
+                        </div>
+                        
+                        {!marksMatch && (
+                          <p className="text-[10px] font-medium text-amber-600 bg-amber-50/50 p-1.5 rounded-lg border border-amber-100/50 text-center">
+                            ⚠️ Note: Sum of marks is {totalMarksSum}, but targeted for {targetMarks} marks.
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -662,7 +970,7 @@ export const SidebarControls: React.FC<SidebarControlsProps> = ({
         </div>
 
         {/* SECTION 2: SUBMITTED TO (TEACHER) */}
-        {activeTab !== 'index' && !(activeTab === 'lab' && state.labFormat === 'obe') && (
+        {activeTab !== 'index' && !(activeTab === 'lab' && (state.labFormat === 'obe' || state.labFormat === 'box')) && (
           <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm">
             <button
               onClick={() => toggleSection('teacher')}
@@ -870,7 +1178,7 @@ export const SidebarControls: React.FC<SidebarControlsProps> = ({
         )}
 
         {/* SECTION 5: CUSTOM DOUBLE BORDER & SPACING ENGINE */}
-        {!(activeTab === 'lab' && state.labFormat === 'obe') && (
+        {!(activeTab === 'lab' && (state.labFormat === 'obe' || state.labFormat === 'box')) && (
           <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm">
             <button
               onClick={() => toggleSection('layout')}
