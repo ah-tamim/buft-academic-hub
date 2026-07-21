@@ -53,9 +53,66 @@ export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTa
   // Find the selected font preset
   const selectedFont = FONT_PRESETS.find((f) => f.value === state.fontFamily) || FONT_PRESETS[0];
 
+  const isColored = state.colorMode !== 'bw';
+  const greenBg = isColored ? '#b4cc9a' : '#f3f4f6'; // Light green from PDF vs present light gray
+  const orangeBg = isColored ? '#f2be94' : '#f3f4f6'; // Light peach/orange from PDF vs present light gray
+  const blueBg = isColored ? '#acd0dc' : '#f3f4f6'; // Light blue/teal from PDF vs present light gray
+  const grayBg = isColored ? '#bfbfbf' : '#f3f4f6'; // Gray for Marks Obtained vs present light gray
+
   // Helper to force hex color for PDF compatibility
   const forceHex = (color: string) => {
     return color.startsWith('#') ? color : '#000000';
+  };
+
+  const getEvaluationCriteria = () => {
+    const is10 = state.boxSubStyle === '10';
+    const type = state.boxCriteriaType;
+
+    if (type === 'custom') {
+      const list = state.customCriteriaList || [
+        { no: '1.', text: 'Custom Criterion 1', marks: 5 },
+        { no: '2.', text: 'Custom Criterion 2', marks: 5 },
+        { no: '3.', text: 'Custom Criterion 3', marks: 5 },
+        { no: '4.', text: 'Custom Criterion 4', marks: 5 },
+      ];
+      return list.map(item => ({
+        no: item.no,
+        text: `${item.text} (${item.marks})`
+      }));
+    }
+
+    if (is10) {
+      if (type === 'eee') {
+        return [
+          { no: '1.', text: 'Top Page & Objective(s) (2)' },
+          { no: '2.', text: 'Required Components & Circuit Diagram (2)' },
+          { no: '3.', text: 'Data Table & Calculation (3)' },
+          { no: '4.', text: 'Result & Discussion (3)' },
+        ];
+      }
+      // default / workshop / general
+      return [
+        { no: '1.', text: 'Abstract/Top Page/Objective (2)' },
+        { no: '2.', text: 'Theory/Background (2)' },
+        { no: '3.', text: 'Diagram/Calculation/Assignment (3)' },
+        { no: '4.', text: 'Result and Discussion (3)' },
+      ];
+    } else {
+      if (type === 'mechanical') {
+        return [
+          { no: '1.', text: 'Top Page,Objective,Apparatus (5)' },
+          { no: '2.', text: 'Theory/Background/Diagram (10)' },
+          { no: '3.', text: 'Discussion (5)' },
+        ];
+      }
+      // default / cse
+      return [
+        { no: '1.', text: 'Top Page & Introduction (5)' },
+        { no: '2.', text: 'Algorithm (5)' },
+        { no: '3.', text: 'Coding & Output (5)' },
+        { no: '4.', text: 'Discussion (5)' },
+      ];
+    }
   };
 
   const getBorderStyle = () => {
@@ -91,23 +148,25 @@ export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTa
           style={{
             padding: activeTab === 'lab' && state.labFormat === 'obe' 
               ? '0.6in 0.82in 0.5in 0.82in' 
-              : bs.padding,
+              : activeTab === 'lab' && state.labFormat === 'box'
+                ? '0.5in 0.64in 0.5in 0.64in'
+                : bs.padding,
           }}
         >
           {/* Double line mimic: Outer Line Container */}
           <div
             className="w-full h-full flex flex-col box-border relative"
             style={{
-              border: activeTab === 'lab' && state.labFormat === 'obe' ? 'none' : `${bs.thickness} solid ${forceHex(bs.borderColor)}`,
-              padding: activeTab === 'lab' && state.labFormat === 'obe' ? '0' : bs.gap,
+              border: activeTab === 'lab' && (state.labFormat === 'obe' || state.labFormat === 'box') ? 'none' : `${bs.thickness} solid ${forceHex(bs.borderColor)}`,
+              padding: activeTab === 'lab' && (state.labFormat === 'obe' || state.labFormat === 'box') ? '0' : bs.gap,
             }}
           >
             {/* Inner Line Container completing the premium academic border effect */}
             <div
               className="w-full h-full flex flex-col items-center box-border relative"
               style={{
-                border: activeTab === 'lab' && state.labFormat === 'obe' ? 'none' : `${bs.thickness} solid ${forceHex(bs.borderColor)}`,
-                padding: activeTab === 'lab' && state.labFormat === 'obe' ? '0px' : '2.5rem 1.8rem',
+                border: activeTab === 'lab' && (state.labFormat === 'obe' || state.labFormat === 'box') ? 'none' : `${bs.thickness} solid ${forceHex(bs.borderColor)}`,
+                padding: activeTab === 'lab' && (state.labFormat === 'obe' || state.labFormat === 'box') ? '0px' : '2.5rem 1.8rem',
               }}
             >
               {activeTab === 'lab' && state.labFormat === 'obe' ? (
@@ -424,6 +483,393 @@ export const A4Preview: React.FC<A4PreviewProps> = ({ state, indexRows, activeTa
                       style={{ fontSize: '8pt', fontFamily: '"Times New Roman", Times, serif' }}
                     >
                       [Excellent = 5.00, Good = 4.00, Fair = 3.00, Average = 2.00, Poor = 1.00]
+                    </div>
+                  </div>
+                </div>
+              ) : activeTab === 'lab' && state.labFormat === 'box' ? (
+                // =========================================================================
+                // BOX FORMAT COVER PAGE LAYOUT
+                // =========================================================================
+                <div 
+                  className="w-full h-full flex flex-col items-center box-border text-black select-text" 
+                  style={{ 
+                    fontFamily: '"Times New Roman", Times, serif',
+                    lineHeight: '1.2'
+                  }}
+                >
+                  {/* UNIVERSITY HEADER */}
+                  <div className="w-full text-center flex flex-col items-center">
+                    <div className="flex items-center justify-center gap-3">
+                      {logoSrc && (
+                        <div className="flex items-center justify-center" style={{ width: '0.62in', height: '0.63in' }}>
+                          <img
+                            src={logoSrc}
+                            alt="University Crest"
+                            crossOrigin="anonymous" 
+                            style={{ width: '0.62in', height: '0.63in' }}
+                            className="object-contain mix-blend-multiply"
+                            onError={(e) => {
+                              (e.target as HTMLElement).style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      )}
+                      <h1 
+                        className="font-bold text-black tracking-wide text-center" 
+                        style={{ 
+                          fontFamily: '"Times New Roman", Times, serif', 
+                          fontSize: '18pt',
+                          margin: 0
+                        }}
+                      >
+                        BGMEA University of Fashion and Technology
+                      </h1>
+                    </div>
+                    <div className="text-center" style={{ marginTop: '0px', marginBottom: '1.2rem' }}>
+                      <span 
+                        className="font-bold underline uppercase" 
+                        style={{ 
+                          fontFamily: '"Times New Roman", Times, serif', 
+                          fontSize: '16pt' 
+                        }}
+                      >
+                        Lab Report – Top Page
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Course Code & Course Title Spaced out */}
+                  <div className="w-full flex justify-between items-center font-bold px-1" style={{ fontSize: '12pt', marginBottom: '1rem' }}>
+                    <div>
+                      <span>Course Code: </span>
+                      <span className="font-bold">{state.courseCode || 'CSE06111102'}</span>
+                    </div>
+                    <div className="text-right max-w-[65%]">
+                      <span>Course Title: </span>
+                      <span className="font-bold">{state.courseTitle || 'Elements of Electrical Engineering & Electronics'}</span>
+                    </div>
+                  </div>
+
+                  {/* Experiment No. & Experiment Name Box */}
+                  <table className="w-full border-collapse text-[12pt]" style={{ border: '1.5px solid black', marginBottom: '1.2rem' }}>
+                    <tbody>
+                      <tr style={{ borderBottom: '1.5px solid black', height: '0.24in' }}>
+                        <td 
+                          className="font-bold text-center" 
+                          style={{ width: '1.37in', minWidth: '1.37in', maxWidth: '1.37in', borderRight: '1.5px solid black', verticalAlign: 'middle', height: '0.24in', padding: '0px', backgroundColor: greenBg }}
+                        >
+                          Experiment No.
+                        </td>
+                        <td className="text-left px-3 bg-white" style={{ width: '5.62in', minWidth: '5.62in', maxWidth: '5.62in', verticalAlign: 'middle', height: '0.24in', padding: '0px 12px' }}>
+                          {state.experimentNo || '01'}
+                        </td>
+                      </tr>
+                      <tr style={{ height: '0.63in' }}>
+                        <td 
+                          className="font-bold text-center" 
+                          style={{ width: '1.37in', minWidth: '1.37in', maxWidth: '1.37in', borderRight: '1.5px solid black', verticalAlign: 'middle', height: '0.63in', padding: '0px', backgroundColor: greenBg }}
+                        >
+                          Experiment Name
+                        </td>
+                        <td className="text-left font-bold bg-white leading-tight" style={{ width: '5.62in', minWidth: '5.62in', maxWidth: '5.62in', verticalAlign: 'middle', height: '0.63in', padding: '4px 12px' }}>
+                          {state.experimentName || 'Determination of While and For Logic Problem and Solving them'}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  {/* Evaluation Criteria Table */}
+                  <table className="w-full border-collapse text-[12pt]" style={{ border: '1.5px solid black', marginBottom: '1.2rem', tableLayout: 'fixed', width: '6.99in' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1.5px solid black', height: '50px' }}>
+                        <th 
+                          rowSpan={2} 
+                          className="text-center font-bold bg-white" 
+                          style={{ width: '0.35in', minWidth: '0.35in', maxWidth: '0.35in', borderRight: '1.5px solid black', verticalAlign: 'middle', height: '180px' }}
+                        >
+                          No.
+                        </th>
+                        <th 
+                          rowSpan={2} 
+                          className="text-center font-bold bg-white" 
+                          style={{ 
+                            width: '1.99in', 
+                            minWidth: '1.99in', 
+                            maxWidth: '1.99in', 
+                            borderRight: '1.5px solid black', 
+                            verticalAlign: 'middle',
+                            padding: '4px',
+                            height: '180px'
+                          }}
+                        >
+                          <div>Evaluation Criteria with</div>
+                          <div>Marks</div>
+                        </th>
+                        <th 
+                          colSpan={5} 
+                          className="text-center font-bold bg-white" 
+                          style={{ borderRight: '1.5px solid black', borderBottom: '1.5px solid black', padding: '4px 0', verticalAlign: 'middle', height: '50px' }}
+                        >
+                          Put Tick (✓) Mark
+                        </th>
+                        <th 
+                          rowSpan={2} 
+                          className="font-bold text-center" 
+                          style={{ width: '0.70in', minWidth: '0.70in', maxWidth: '0.70in', borderRight: '1.5px solid black', verticalAlign: 'middle', height: '180px', backgroundColor: grayBg }}
+                        >
+                          <div className="flex items-center justify-center h-full w-full">
+                            <span style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', whiteSpace: 'nowrap' }}>
+                              Marks Obtained
+                            </span>
+                          </div>
+                        </th>
+                        <th 
+                          rowSpan={2} 
+                          className="text-center font-bold bg-white" 
+                          style={{ width: '1.20in', minWidth: '1.20in', maxWidth: '1.20in', verticalAlign: 'middle', height: '180px' }}
+                        >
+                          Remark
+                        </th>
+                      </tr>
+                      <tr style={{ borderBottom: '1.5px solid black', height: '130px' }}>
+                        {(state.boxGradingType === 'vgood' || (!state.boxGradingType && state.boxSubStyle === '20')
+                          ? ['Excellent', 'V. Good', 'Good', 'Fair', 'Poor'] 
+                          : ['Excellent', 'Good', 'Fair', 'Poor', 'Fail']
+                        ).map((label, idx) => (
+                          <th 
+                            key={idx}
+                            className="font-bold text-center" 
+                            style={{ 
+                              width: '0.55in', 
+                              minWidth: '0.55in', 
+                              maxWidth: '0.55in', 
+                              borderRight: '1.5px solid black', 
+                              height: '130px',
+                              verticalAlign: 'middle',
+                              backgroundColor: greenBg
+                            }}
+                          >
+                            <div className="flex items-center justify-center h-full w-full">
+                              <span style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', whiteSpace: 'nowrap' }}>
+                                {label}
+                              </span>
+                            </div>
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                       {/* Sub-Header Group Row */}
+                       <tr style={{ borderBottom: '1.5px solid black' }}>
+                        <td colSpan={9} className="text-center font-bold bg-white py-1.5 text-[16pt] tracking-wider" style={{ verticalAlign: 'middle' }}>
+                           Report Writing
+                        </td>
+                      </tr>
+                      
+                      {/* Evaluation Criteria Details */}
+                      {getEvaluationCriteria().map((row, rowIdx) => (
+                        <tr key={rowIdx} style={{ borderBottom: '1.5px solid black', height: '50px' }}>
+                          <td 
+                            className="text-center font-medium" 
+                            style={{ borderRight: '1.5px solid black', verticalAlign: 'middle', height: '50px', backgroundColor: greenBg }}
+                          >
+                            {row.no}
+                          </td>
+                          <td 
+                            className="text-left bg-white font-medium" 
+                            style={{ 
+                              borderRight: '1.5px solid black', 
+                              verticalAlign: 'middle', 
+                              height: '50px',
+                              width: '1.99in',
+                              minWidth: '1.99in',
+                              maxWidth: '1.99in',
+                              padding: '4px 8px',
+                              fontSize: '11pt',
+                              lineHeight: '1.15',
+                              wordBreak: 'break-word'
+                            }}
+                          >
+                            {row.text}
+                          </td>
+                          {/* Tick cells */}
+                          {Array.from({ length: 5 }).map((_, colIdx) => (
+                            <td 
+                              key={colIdx} 
+                              className="bg-white" 
+                              style={{ borderRight: '1.5px solid black', height: '50px' }}
+                            ></td>
+                          ))}
+                          {/* Marks Obtained cell */}
+                          <td 
+                            className="bg-white" 
+                            style={{ borderRight: '1.5px solid black', height: '50px' }}
+                          ></td>
+                          {/* Remark cell */}
+                          <td className="bg-white" style={{ height: '50px' }}></td>
+                        </tr>
+                      ))}
+
+                      {/* Total Marks row */}
+                      <tr style={{ height: '50px' }}>
+                        <td 
+                          className="text-center font-medium" 
+                          style={{ borderRight: '1.5px solid black', verticalAlign: 'middle', height: '50px', backgroundColor: greenBg }}
+                        ></td>
+                        <td 
+                          className="text-center font-bold bg-white text-[16pt]" 
+                          style={{ borderRight: '1.5px solid black', verticalAlign: 'middle', height: '50px' }}
+                        >
+                          Total
+                        </td>
+                        {/* Tick cells */}
+                        {Array.from({ length: 5 }).map((_, colIdx) => (
+                          <td 
+                            key={colIdx} 
+                            className="bg-white" 
+                            style={{ borderRight: '1.5px solid black', height: '50px' }}
+                          ></td>
+                        ))}
+                        {/* Marks Obtained cell */}
+                        <td 
+                          className="bg-white" 
+                          style={{ borderRight: '1.5px solid black', height: '50px' }}
+                        ></td>
+                        {/* Remark cell */}
+                        <td className="bg-white" style={{ height: '50px' }}></td>
+                      </tr>
+                    </tbody>
+                  </table>
+
+                  {/* Bottom section container pushed to the bottom of page */}
+                  <div className="w-full mt-auto flex flex-col" style={{ marginTop: '0.35in' }}>
+                    {/* Dates / Signatures table */}
+                    <table className="w-full border-collapse text-[12pt]" style={{ border: '1.5px solid black', marginBottom: '1.2rem' }}>
+                      <tbody>
+                        <tr style={{ height: '0.3in', borderBottom: '1.5px solid black' }}>
+                          <td className="w-1/3 text-center font-bold bg-white text-[14pt]" style={{ borderRight: '1.5px solid black', verticalAlign: 'middle', height: '0.3in', padding: '0px' }}>
+                            {state.performanceDate || ''}
+                          </td>
+                          <td className="w-1/3 text-center font-bold bg-white text-[14pt]" style={{ borderRight: '1.5px solid black', verticalAlign: 'middle', height: '0.3in', padding: '0px' }}>
+                            {state.submissionDate || ''}
+                          </td>
+                          <td className="w-1/3 bg-white" style={{ height: '0.3in', padding: '0px' }}></td>
+                        </tr>
+                        <tr style={{ height: '0.33in' }}>
+                          <td 
+                            className="w-1/3 font-bold text-center" 
+                            style={{ borderRight: '1.5px solid black', verticalAlign: 'middle', height: '0.33in', padding: '0px', backgroundColor: orangeBg }}
+                          >
+                            Date of Experiment
+                          </td>
+                          <td 
+                            className="w-1/3 font-bold text-center" 
+                            style={{ borderRight: '1.5px solid black', verticalAlign: 'middle', height: '0.33in', padding: '0px', backgroundColor: orangeBg }}
+                          >
+                            Date of Submission
+                          </td>
+                          <td className="w-1/3 font-bold text-center" style={{ verticalAlign: 'middle', height: '0.33in', padding: '0px', backgroundColor: orangeBg }}>
+                            Signature
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+
+                    {/* Submitted To / Submitted By Columns */}
+                    <div className="flex justify-between items-start gap-4 w-full">
+                      {/* Left Column: Submitted to */}
+                      <div className="flex-1 flex flex-col items-start">
+                        <div className="font-bold underline text-[14pt] mb-3 select-none">Submitted to:</div>
+                        <table className="border-collapse text-[12pt]" style={{ border: '1.5px solid black', width: '2.34in' }}>
+                          <tbody>
+                            <tr style={{ borderBottom: '1.5px solid black', height: '30px' }}>
+                              <td 
+                                className="font-bold text-left px-2" 
+                                style={{ width: '1.38in', minWidth: '1.38in', maxWidth: '1.38in', borderRight: '1.5px solid black', verticalAlign: 'middle', backgroundColor: blueBg }}
+                              >
+                                Faculty Initials:
+                              </td>
+                              <td 
+                                className="text-center font-bold px-2 bg-white text-[14pt]" 
+                                style={{ width: '0.96in', minWidth: '0.96in', maxWidth: '0.96in', verticalAlign: 'middle' }}
+                              >
+                                {state.facultyInitials || ''}
+                              </td>
+                            </tr>
+                            <tr style={{ borderBottom: '1.5px solid black', height: '30px' }}>
+                              <td 
+                                className="font-bold text-left px-2" 
+                                style={{ width: '1.38in', minWidth: '1.38in', maxWidth: '1.38in', borderRight: '1.5px solid black', verticalAlign: 'middle', backgroundColor: blueBg }}
+                              >
+                                GTA Initials
+                              </td>
+                              <td 
+                                className="text-center font-bold px-2 bg-white text-[14pt]" 
+                                style={{ width: '0.96in', minWidth: '0.96in', maxWidth: '0.96in', verticalAlign: 'middle' }}
+                              >
+                                {state.gtaInitials || ''}
+                              </td>
+                            </tr>
+                            <tr style={{ height: '0.55in' }}>
+                              <td 
+                                className="font-bold text-left px-2" 
+                                style={{ width: '1.38in', minWidth: '1.38in', maxWidth: '1.38in', borderRight: '1.5px solid black', verticalAlign: 'middle', height: '0.55in', backgroundColor: blueBg }}
+                              >
+                                Lab Room No:
+                              </td>
+                              <td 
+                                className="text-center font-bold px-2 bg-white text-[14pt]" 
+                                style={{ width: '0.96in', minWidth: '0.96in', maxWidth: '0.96in', verticalAlign: 'middle', height: '0.55in' }}
+                              >
+                                {state.labRoomNo || '910'}
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Right Column: Submitted by */}
+                      <div className="flex-1 flex flex-col items-start">
+                        <div className="font-bold underline text-[14pt] mb-3 select-none">Submitted by:</div>
+                        <table className="w-full border-collapse text-[12pt]" style={{ border: '1.5px solid black' }}>
+                          <tbody>
+                            <tr style={{ borderBottom: '1.5px solid black', height: '30px' }}>
+                              <td 
+                                className="font-semibold text-left px-2" 
+                                style={{ width: '135px', minWidth: '135px', maxWidth: '135px', borderRight: '1.5px solid black', verticalAlign: 'middle', backgroundColor: orangeBg }}
+                              >
+                                Student Name:
+                              </td>
+                              <td className="text-center font-bold px-2 bg-white text-[14pt]" style={{ verticalAlign: 'middle' }}>
+                                {state.studentName || 'Mottakin'}
+                              </td>
+                            </tr>
+                            <tr style={{ borderBottom: '1.5px solid black', height: '30px' }}>
+                              <td 
+                                className="font-semibold text-left px-2" 
+                                style={{ width: '135px', minWidth: '135px', maxWidth: '135px', borderRight: '1.5px solid black', verticalAlign: 'middle', backgroundColor: orangeBg }}
+                              >
+                                Student ID:
+                              </td>
+                              <td className="text-center font-bold px-2 bg-white text-[14pt]" style={{ verticalAlign: 'middle' }}>
+                                {state.studentId || '242-520-801'}
+                              </td>
+                            </tr>
+                            <tr style={{ height: '0.55in' }}>
+                              <td 
+                                className="font-semibold text-left px-2" 
+                                style={{ width: '135px', minWidth: '135px', maxWidth: '135px', borderRight: '1.5px solid black', verticalAlign: 'middle', height: '0.55in', backgroundColor: orangeBg }}
+                              >
+                                Department, Batch & Section:
+                              </td>
+                              <td className="text-center font-bold px-1.5 bg-white leading-tight text-[14pt]" style={{ verticalAlign: 'middle', height: '0.55in' }}>
+                                <div>{getDeptShortForm(state.studentDept) || 'TE'} – {state.studentBatch || '242'}</div>
+                                <div>Section – {state.studentSection || '6B'}</div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
                 </div>
