@@ -54,6 +54,16 @@ export interface CoverPageState {
   obeClo?: string;
   obePlo?: string;
   obeClevel?: string;
+
+  // Box Format optional extensions
+  facultyInitials?: string;
+  gtaInitials?: string;
+  labRoomNo?: string;
+  boxSubStyle?: '10' | '20';
+  colorMode?: 'colored' | 'bw';
+  boxCriteriaType?: 'workshop' | 'eee' | 'cse' | 'mechanical' | 'custom';
+  customCriteriaList?: { no: string; text: string; marks: number }[];
+  boxGradingType?: 'fail' | 'vgood';
 }
 
 export interface IndexRow {
