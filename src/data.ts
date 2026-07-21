@@ -79,6 +79,7 @@ export const INITIAL_COVER_STATE: CoverPageState = {
   studentBatch: '',
   studentSession: '',
   studentSemester: 'r',
+  program: 'B.Sc. in Textile Engineering',
   
   // Dates
   submissionDate: new Date().toLocaleDateString('en-GB'),
@@ -97,6 +98,7 @@ export const INITIAL_COVER_STATE: CoverPageState = {
   customLogo: null,
   titleBoxStyle: 'bordered',
   submissionBoxStyle: 'minimal',
+  indexFormat: 'without_marks',
   
   // OBE Format default extensions
   labFormat: 'plain',
