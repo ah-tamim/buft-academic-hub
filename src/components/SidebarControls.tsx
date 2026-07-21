@@ -900,7 +900,34 @@ export const SidebarControls: React.FC<SidebarControlsProps> = ({
               )}
             
          {activeTab === 'index' && (
-                <div className="space-y-3.5 pt-3.5 border-t border-slate-200/60">
+                <div className="space-y-3.5 pt-3.5 border-t border-slate-200/60 font-sans">
+                  <div className="bg-gradient-to-r from-pink-500/10 to-indigo-500/10 p-3.5 rounded-xl border border-pink-100/50 flex flex-col gap-1.5 mb-2 font-sans">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-pink-700">Index Table Format Style</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => onChange({ indexFormat: 'without_marks' })}
+                        className={`py-1.5 rounded-lg text-xs font-bold transition border cursor-pointer text-center ${
+                          state.indexFormat !== 'with_marks'
+                            ? 'bg-pink-600 text-white border-pink-600 shadow-sm'
+                            : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:text-slate-900'
+                        }`}
+                      >
+                        Without Marks
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onChange({ indexFormat: 'with_marks' })}
+                        className={`py-1.5 rounded-lg text-xs font-bold transition border cursor-pointer text-center ${
+                          state.indexFormat === 'with_marks'
+                            ? 'bg-pink-600 text-white border-pink-600 shadow-sm'
+                            : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:text-slate-900'
+                        }`}
+                      >
+                        With Marks
+                      </button>
+                    </div>
+                  </div>
                   <div>
                     <label className="block text-[11px] font-bold text-slate-500 mb-1">Full Name</label>
                     <input
@@ -963,6 +990,78 @@ export const SidebarControls: React.FC<SidebarControlsProps> = ({
                       </datalist>
                     </div>
                   </div>
+
+                  {state.indexFormat === 'with_marks' && (
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-500 mb-1">Program</label>
+                      <select
+                        value={
+                          [
+                            'B.Sc. in Apparel Manufacturing & Technology',
+                            'Bachelor of Apparel Merchandising & Management',
+                            'Bachelor of Business Administration',
+                            'B.Sc. in Computer Science & Engineering',
+                            'Bachelor of Arts (Hon’s) in English',
+                            'B.Sc. in Science in Environmental Science',
+                            'B.Sc. in Science in Fashion Design & Technology',
+                            'Bachelor of Fashion Studies',
+                            'B.Sc. in Science in Industrial Engineering',
+                            'B.Sc. in Science in Knitwear Engineering',
+                            'B.Sc. in Science in Textile Engineering',
+                            'B.Sc. in Science in Textile Engineering & Management'
+                          ].includes(state.program || '')
+                            ? state.program
+                            : 'custom'
+                        }
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val !== 'custom') {
+                            onChange({ program: val });
+                          } else {
+                            onChange({ program: '' });
+                          }
+                        }}
+                        className="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-2 text-xs text-slate-800 focus:outline-none focus:border-pink-500 transition cursor-pointer shadow-sm mb-2 font-sans"
+                      >
+                        <option value="B.Sc. in Apparel Manufacturing & Technology">B.Sc. in Apparel Manufacturing & Technology</option>
+                        <option value="Bachelor of Apparel Merchandising & Management">Bachelor of Apparel Merchandising & Management</option>
+                        <option value="Bachelor of Business Administration">Bachelor of Business Administration</option>
+                        <option value="B.Sc. in Computer Science & Engineering">B.Sc. in Computer Science & Engineering</option>
+                        <option value="Bachelor of Arts (Hon’s) in English">Bachelor of Arts (Hon’s) in English</option>
+                        <option value="B.Sc. in Science in Environmental Science">B.Sc. in Science in Environmental Science</option>
+                        <option value="B.Sc. in Science in Fashion Design & Technology">B.Sc. in Science in Fashion Design & Technology</option>
+                        <option value="Bachelor of Fashion Studies">Bachelor of Fashion Studies</option>
+                        <option value="B.Sc. in Science in Industrial Engineering">B.Sc. in Science in Industrial Engineering</option>
+                        <option value="B.Sc. in Science in Knitwear Engineering">B.Sc. in Science in Knitwear Engineering</option>
+                        <option value="B.Sc. in Science in Textile Engineering">B.Sc. in Science in Textile Engineering</option>
+                        <option value="B.Sc. in Science in Textile Engineering & Management">B.Sc. in Science in Textile Engineering & Management</option>
+                        <option value="custom">✍️ Write Custom Program...</option>
+                      </select>
+
+                      {![
+                        'B.Sc. in Apparel Manufacturing & Technology',
+                        'Bachelor of Apparel Merchandising & Management',
+                        'Bachelor of Business Administration',
+                        'B.Sc. in Computer Science & Engineering',
+                        'Bachelor of Arts (Hon’s) in English',
+                        'B.Sc. in Science in Environmental Science',
+                        'B.Sc. in Science in Fashion Design & Technology',
+                        'Bachelor of Fashion Studies',
+                        'B.Sc. in Science in Industrial Engineering',
+                        'B.Sc. in Science in Knitwear Engineering',
+                        'B.Sc. in Science in Textile Engineering',
+                        'B.Sc. in Science in Textile Engineering & Management'
+                      ].includes(state.program || '') && (
+                        <input
+                          type="text"
+                          value={state.program || ''}
+                          onChange={(e) => onChange({ program: e.target.value })}
+                          placeholder="Or write custom program"
+                          className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition shadow-sm placeholder-slate-400"
+                        />
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
               </div>
@@ -1178,7 +1277,7 @@ export const SidebarControls: React.FC<SidebarControlsProps> = ({
         )}
 
         {/* SECTION 5: CUSTOM DOUBLE BORDER & SPACING ENGINE */}
-        {!(activeTab === 'lab' && (state.labFormat === 'obe' || state.labFormat === 'box')) && (
+        {!(activeTab === 'lab' && (state.labFormat === 'obe' || state.labFormat === 'box')) && !(activeTab === 'index' && state.indexFormat === 'with_marks') && (
           <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm">
             <button
               onClick={() => toggleSection('layout')}
