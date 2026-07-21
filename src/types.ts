@@ -21,6 +21,7 @@ export interface CoverPageState {
   studentBatch: string;
   studentSession: string;
   studentSemester: string;
+  program?: string;
   
   // Dates
   submissionDate: string;
@@ -39,6 +40,7 @@ export interface CoverPageState {
   customLogo: string | null;
   titleBoxStyle: 'bordered' | 'solid' | 'double' | 'clean';
   submissionBoxStyle: 'grid' | 'stacked' | 'outlined-cards' | 'minimal';
+  indexFormat?: 'without_marks' | 'with_marks';
 
   // OBE Format optional extensions
   labFormat?: string;
