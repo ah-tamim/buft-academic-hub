@@ -1,0 +1,92 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <!-- Deep Emerald Green Gradient -->
+      <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#127a44" />
+        <stop offset="40%" stop-color="#0c5e33" />
+        <stop offset="100%" stop-color="#053d20" />
+      </linearGradient>
+
+      <!-- Metallic Gold Gradient for Borders & Cap -->
+      <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#fff1b0" />
+        <stop offset="30%" stop-color="#e6c363" />
+        <stop offset="70%" stop-color="#b88e2b" />
+        <stop offset="100%" stop-color="#fdf3c7" />
+      </linearGradient>
+
+      <linearGradient id="goldEdgeGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#916b15" />
+        <stop offset="50%" stop-color="#d4af37" />
+        <stop offset="100%" stop-color="#fef08a" />
+      </linearGradient>
+
+      <!-- Drop Shadows for 3D Depth -->
+      <filter id="badgeShadow" x="-20%" y="-20%" width="140%" height="140%">
+        <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#021c0e" flood-opacity="0.4" />
+      </filter>
+
+      <filter id="gold3dShadow" x="-20%" y="-20%" width="140%" height="140%">
+        <feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#000000" flood-opacity="0.45" />
+      </filter>
+      
+      <filter id="innerGlow">
+        <feComponentTransfer>
+          <feFuncA type="linear" slope="0.2"/>
+        </feComponentTransfer>
+      </filter>
+    </defs>
+
+    <!-- Outer Squircle Badge Background -->
+    <rect x="28" y="28" width="456" height="456" rx="100" fill="url(#emeraldGrad)" filter="url(#badgeShadow)" />
+    
+    <!-- Outer Gold Bevel Border (Thick 3D Metallic Rim) -->
+    <rect x="28" y="28" width="456" height="456" rx="100" fill="none" stroke="url(#goldGrad)" stroke-width="14" />
+    <rect x="36" y="36" width="440" height="440" rx="92" fill="none" stroke="url(#goldEdgeGrad)" stroke-width="3" stroke-opacity="0.8" />
+    <rect x="42" y="42" width="428" height="428" rx="86" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.15" />
+
+    <!-- 3D GRADUATION CAP (GOLD METALLIC) -->
+    <g filter="url(#gold3dShadow)">
+      <!-- Mortarboard Diamond Top (Outer & Inner 3D Lines) -->
+      <polygon points="256,68 440,140 256,205 72,140" fill="none" stroke="url(#goldGrad)" stroke-width="16" stroke-linejoin="round" />
+      <polygon points="256,86 410,140 256,192 102,140" fill="none" stroke="url(#goldEdgeGrad)" stroke-width="6" stroke-linejoin="round" />
+      
+      <!-- Skull Cap Base (Lower curved part) -->
+      <path d="M 140,165 Q 138,270 256,270 Q 374,270 372,165" fill="none" stroke="url(#goldGrad)" stroke-width="16" stroke-linecap="round" />
+      <path d="M 152,175 Q 150,256 256,256 Q 362,256 360,175" fill="none" stroke="url(#goldEdgeGrad)" stroke-width="6" stroke-linecap="round" />
+
+      <!-- Left Hanging Tassel -->
+      <path d="M 256,138 C 170,142 102,190 90,260" fill="none" stroke="url(#goldGrad)" stroke-width="12" stroke-linecap="round" />
+      <!-- Tassel Ring / Button -->
+      <circle cx="256" cy="138" r="9" fill="url(#goldGrad)" />
+      <!-- Tassel Fringe -->
+      <path d="M 90,260 L 80,305 M 90,260 L 90,310 M 90,260 L 100,305" stroke="url(#goldGrad)" stroke-width="5" stroke-linecap="round" />
+      <circle cx="90" cy="265" r="7" fill="url(#goldGrad)" />
+    </g>
+
+    <!-- BUFT TEXT (BOLD 3D GOLD) -->
+    <g filter="url(#gold3dShadow)">
+      <text x="256" y="352" 
+        font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" 
+        font-weight="900" 
+        font-size="64" 
+        fill="url(#goldGrad)" 
+        stroke="url(#goldEdgeGrad)"
+        stroke-width="2"
+        text-anchor="middle" 
+        letter-spacing="5">BUFT</text>
+    </g>
+
+    <!-- ACADEMIC HUB TEXT (CURVED / ELEGANT SCRIPT GOLD) -->
+    <g filter="url(#gold3dShadow)">
+      <path id="textCurve" d="M 80,390 Q 256,470 432,390" fill="none" />
+      <text font-family="'Brush Script MT', 'Georgia', 'Times New Roman', cursive, serif" 
+        font-size="46" 
+        font-weight="bold"
+        fill="url(#goldGrad)">
+        <textPath href="#textCurve" startOffset="50%" text-anchor="middle">
+          Academic Hub
+        </textPath>
+      </text>
+    </g>
+  </svg>
