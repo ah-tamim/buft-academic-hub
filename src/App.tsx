@@ -872,7 +872,7 @@ export default function App() {
                       Courtesy of Owner Shazzad Hossain Nabil
                     </span>
                   </div>
-                  <h3 className="text-xl font-bold tracking-tight mb-2">BUFT Shuttle & Bus Tracker</h3>
+                  <h3 className="text-xl font-bold tracking-tight mb-2">BUFT Bus Tracker</h3>
                   <p className="text-xs text-slate-300 leading-relaxed max-w-2xl">
                     Never worry about missing your bus again! This real-time tracker for BUFT shuttle routes and schedules is engineered with dedication by our respected senior brother <strong className="text-white">Shazzad Hossain Nabil (TE 221)</strong> to help the entire BUFT community. Open it & stay updated on current trips.
                   </p>
