@@ -6,7 +6,7 @@ import { A4Preview } from './components/A4Preview';
 import { CgpaCalculator } from './components/CgpaCalculator';
 import RoutineViewer from './components/RoutineViewer';
 import { InstallPwaPrompt } from './components/InstallPwaPrompt';
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ExamRoutine from "./components/ExamRoutine"; // Adjust path as needed
 import { downloadA4PDF } from './utils/pdfGenerator';
 import { motion, AnimatePresence } from 'motion/react';
@@ -33,20 +33,29 @@ import {
 } from 'lucide-react';
 
 export default function App() {
-  // Current view: Reads the URL Hash link directly so bookmarks and link sharing work perfectly!
+  // Current view: Reads clean path (e.g., /cgpa) or legacy hash for backward compatibility
   const [currentView, setCurrentView] = useState<'home' | 'generator' | 'cgpa' | 'classroutine' | 'examroutine'>(() => {
+    const path = window.location.pathname;
     const currentHash = window.location.hash;
-    if (currentHash === '#/cgpa') return 'cgpa';
-    if (currentHash === '#/pagemaker') return 'generator';
-    if (currentHash === '#/classroutine') return 'classroutine';
-    if (currentHash === '#/examroutine') return 'examroutine';
+
+    if (path === '/cgpa' || currentHash === '#/cgpa') return 'cgpa';
+    if (path === '/pagemaker' || path === '/coverpage' || currentHash === '#/pagemaker') return 'generator';
+    if (path === '/classroutine' || currentHash === '#/classroutine') return 'classroutine';
+    if (path === '/examroutine' || currentHash === '#/examroutine') return 'examroutine';
     
-    // Legacy support for your old query parameters if anyone uses them
+    // Legacy support for query parameters
     const params = new URLSearchParams(window.location.search);
     if (params.get('view') === 'cgpa') return 'cgpa';
     
     return 'home';
   });
+
+  // Clean path navigation helper
+  const navigateTo = (path: string, view: 'home' | 'generator' | 'cgpa' | 'classroutine' | 'examroutine', tab?: 'lab' | 'assignment' | 'index') => {
+    setCurrentView(view);
+    if (tab) setActiveTab(tab);
+    window.history.pushState({}, '', path);
+  };
 
   // Try loading from localStorage first, or fallback to default
   const [coverState, setCoverState] = useState<CoverPageState>(() => {
@@ -81,26 +90,93 @@ export default function App() {
     setCoverState(prev => ({ ...prev, coverType: activeTab }));
   }, [activeTab]);
 
-  // Listen for browser navigation changes (if back/forward buttons are pressed)
+  // Listen for browser navigation changes (if back/forward or route links are clicked)
   useEffect(() => {
-    const handleHashChange = () => {
+    const handleNavigation = () => {
+      const path = window.location.pathname;
       const currentHash = window.location.hash;
-      if (currentHash === '#/cgpa') {
+
+      if (path === '/cgpa' || currentHash === '#/cgpa') {
         setCurrentView('cgpa');
-      } else if (currentHash === '#/pagemaker') {
+        if (currentHash) window.history.replaceState({}, '', '/cgpa');
+      } else if (path === '/pagemaker' || path === '/coverpage' || currentHash === '#/pagemaker') {
         setCurrentView('generator');
-        } else if (currentHash === '#/classroutine') { 
+        if (currentHash) window.history.replaceState({}, '', '/pagemaker');
+      } else if (path === '/classroutine' || currentHash === '#/classroutine') { 
         setCurrentView('classroutine');
-        } else if (currentHash === '#/examroutine') { 
-      setCurrentView('examroutine');
-      } else if (currentHash === '' || currentHash === '#/') {
+        if (currentHash) window.history.replaceState({}, '', '/classroutine');
+      } else if (path === '/examroutine' || currentHash === '#/examroutine') { 
+        setCurrentView('examroutine');
+        if (currentHash) window.history.replaceState({}, '', '/examroutine');
+      } else if (path === '/' && (currentHash === '' || currentHash === '#/')) {
         setCurrentView('home');
+        if (currentHash) window.history.replaceState({}, '', '/');
       }
     };
 
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    handleNavigation(); // Run on mount to automatically convert any old hash link to clean path URL
+    window.addEventListener('popstate', handleNavigation);
+    window.addEventListener('hashchange', handleNavigation);
+    return () => {
+      window.removeEventListener('popstate', handleNavigation);
+      window.removeEventListener('hashchange', handleNavigation);
+    };
   }, []);
+
+  // Dynamic SEO meta description, canonical tags & document title updates
+  useEffect(() => {
+    let title = 'BUFT Academic HUB | Official University Academic Portal';
+    let description = 'Official academic tool suite for BGMEA University of Fashion & Technology (BUFT). Access CGPA Calculator, Class Routine, Exam Routine, and Cover Page Generator.';
+    let canonicalPath = '/';
+
+    if (currentView === 'cgpa') {
+      title = 'BUFT CGPA Calculator | BGMEA University GPA & Credit Calculator';
+      description = 'Accurate SGPA and CGPA Calculator for BUFT students. Calculate semester GPA, credit weightage, target marks, and grade points easily.';
+      canonicalPath = '/cgpa';
+    } else if (currentView === 'classroutine') {
+      title = 'BUFT Class Routine Viewer | Batch Timetable & Schedule';
+      description = 'View and search BUFT department class routines. Search routines by batch, day, room, teacher, and course code.';
+      canonicalPath = '/classroutine';
+    } else if (currentView === 'examroutine') {
+      title = 'BUFT Exam Routine | Midterm & Final Examination Schedule';
+      description = 'Check official BUFT midterm and final exam schedules. Search exam routines by course code, room number, date, and timing.';
+      canonicalPath = '/examroutine';
+    } else if (currentView === 'generator') {
+      title = 'BUFT Cover Page Generator | Lab & Assignment Cover PDF';
+      description = 'Create and download official BUFT assignment and lab report cover pages with high-resolution A4 PDF export.';
+      canonicalPath = '/pagemaker';
+    }
+
+    document.title = title;
+
+    // Update meta description
+    let metaDesc = document.querySelector('meta[name="description"]');
+    if (!metaDesc) {
+      metaDesc = document.createElement('meta');
+      metaDesc.setAttribute('name', 'description');
+      document.head.appendChild(metaDesc);
+    }
+    metaDesc.setAttribute('content', description);
+
+    // Update canonical link
+    let canonicalLink = document.querySelector('link[rel="canonical"]');
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.setAttribute('href', `https://bufthub.vercel.app${canonicalPath}`);
+
+    // Update Open Graph meta tags
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute('content', title);
+
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    if (ogDesc) ogDesc.setAttribute('content', description);
+
+    const ogUrl = document.querySelector('meta[property="og:url"]');
+    if (ogUrl) ogUrl.setAttribute('content', `https://bufthub.vercel.app${canonicalPath}`);
+  }, [currentView]);
 
   // Mobile navigation views: 'edit' or 'preview'
   const [mobileView, setMobileView] = useState<'edit' | 'preview'>('edit');
@@ -269,11 +345,10 @@ export default function App() {
       <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-white/75 border-b border-emerald-100/50 px-4 lg:px-8 py-3 flex items-center justify-between shadow-sm no-print">
         <div className="flex items-center gap-2.5">
           <a 
-            href="#/"
+            href="/"
             onClick={(e) => {
               e.preventDefault();
-              setCurrentView('home');
-              window.location.hash = '#/';
+              navigateTo('/', 'home');
             }} 
             className="flex items-center gap-2 cursor-pointer select-none group"
           >
@@ -291,11 +366,10 @@ export default function App() {
         {/* Desktop Nav: Automatically appears on PC (md:flex) */}
         <nav className="hidden md:flex items-center gap-6">
           <a 
-            href="#/"
+            href="/"
             onClick={(e) => {
               e.preventDefault();
-              setCurrentView('home');
-              window.location.hash = '#/';
+              navigateTo('/', 'home');
             }}
             className={`text-xs font-bold transition-all cursor-pointer ${currentView === 'home' ? 'text-emerald-600' : 'text-slate-600 hover:text-slate-900'}`}
           >
@@ -303,12 +377,10 @@ export default function App() {
           </a>
           
           <a 
-            href="#/pagemaker"
+            href="/pagemaker"
             onClick={(e) => {
               e.preventDefault();
-              setCurrentView('generator');
-              setActiveTab('lab');
-              window.location.hash = '#/pagemaker';
+              navigateTo('/pagemaker', 'generator', 'lab');
             }}
             className={`text-xs font-bold transition-all cursor-pointer ${currentView === 'generator' && activeTab === 'lab' ? 'text-emerald-600' : 'text-slate-600 hover:text-slate-900'}`}
           >
@@ -316,11 +388,10 @@ export default function App() {
           </a>
          
           <a 
-            href="#/cgpa"
+            href="/cgpa"
             onClick={(e) => {
               e.preventDefault();
-              setCurrentView('cgpa');
-              window.location.hash = '#/cgpa';
+              navigateTo('/cgpa', 'cgpa');
             }}
             className={`text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${currentView === 'cgpa' ? 'text-emerald-600 font-extrabold' : 'text-slate-600 hover:text-indigo-600'}`}
           >
@@ -328,11 +399,10 @@ export default function App() {
             <span>CGPA Calculator</span>
           </a>
           <a 
-            href="#/classroutine"
+            href="/classroutine"
             onClick={(e) => {
               e.preventDefault();
-              setCurrentView('classroutine');
-              window.location.hash = '#/classroutine';
+              navigateTo('/classroutine', 'classroutine');
             }}
             className={`text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${currentView === 'classroutine' ? 'text-emerald-600 font-extrabold' : 'text-slate-600 hover:text-emerald-600'}`}
           >
@@ -340,11 +410,10 @@ export default function App() {
             <span>Class Routine</span>
           </a>
           <a 
-            href="#/examroutine"
+            href="/examroutine"
             onClick={(e) => {
               e.preventDefault();
-              setCurrentView('examroutine');
-              window.location.hash = '#/examroutine';
+              navigateTo('/examroutine', 'examroutine');
             }}
             className={`text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${currentView === 'examroutine' ? 'text-emerald-600 font-extrabold' : 'text-slate-600 hover:text-emerald-600'}`}
           >
@@ -411,13 +480,11 @@ export default function App() {
           <div className="hidden md:block">
             {currentView === 'home' ? (
               <a
-                href="#/pagemaker"
+                href="/pagemaker"
                 key="start-generating-btn"
                 onClick={(e) => {
                   e.preventDefault();
-                  setCurrentView('generator');
-                  setActiveTab('lab');
-                  window.location.hash = '#/pagemaker';
+                  navigateTo('/pagemaker', 'generator', 'lab');
                 }}
                 className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-lg shadow-emerald-600/10 hover:shadow-emerald-600/20 transition-all cursor-pointer block animate-fade-in"
               >
@@ -425,12 +492,11 @@ export default function App() {
               </a>
             ) : (
               <a
-                href="#/"
+                href="/"
                 key="back-to-home-btn"
                 onClick={(e) => {
                   e.preventDefault();
-                  setCurrentView('home');
-                  window.location.hash = '#/';
+                  navigateTo('/', 'home');
                 }}
                 className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs px-4 py-2 rounded-xl transition-all cursor-pointer border border-slate-200/80 block animate-fade-in"
               >
@@ -453,12 +519,11 @@ export default function App() {
           >
             <div className="px-4 py-3 space-y-2 flex flex-col">
               <a 
-                href="#/"
+                href="/"
                 onClick={(e) => {
                   e.preventDefault();
-                  setCurrentView('home');
                   setMobileMenuOpen(false);
-                  window.location.hash = '#/';
+                  navigateTo('/', 'home');
                 }}
                 className={`flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
                   currentView === 'home'
@@ -471,13 +536,11 @@ export default function App() {
               </a>
 
               <a 
-                href="#/pagemaker"
+                href="/pagemaker"
                 onClick={(e) => {
                   e.preventDefault();
-                  setCurrentView('generator');
-                  setActiveTab('lab');
                   setMobileMenuOpen(false);
-                  window.location.hash = '#/pagemaker';
+                  navigateTo('/pagemaker', 'generator', 'lab');
                 }}
                 className={`flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
                   currentView === 'generator'
@@ -490,12 +553,11 @@ export default function App() {
               </a>
 
               <a 
-                href="#/cgpa"
+                href="/cgpa"
                 onClick={(e) => {
                   e.preventDefault();
-                  setCurrentView('cgpa');
                   setMobileMenuOpen(false);
-                  window.location.hash = '#/cgpa';
+                  navigateTo('/cgpa', 'cgpa');
                 }}
                 className={`flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
                   currentView === 'cgpa'
@@ -508,12 +570,11 @@ export default function App() {
               </a>
 
               <a 
-                href="#/classroutine"
+                href="/classroutine"
                 onClick={(e) => {
                   e.preventDefault();
-                  setCurrentView('classroutine');
                   setMobileMenuOpen(false);
-                  window.location.hash = '#/classroutine';
+                  navigateTo('/classroutine', 'classroutine');
                 }}
                 className={`flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
                   currentView === 'classroutine'
@@ -526,12 +587,11 @@ export default function App() {
               </a>
 
               <a 
-                href="#/examroutine"
+                href="/examroutine"
                 onClick={(e) => {
                   e.preventDefault();
-                  setCurrentView('examroutine');
                   setMobileMenuOpen(false);
-                  window.location.hash = '#/examroutine';
+                  navigateTo('/examroutine', 'examroutine');
                 }}
                 className={`flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
                   currentView === 'examroutine'
@@ -644,12 +704,10 @@ export default function App() {
           >
             {/* ASSIGNMENT CARD */}
             <a 
-              href="#/pagemaker"
+              href="/pagemaker"
               onClick={(e) => {
                 e.preventDefault();
-                setCurrentView('generator');
-                setActiveTab('assignment');
-                window.location.hash = '#/pagemaker';
+                navigateTo('/pagemaker', 'generator', 'assignment');
               }}
               className="bg-white/80 backdrop-blur-sm border border-slate-100/80 p-6 rounded-3xl hover:border-emerald-300/60 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between"
             >
@@ -670,12 +728,10 @@ export default function App() {
 
             {/* LAB REPORT CARD */}
             <a 
-              href="#/pagemaker"
+              href="/pagemaker"
               onClick={(e) => {
                 e.preventDefault();
-                setCurrentView('generator');
-                setActiveTab('lab');
-                window.location.hash = '#/pagemaker';
+                navigateTo('/pagemaker', 'generator', 'lab');
               }}
               className="bg-white/80 backdrop-blur-sm border border-slate-100/80 p-6 rounded-3xl hover:border-emerald-300/60 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between"
             >
@@ -696,12 +752,10 @@ export default function App() {
 
             {/* INDEX PAGE CARD */}
             <a 
-              href="#/pagemaker"
+              href="/pagemaker"
               onClick={(e) => {
                 e.preventDefault();
-                setCurrentView('generator');
-                setActiveTab('index');
-                window.location.hash = '#/pagemaker';
+                navigateTo('/pagemaker', 'generator', 'index');
               }}
               className="bg-white/80 backdrop-blur-sm border border-slate-100/80 p-6 rounded-3xl hover:border-emerald-300/60 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between"
             >
@@ -722,11 +776,10 @@ export default function App() {
 
             {/* CGPA CALCULATOR CARD */}
             <a 
-              href="#/cgpa"
+              href="/cgpa"
               onClick={(e) => {
                 e.preventDefault();
-                setCurrentView('cgpa');
-                window.location.hash = '#/cgpa';
+                navigateTo('/cgpa', 'cgpa');
               }}
               className="bg-white/80 backdrop-blur-sm border border-slate-100/80 p-6 rounded-3xl hover:border-emerald-300/60 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between"
             >
@@ -744,13 +797,13 @@ export default function App() {
                 <span className="ml-1">&rarr;</span>
               </div>
             </a>
-        {/* CLASS ROUTINE CARD */}
+
+            {/* CLASS ROUTINE CARD */}
             <a 
-              href="#/classroutine"
+              href="/classroutine"
               onClick={(e) => {
                 e.preventDefault();
-                setCurrentView('classroutine');
-                window.location.hash = '#/classroutine';
+                navigateTo('/classroutine', 'classroutine');
               }}
               className="bg-white/80 backdrop-blur-sm border border-slate-100/80 p-6 rounded-3xl hover:border-emerald-300/60 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between"
             >
@@ -771,28 +824,27 @@ export default function App() {
 
             {/* EXAM ROUTINE CARD */}
             <a 
-              href="#/examroutine"
+              href="/examroutine"
               onClick={(e) => {
                 e.preventDefault();
-                setCurrentView('examroutine');
-                window.location.hash = '#/examroutine';
+                navigateTo('/examroutine', 'examroutine');
               }}
               className="bg-white/80 backdrop-blur-sm border border-slate-100/80 p-6 rounded-3xl hover:border-emerald-300/60 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between"
             >
-  <div>
-    <div className="bg-emerald-100 text-emerald-700 p-3 rounded-2xl w-fit mb-5 group-hover:scale-110 transition-transform">
-      <FileText className="h-6 w-6" />
-    </div>
-    <h3 className="font-extrabold text-lg text-slate-900 mb-2">Exam Routine</h3>
-    <p className="text-xs text-slate-500 leading-relaxed font-medium">
-      Check exam schedules.
-    </p>
-  </div>
-  <div className="mt-6 flex items-center text-xs font-bold text-emerald-600 group-hover:translate-x-1 transition-transform">
-    <span>View Exam Routine</span>
-    <span className="ml-1">&rarr;</span>
-  </div>
-</a>
+              <div>
+                <div className="bg-emerald-100 text-emerald-700 p-3 rounded-2xl w-fit mb-5 group-hover:scale-110 transition-transform">
+                  <FileText className="h-6 w-6" />
+                </div>
+                <h3 className="font-extrabold text-lg text-slate-900 mb-2">Exam Routine</h3>
+                <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                  Check exam schedules.
+                </p>
+              </div>
+              <div className="mt-6 flex items-center text-xs font-bold text-emerald-600 group-hover:translate-x-1 transition-transform">
+                <span>View Exam Routine</span>
+                <span className="ml-1">&rarr;</span>
+              </div>
+            </a>
 
             
           </motion.div>
