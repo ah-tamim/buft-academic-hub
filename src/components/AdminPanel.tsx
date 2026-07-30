@@ -8,6 +8,7 @@ import {
   User 
 } from "../lib/firebase";
 import { useAppConfig, PortalConfig } from "../context/AppConfigContext";
+import { fetchCSVFromGoogleSheet } from "../utils/csvParser";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   Lock, 
@@ -172,19 +173,15 @@ export function AdminPanel() {
     setTestingClassSheet(true);
     setClassSheetResult(null);
 
-    const csvUrl = convertToCSVUrl(formState.classRoutineSheetUrl);
-    if (!csvUrl) {
+    const sheetUrl = formState.classRoutineSheetUrl?.trim();
+    if (!sheetUrl) {
       setClassSheetResult({ success: false, msg: "Spreadsheet URL is empty or invalid." });
       setTestingClassSheet(false);
       return;
     }
 
     try {
-      const resp = await fetch(csvUrl);
-      if (!resp.ok) {
-        throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
-      }
-      const text = await resp.text();
+      const text = await fetchCSVFromGoogleSheet(sheetUrl);
       const lines = text.split("\n").filter(l => l.trim().length > 0);
       if (lines.length > 1) {
         setClassSheetResult({
@@ -200,7 +197,7 @@ export function AdminPanel() {
     } catch (err: any) {
       setClassSheetResult({
         success: false,
-        msg: `Failed to fetch CSV: ${err.message || "Network error. Make sure Google Sheet is published to web as CSV."}`
+        msg: `Failed to fetch CSV: ${err.message || "Make sure Google Sheet access is set to 'Anyone with the link'."}`
       });
     } finally {
       setTestingClassSheet(false);
@@ -212,19 +209,15 @@ export function AdminPanel() {
     setTestingExamSheet(true);
     setExamSheetResult(null);
 
-    const csvUrl = convertToCSVUrl(formState.examRoutineSheetUrl);
-    if (!csvUrl) {
+    const sheetUrl = formState.examRoutineSheetUrl?.trim();
+    if (!sheetUrl) {
       setExamSheetResult({ success: false, msg: "Spreadsheet URL is empty or invalid." });
       setTestingExamSheet(false);
       return;
     }
 
     try {
-      const resp = await fetch(csvUrl);
-      if (!resp.ok) {
-        throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
-      }
-      const text = await resp.text();
+      const text = await fetchCSVFromGoogleSheet(sheetUrl);
       const lines = text.split("\n").filter(l => l.trim().length > 0);
       if (lines.length > 1) {
         setExamSheetResult({
@@ -240,7 +233,7 @@ export function AdminPanel() {
     } catch (err: any) {
       setExamSheetResult({
         success: false,
-        msg: `Failed to fetch CSV: ${err.message || "Network error. Make sure Google Sheet is published to web as CSV."}`
+        msg: `Failed to fetch CSV: ${err.message || "Make sure Google Sheet access is set to 'Anyone with the link'."}`
       });
     } finally {
       setTestingExamSheet(false);
