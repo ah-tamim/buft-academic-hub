@@ -631,7 +631,12 @@ export default function App() {
 
       {/* BROADCAST NOTICE BANNER (Managed by Admin Panel) */}
       {config.noticeBannerEnabled && config.noticeBannerText && (
-        <div className="bg-gradient-to-r from-amber-600 to-orange-600 text-white px-4 py-2 text-xs font-semibold text-center flex items-center justify-center gap-2 shadow-sm no-print">
+        <div className={`text-white px-4 py-2 text-xs font-semibold text-center flex items-center justify-center gap-2 shadow-sm no-print ${
+          config.noticeBannerType === 'alert' ? 'bg-gradient-to-r from-rose-600 to-red-600' :
+          config.noticeBannerType === 'warning' ? 'bg-gradient-to-r from-amber-600 to-orange-600' :
+          config.noticeBannerType === 'success' ? 'bg-gradient-to-r from-emerald-600 to-teal-600' :
+          'bg-gradient-to-r from-blue-600 to-indigo-600'
+        }`}>
           <span className="bg-white/20 px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider">
             Notice
           </span>
@@ -639,8 +644,28 @@ export default function App() {
         </div>
       )}
 
-     {/* RENDER VIEW: ADMIN, ROUTINES, CGPA, HOME, OR GENERATOR */}
-      {currentView === 'admin' ? (
+      {/* EMERGENCY MAINTENANCE MODE LOCK */}
+      {config.maintenanceMode && currentView !== 'admin' ? (
+        <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-16 flex flex-col items-center justify-center text-center no-print">
+          <div className="p-4 rounded-full bg-rose-500/10 text-rose-500 mb-4 border border-rose-500/20">
+            <Settings2 className="w-10 h-10 animate-spin" />
+          </div>
+          <h2 className="text-2xl font-black text-slate-900 mb-2">Portal Under Maintenance</h2>
+          <p className="text-sm text-slate-600 max-w-md mb-6 leading-relaxed">
+            {config.maintenanceMessage || "The portal is currently undergoing scheduled updates and maintenance. Please check back shortly!"}
+          </p>
+          <a
+            href="/admin"
+            onClick={(e) => {
+              e.preventDefault();
+              navigateTo('/admin', 'admin');
+            }}
+            className="text-xs text-slate-400 hover:text-slate-600 underline"
+          >
+            Admin Portal Sign In
+          </a>
+        </main>
+      ) : currentView === 'admin' ? (
         <AdminPanel />
       ) : currentView === 'classroutine' ? (
         <main className="flex-1 max-w-5xl mx-auto w-full px-4 lg:px-8 py-10 lg:py-16 flex flex-col items-center no-print animate-fade-in">
@@ -1328,4 +1353,3 @@ export default function App() {
     </div>
   );
 }
- 
