@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useAppConfig } from "../context/AppConfigContext";
 import { 
   Calendar, 
   Clock, 
@@ -285,6 +286,8 @@ export function sortByDate(exams: ExamRow[]): ExamRow[] {
 // 4. MAIN EXAM ROUTINE COMPONENT
 // ==========================================
 export default function ExamRoutine() {
+  const { config: appConfig } = useAppConfig();
+
   // Application Data States
   const [exams, setExams] = useState<ExamRow[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -300,7 +303,7 @@ export default function ExamRoutine() {
     setLoading(true);
     setError(null);
     try {
-      const url = config.spreadsheetUrl;
+      const url = appConfig.examRoutineSheetUrl || config.spreadsheetUrl;
       const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
       if (!match || !match[1]) {
         throw new Error("Invalid Google Spreadsheet URL in configuration.");
@@ -508,7 +511,7 @@ export default function ExamRoutine() {
                   Exam Routine
                 </h1>
                 <p className="text-base text-teal-100 font-medium mt-1.5 flex items-center gap-1.5" id="page_subtitle">
-                  <Award className="h-4.5 w-4.5 text-amber-300" /> {config.examName} — {config.semester}
+                  <Award className="h-4.5 w-4.5 text-amber-300" /> {appConfig.examName || config.examName} — {appConfig.examRoutineSemester || config.semester}
                 </p>
               </div>
             </div>
