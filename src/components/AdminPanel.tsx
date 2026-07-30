@@ -1253,6 +1253,7 @@ export function AdminPanel() {
                 {[
                   { key: "enableClassRoutine", title: "Class Routine Viewer", desc: "Allow students to search and view weekly class timetables", icon: GraduationCap },
                   { key: "enableExamRoutine", title: "Exam Routine Viewer", desc: "Allow students to view midterm and final exam schedules", icon: Calendar },
+                  { key: "enableNoteHub", title: "Note HUB Archive", desc: "Allow students to view & download lecture notes, question banks & lab manuals", icon: BookOpen },
                   { key: "enableCgpaCalculator", title: "CGPA Calculator", desc: "Enable SGPA and CGPA weighted credit calculator tool", icon: Zap },
                   { key: "enableCoverPageMaker", title: "Cover Page PDF Maker", desc: "Enable A4 assignment and lab report PDF cover page generator", icon: FileSpreadsheet },
                 ].map((mod) => {
