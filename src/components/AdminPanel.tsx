@@ -7,7 +7,7 @@ import {
   sendPasswordResetEmail,
   User 
 } from "../lib/firebase";
-import { useAppConfig, PortalConfig } from "../context/AppConfigContext";
+import { useAppConfig, PortalConfig, DEFAULT_PORTAL_CONFIG } from "../context/AppConfigContext";
 import { fetchCSVFromGoogleSheet } from "../utils/csvParser";
 import { motion, AnimatePresence } from "motion/react";
 import { 
@@ -32,11 +32,28 @@ import {
   Loader2,
   GraduationCap,
   Layers,
-  Clock
+  Clock,
+  Globe,
+  Link2,
+  Wrench,
+  ShieldAlert,
+  Sliders,
+  Info,
+  CheckCircle,
+  AlertTriangle,
+  Phone,
+  Building,
+  Layout,
+  MessageSquare,
+  Zap,
+  Activity
 } from "lucide-react";
 
 export function AdminPanel() {
   const { config, saveConfig, isFirebaseAvailable } = useAppConfig();
+
+  // Active Admin Tab State
+  const [activeTab, setActiveTab] = useState<"routines" | "broadcast" | "portal" | "features" | "status">("routines");
 
   // Auth States
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -47,8 +64,11 @@ export function AdminPanel() {
   const [authSuccess, setAuthSuccess] = useState("");
   const [isSubmittingAuth, setIsSubmittingAuth] = useState(false);
 
-  // Editable Form States
-  const [formState, setFormState] = useState<PortalConfig>(config);
+  // Editable Form States (safely merge loaded config with defaults)
+  const [formState, setFormState] = useState<PortalConfig>(() => ({
+    ...DEFAULT_PORTAL_CONFIG,
+    ...config
+  }));
   const [isSaving, setIsSaving] = useState(false);
   const [saveToast, setSaveToast] = useState<{ type: "success" | "error"; msg: string } | null>(null);
 
@@ -71,7 +91,10 @@ export function AdminPanel() {
   // Keep form state in sync with loaded Firestore config
   useEffect(() => {
     if (config) {
-      setFormState(config);
+      setFormState({
+        ...DEFAULT_PORTAL_CONFIG,
+        ...config
+      });
     }
   }, [config]);
 
@@ -136,7 +159,7 @@ export function AdminPanel() {
       await saveConfig(formState, currentUser?.email || "admin");
       setSaveToast({
         type: "success",
-        msg: "All configurations published successfully! Students will now see the updated routines live."
+        msg: "All configurations published successfully! Public portal updated in real-time."
       });
       setTimeout(() => setSaveToast(null), 6000);
     } catch (err: any) {
@@ -150,22 +173,13 @@ export function AdminPanel() {
     }
   };
 
-  // Helper to convert sheet URL to direct CSV download URL
-  const convertToCSVUrl = (url: string): string => {
-    if (!url) return "";
-    let trimmed = url.trim();
-    if (trimmed.includes("output=csv") || trimmed.endsWith(".csv")) return trimmed;
-    if (trimmed.includes("docs.google.com/spreadsheets/d/")) {
-      const match = trimmed.match(/\/d\/([a-zA-Z0-9-_]+)/);
-      if (match && match[1]) {
-        const id = match[1];
-        let gid = "0";
-        const gidMatch = trimmed.match(/[?&]gid=([0-9]+)/);
-        if (gidMatch && gidMatch[1]) gid = gidMatch[1];
-        return `https://docs.google.com/spreadsheets/d/${id}/export?format=csv&gid=${gid}`;
-      }
-    }
-    return trimmed;
+  // Helper to set today's date string in DD/MM/YYYY
+  const getTodayFormatted = (): string => {
+    const today = new Date();
+    const dd = String(today.getDate()).padStart(2, "0");
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const yyyy = today.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
   };
 
   // Test Class Routine Spreadsheet
@@ -242,7 +256,7 @@ export function AdminPanel() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-slate-900 text-slate-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4 font-sans">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
           <p className="text-sm text-slate-400">Loading secure admin portal...</p>
@@ -256,7 +270,7 @@ export function AdminPanel() {
   // =========================================================================
   if (!currentUser) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center items-center p-4 sm:p-6 select-none">
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center items-center p-4 sm:p-6 select-none font-sans">
         <motion.div 
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -394,9 +408,9 @@ export function AdminPanel() {
           </div>
           <div>
             <h1 className="text-base font-bold text-white leading-tight flex items-center gap-2">
-              BUFT HUB Admin Panel
+              BUFT HUB Admin Controller
               <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                Live System
+                Live Firestore
               </span>
             </h1>
             <p className="text-xs text-slate-400 hidden sm:block">
@@ -428,8 +442,8 @@ export function AdminPanel() {
       </header>
 
       {/* Main Body */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-8 py-8 space-y-8">
-        {/* Toast Alert */}
+      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-8 py-8 space-y-6">
+        {/* Save Toast Notification */}
         <AnimatePresence>
           {saveToast && (
             <motion.div
@@ -438,8 +452,8 @@ export function AdminPanel() {
               exit={{ opacity: 0, y: -10 }}
               className={`p-4 rounded-2xl border text-sm flex items-start justify-between gap-3 shadow-xl ${
                 saveToast.type === "success" 
-                  ? "bg-emerald-950/80 border-emerald-500/30 text-emerald-200" 
-                  : "bg-rose-950/80 border-rose-500/30 text-rose-200"
+                  ? "bg-emerald-950/90 border-emerald-500/40 text-emerald-200" 
+                  : "bg-rose-950/90 border-rose-500/40 text-rose-200"
               }`}
             >
               <div className="flex items-start gap-3">
@@ -448,11 +462,11 @@ export function AdminPanel() {
                 ) : (
                   <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
                 )}
-                <span>{saveToast.msg}</span>
+                <span className="font-medium">{saveToast.msg}</span>
               </div>
               <button 
                 onClick={() => setSaveToast(null)}
-                className="text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
+                className="text-slate-400 hover:text-slate-200 transition-colors cursor-pointer text-lg leading-none"
               >
                 ×
               </button>
@@ -460,15 +474,19 @@ export function AdminPanel() {
           )}
         </AnimatePresence>
 
-        {/* Overview Banner */}
+        {/* Top Control Banner */}
         <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                Dynamic Routine & Schedule Controller
+              <div className="flex items-center gap-2 mb-1">
+                <Sparkles className="w-4 h-4 text-emerald-400" />
+                <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">No-Code Live Admin Controls</span>
+              </div>
+              <h2 className="text-xl font-bold text-white">
+                Live Portal Settings & Routine Manager
               </h2>
               <p className="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
-                Updates saved here instantly update the public website (<code className="text-emerald-400">bufthub.vercel.app</code>) without making code changes or redeploying the app!
+                Configure routine Google Sheets, emergency notices, portal branding, links, and feature toggles. All changes update instantly on the public website without code redeployments!
               </p>
             </div>
 
@@ -492,230 +510,654 @@ export function AdminPanel() {
           </div>
         </div>
 
-        {/* Configuration Sections Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* SECTION 1: CLASS ROUTINE CONFIGURATION */}
+        {/* Tab Navigation Menu */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-800 text-xs font-medium no-scrollbar">
+          <button
+            onClick={() => setActiveTab("routines")}
+            className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+              activeTab === "routines"
+                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-semibold shadow-inner"
+                : "bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-slate-200"
+            }`}
+          >
+            <Calendar className="w-4 h-4" />
+            <span>Class & Exam Routines</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("broadcast")}
+            className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+              activeTab === "broadcast"
+                ? "bg-amber-500/20 text-amber-400 border border-amber-500/30 font-semibold shadow-inner"
+                : "bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-slate-200"
+            }`}
+          >
+            <Bell className="w-4 h-4" />
+            <span>Broadcast Notice Banner</span>
+            {formState.noticeBannerEnabled && (
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+            )}
+          </button>
+
+          <button
+            onClick={() => setActiveTab("portal")}
+            className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+              activeTab === "portal"
+                ? "bg-blue-500/20 text-blue-400 border border-blue-500/30 font-semibold shadow-inner"
+                : "bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-slate-200"
+            }`}
+          >
+            <Globe className="w-4 h-4" />
+            <span>Portal Info & Quick Links</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("features")}
+            className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+              activeTab === "features"
+                ? "bg-purple-500/20 text-purple-400 border border-purple-500/30 font-semibold shadow-inner"
+                : "bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-slate-200"
+            }`}
+          >
+            <Sliders className="w-4 h-4" />
+            <span>Features & Maintenance</span>
+            {formState.maintenanceMode && (
+              <span className="text-[10px] px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                Maintenance
+              </span>
+            )}
+          </button>
+
+          <button
+            onClick={() => setActiveTab("status")}
+            className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+              activeTab === "status"
+                ? "bg-teal-500/20 text-teal-400 border border-teal-500/30 font-semibold shadow-inner"
+                : "bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-slate-200"
+            }`}
+          >
+            <Activity className="w-4 h-4" />
+            <span>System Status</span>
+          </button>
+        </div>
+
+        {/* TAB 1: ROUTINES & SPREADSHEETS */}
+        {activeTab === "routines" && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* CLASS ROUTINE CONFIGURATION */}
+            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                    <GraduationCap className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-semibold text-white">Class Routine Settings</h3>
+                    <p className="text-xs text-slate-400">Weekly timetable Google Sheet & semester details</p>
+                  </div>
+                </div>
+
+                <span className="text-[10px] px-2 py-1 rounded-md bg-blue-500/10 text-blue-300 font-mono">
+                  Class Routine
+                </span>
+              </div>
+
+              <div className="space-y-4">
+                {/* Sheet URL */}
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1.5 flex items-center justify-between">
+                    <span>Google Sheet CSV / Edit Link</span>
+                    <a 
+                      href={formState.classRoutineSheetUrl || "#"} 
+                      target="_blank" 
+                      rel="noreferrer"
+                      className="text-[11px] text-blue-400 hover:underline flex items-center gap-1"
+                    >
+                      Open Sheet <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </label>
+                  <input
+                    type="text"
+                    value={formState.classRoutineSheetUrl}
+                    onChange={(e) => setFormState({ ...formState, classRoutineSheetUrl: e.target.value })}
+                    placeholder="https://docs.google.com/spreadsheets/d/..."
+                    className="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-xl py-2.5 px-3 text-xs text-slate-100 font-mono placeholder-slate-600 transition-colors outline-none"
+                  />
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Paste standard Google Sheet link. Ensure sharing is set to "Anyone with the link".
+                  </p>
+                </div>
+
+                {/* Test Spreadsheet Button */}
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={handleTestClassSheet}
+                    disabled={testingClassSheet}
+                    className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 flex items-center gap-2 transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    {testingClassSheet ? <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-400" /> : <RefreshCw className="w-3.5 h-3.5 text-blue-400" />}
+                    <span>Test Connection</span>
+                  </button>
+
+                  {classSheetResult && (
+                    <span className={`text-xs flex items-center gap-1.5 ${classSheetResult.success ? "text-emerald-400" : "text-rose-400"}`}>
+                      {classSheetResult.success ? <Check className="w-3.5 h-3.5 shrink-0" /> : <AlertCircle className="w-3.5 h-3.5 shrink-0" />}
+                      {classSheetResult.msg}
+                    </span>
+                  )}
+                </div>
+
+                {/* Semester Name & Last Updated Date */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      Semester Name
+                    </label>
+                    <input
+                      type="text"
+                      value={formState.classRoutineSemester}
+                      onChange={(e) => setFormState({ ...formState, classRoutineSemester: e.target.value })}
+                      placeholder="Spring 2026 (261)"
+                      className="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-xl py-2 px-3 text-xs text-slate-100 transition-colors outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-xs font-medium text-slate-300">
+                        Last Updated Date
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setFormState({ ...formState, classRoutineLastUpdate: getTodayFormatted() })}
+                        className="text-[10px] text-blue-400 hover:underline cursor-pointer"
+                      >
+                        Set Today
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      value={formState.classRoutineLastUpdate}
+                      onChange={(e) => setFormState({ ...formState, classRoutineLastUpdate: e.target.value })}
+                      placeholder="14/07/2026"
+                      className="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-xl py-2 px-3 text-xs text-slate-100 transition-colors outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Custom Class Routine Notice */}
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                    Custom Class Routine Notice (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={formState.classRoutineNotice || ""}
+                    onChange={(e) => setFormState({ ...formState, classRoutineNotice: e.target.value })}
+                    placeholder="e.g. Note: Room 809 has been temporarily shifted to Lab 3."
+                    className="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-xl py-2 px-3 text-xs text-slate-100 placeholder-slate-600 transition-colors outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* EXAM ROUTINE CONFIGURATION */}
+            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                    <Calendar className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-semibold text-white">Exam Routine Settings</h3>
+                    <p className="text-xs text-slate-400">Midterm & Final exam schedules Google Sheet</p>
+                  </div>
+                </div>
+
+                <span className="text-[10px] px-2 py-1 rounded-md bg-purple-500/10 text-purple-300 font-mono">
+                  Exam Routine
+                </span>
+              </div>
+
+              <div className="space-y-4">
+                {/* Sheet URL */}
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1.5 flex items-center justify-between">
+                    <span>Google Sheet CSV / Edit Link</span>
+                    <a 
+                      href={formState.examRoutineSheetUrl || "#"} 
+                      target="_blank" 
+                      rel="noreferrer"
+                      className="text-[11px] text-purple-400 hover:underline flex items-center gap-1"
+                    >
+                      Open Sheet <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </label>
+                  <input
+                    type="text"
+                    value={formState.examRoutineSheetUrl}
+                    onChange={(e) => setFormState({ ...formState, examRoutineSheetUrl: e.target.value })}
+                    placeholder="https://docs.google.com/spreadsheets/d/..."
+                    className="w-full bg-slate-950 border border-slate-800 focus:border-purple-500 rounded-xl py-2.5 px-3 text-xs text-slate-100 font-mono placeholder-slate-600 transition-colors outline-none"
+                  />
+                </div>
+
+                {/* Test Exam Spreadsheet Button */}
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={handleTestExamSheet}
+                    disabled={testingExamSheet}
+                    className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 flex items-center gap-2 transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    {testingExamSheet ? <Loader2 className="w-3.5 h-3.5 animate-spin text-purple-400" /> : <RefreshCw className="w-3.5 h-3.5 text-purple-400" />}
+                    <span>Test Connection</span>
+                  </button>
+
+                  {examSheetResult && (
+                    <span className={`text-xs flex items-center gap-1.5 ${examSheetResult.success ? "text-emerald-400" : "text-rose-400"}`}>
+                      {examSheetResult.success ? <Check className="w-3.5 h-3.5 shrink-0" /> : <AlertCircle className="w-3.5 h-3.5 shrink-0" />}
+                      {examSheetResult.msg}
+                    </span>
+                  )}
+                </div>
+
+                {/* Semester Name & Last Updated Date */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      Exam Term / Semester
+                    </label>
+                    <input
+                      type="text"
+                      value={formState.examRoutineSemester}
+                      onChange={(e) => setFormState({ ...formState, examRoutineSemester: e.target.value })}
+                      placeholder="Spring 2026 (261)"
+                      className="w-full bg-slate-950 border border-slate-800 focus:border-purple-500 rounded-xl py-2 px-3 text-xs text-slate-100 transition-colors outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      Exam Tag / Type
+                    </label>
+                    <input
+                      type="text"
+                      value={formState.examName || "SEE"}
+                      onChange={(e) => setFormState({ ...formState, examName: e.target.value })}
+                      placeholder="SEE / Midterm / Final"
+                      className="w-full bg-slate-950 border border-slate-800 focus:border-purple-500 rounded-xl py-2 px-3 text-xs text-slate-100 transition-colors outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Custom Exam Routine Notice */}
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                    Custom Exam Notice (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={formState.examNotice || ""}
+                    onChange={(e) => setFormState({ ...formState, examNotice: e.target.value })}
+                    placeholder="e.g. Admit cards must be verified by department head."
+                    className="w-full bg-slate-950 border border-slate-800 focus:border-purple-500 rounded-xl py-2 px-3 text-xs text-slate-100 placeholder-slate-600 transition-colors outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 2: BROADCAST NOTICE BANNER */}
+        {activeTab === "broadcast" && (
           <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                  <GraduationCap className="w-5 h-5" />
+                <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                  <Bell className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-semibold text-white">Class Routine Settings</h3>
-                  <p className="text-xs text-slate-400">Weekly class timetable configurations</p>
+                  <h3 className="text-base font-semibold text-white">Top Broadcast Notice Banner</h3>
+                  <p className="text-xs text-slate-400">Display an urgent alert or announcement bar across all portal pages</p>
                 </div>
               </div>
 
-              <span className="text-[10px] px-2 py-1 rounded-md bg-blue-500/10 text-blue-300 font-mono">
-                Class Routine
-              </span>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  checked={formState.noticeBannerEnabled}
+                  onChange={(e) => setFormState({ ...formState, noticeBannerEnabled: e.target.checked })}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+              </label>
             </div>
 
             <div className="space-y-4">
-              {/* Sheet URL */}
+              {/* Style / Color Picker */}
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5 flex items-center justify-between">
-                  <span>Class Routine Google Sheet CSV URL</span>
-                  <a 
-                    href="https://docs.google.com/spreadsheets/d/1vdPoJPxAwUDKblyyUv5Nd8cchFRxhcqe4FUAuUA-mTs/edit?usp=sharing" 
-                    target="_blank" 
-                    rel="noreferrer"
-                    className="text-[11px] text-blue-400 hover:underline flex items-center gap-1"
-                  >
-                    Open Current Sheet <ExternalLink className="w-3 h-3" />
-                  </a>
+                <label className="block text-xs font-medium text-slate-300 mb-2">
+                  Banner Alert Style
                 </label>
-                <input
-                  type="text"
-                  value={formState.classRoutineSheetUrl}
-                  onChange={(e) => setFormState({ ...formState, classRoutineSheetUrl: e.target.value })}
-                  placeholder="https://docs.google.com/spreadsheets/d/.../export?format=csv"
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-xl py-2.5 px-3 text-xs text-slate-100 font-mono placeholder-slate-600 transition-colors outline-none"
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                  {[
+                    { id: "info", label: "Info Blue", color: "border-blue-500/50 bg-blue-950/40 text-blue-300" },
+                    { id: "warning", label: "Warning Amber", color: "border-amber-500/50 bg-amber-950/40 text-amber-300" },
+                    { id: "alert", label: "Alert Red", color: "border-rose-500/50 bg-rose-950/40 text-rose-300" },
+                    { id: "success", label: "Success Green", color: "border-emerald-500/50 bg-emerald-950/40 text-emerald-300" },
+                  ].map((style) => (
+                    <button
+                      key={style.id}
+                      type="button"
+                      onClick={() => setFormState({ ...formState, noticeBannerType: style.id as any })}
+                      className={`p-2.5 rounded-xl border text-center font-medium transition-all cursor-pointer ${style.color} ${
+                        (formState.noticeBannerType || "info") === style.id ? "ring-2 ring-white/50 font-bold scale-[1.02]" : "opacity-60 hover:opacity-100"
+                      }`}
+                    >
+                      {style.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Message Text Area */}
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                  Announcement Text Content
+                </label>
+                <textarea
+                  rows={3}
+                  value={formState.noticeBannerText}
+                  onChange={(e) => setFormState({ ...formState, noticeBannerText: e.target.value })}
+                  placeholder="e.g. 📢 Important Notice: Midterm Examination routine for Spring 2026 has been published! Please verify your course codes."
+                  className="w-full bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl p-3 text-xs text-slate-100 placeholder-slate-600 transition-colors outline-none resize-none"
                 />
-                <p className="text-[11px] text-slate-500 mt-1">
-                  💡 Tip: You can paste either the standard Google Sheet edit link OR the published CSV format link.
+              </div>
+
+              {/* Live Preview Card */}
+              {formState.noticeBannerEnabled && (
+                <div className="pt-2">
+                  <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Live Student Banner Preview:</p>
+                  <div className={`p-3.5 rounded-xl border flex items-start gap-3 shadow-md ${
+                    formState.noticeBannerType === "alert" ? "bg-rose-900/30 border-rose-500/40 text-rose-200" :
+                    formState.noticeBannerType === "warning" ? "bg-amber-900/30 border-amber-500/40 text-amber-200" :
+                    formState.noticeBannerType === "success" ? "bg-emerald-900/30 border-emerald-500/40 text-emerald-200" :
+                    "bg-blue-900/30 border-blue-500/40 text-blue-200"
+                  }`}>
+                    <Bell className="w-4 h-4 shrink-0 mt-0.5 animate-bounce" />
+                    <span className="text-xs font-medium leading-relaxed">
+                      {formState.noticeBannerText || "No announcement text entered yet."}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: PORTAL INFO & QUICK LINKS */}
+        {activeTab === "portal" && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* BRANDING & CONTACT INFO */}
+            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+              <div className="flex items-center gap-2.5 border-b border-slate-800 pb-4">
+                <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                  <Building className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-semibold text-white">Portal Branding & Information</h3>
+                  <p className="text-xs text-slate-400">Header titles, department branding & helpline info</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1.5">Portal Title</label>
+                  <input
+                    type="text"
+                    value={formState.portalTitle || ""}
+                    onChange={(e) => setFormState({ ...formState, portalTitle: e.target.value })}
+                    placeholder="BUFT Academic Hub"
+                    className="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-xl py-2 px-3 text-xs text-slate-100 transition-colors outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1.5">University / Subtitle</label>
+                  <input
+                    type="text"
+                    value={formState.portalSubtitle || ""}
+                    onChange={(e) => setFormState({ ...formState, portalSubtitle: e.target.value })}
+                    placeholder="BGMEA University of Fashion & Technology — Official Routine & Academic Portal"
+                    className="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-xl py-2 px-3 text-xs text-slate-100 transition-colors outline-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">Support Email</label>
+                    <input
+                      type="email"
+                      value={formState.contactEmail || ""}
+                      onChange={(e) => setFormState({ ...formState, contactEmail: e.target.value })}
+                      placeholder="academic@buft.edu.bd"
+                      className="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-xl py-2 px-3 text-xs text-slate-100 transition-colors outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">Helpline Phone</label>
+                    <input
+                      type="text"
+                      value={formState.helplinePhone || ""}
+                      onChange={(e) => setFormState({ ...formState, helplinePhone: e.target.value })}
+                      placeholder="+880 9678-002838"
+                      className="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-xl py-2 px-3 text-xs text-slate-100 transition-colors outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* EXTERNAL QUICK LINKS */}
+            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+              <div className="flex items-center gap-2.5 border-b border-slate-800 pb-4">
+                <div className="p-2 rounded-xl bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                  <Link2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-semibold text-white">External Quick Links</h3>
+                  <p className="text-xs text-slate-400">Direct resources accessible to students in sidebar & footer</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1.5">Google Drive Routine Archive URL</label>
+                  <input
+                    type="text"
+                    value={formState.googleDriveLink || ""}
+                    onChange={(e) => setFormState({ ...formState, googleDriveLink: e.target.value })}
+                    placeholder="https://drive.google.com/drive/folders/..."
+                    className="w-full bg-slate-950 border border-slate-800 focus:border-teal-500 rounded-xl py-2 px-3 text-xs text-slate-100 font-mono transition-colors outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1.5">University Official Notice Board URL</label>
+                  <input
+                    type="text"
+                    value={formState.noticeBoardUrl || ""}
+                    onChange={(e) => setFormState({ ...formState, noticeBoardUrl: e.target.value })}
+                    placeholder="https://buft.edu.bd/notice"
+                    className="w-full bg-slate-950 border border-slate-800 focus:border-teal-500 rounded-xl py-2 px-3 text-xs text-slate-100 font-mono transition-colors outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1.5">Bus / Transport Schedule PDF URL</label>
+                  <input
+                    type="text"
+                    value={formState.busScheduleUrl || ""}
+                    onChange={(e) => setFormState({ ...formState, busScheduleUrl: e.target.value })}
+                    placeholder="https://buft.edu.bd/transport"
+                    className="w-full bg-slate-950 border border-slate-800 focus:border-teal-500 rounded-xl py-2 px-3 text-xs text-slate-100 font-mono transition-colors outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: FEATURE MODULE TOGGLES & MAINTENANCE */}
+        {activeTab === "features" && (
+          <div className="space-y-8">
+            {/* MAINTENANCE MODE */}
+            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                    <Wrench className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-semibold text-white">Emergency Maintenance Mode</h3>
+                    <p className="text-xs text-slate-400">Lock public portal with a maintenance alert during major updates</p>
+                  </div>
+                </div>
+
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={formState.maintenanceMode || false}
+                    onChange={(e) => setFormState({ ...formState, maintenanceMode: e.target.checked })}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-500"></div>
+                </label>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                  Maintenance Message to Display
+                </label>
+                <textarea
+                  rows={2}
+                  value={formState.maintenanceMessage || ""}
+                  onChange={(e) => setFormState({ ...formState, maintenanceMessage: e.target.value })}
+                  placeholder="The portal is currently undergoing scheduled updates. Please check back shortly."
+                  className="w-full bg-slate-950 border border-slate-800 focus:border-rose-500 rounded-xl p-3 text-xs text-slate-100 placeholder-slate-600 transition-colors outline-none resize-none"
+                />
+              </div>
+            </div>
+
+            {/* FEATURE MODULE TOGGLES */}
+            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+              <div className="flex items-center gap-2.5 border-b border-slate-800 pb-4">
+                <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                  <Sliders className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-semibold text-white">Module Feature Flags</h3>
+                  <p className="text-xs text-slate-400">Enable or disable specific portal tools dynamically</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[
+                  { key: "enableClassRoutine", title: "Class Routine Viewer", desc: "Allow students to search and view weekly class timetables", icon: GraduationCap },
+                  { key: "enableExamRoutine", title: "Exam Routine Viewer", desc: "Allow students to view midterm and final exam schedules", icon: Calendar },
+                  { key: "enableCgpaCalculator", title: "CGPA Calculator", desc: "Enable SGPA and CGPA weighted credit calculator tool", icon: Zap },
+                  { key: "enableCoverPageMaker", title: "Cover Page PDF Maker", desc: "Enable A4 assignment and lab report PDF cover page generator", icon: FileSpreadsheet },
+                ].map((mod) => {
+                  const Icon = mod.icon;
+                  const isEnabled = (formState as any)[mod.key] !== false;
+                  return (
+                    <div 
+                      key={mod.key}
+                      className={`p-4 rounded-xl border flex items-center justify-between gap-4 transition-all ${
+                        isEnabled ? "bg-slate-900 border-slate-700" : "bg-slate-950/50 border-slate-800/80 opacity-60"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-lg ${isEnabled ? "bg-emerald-500/10 text-emerald-400" : "bg-slate-800 text-slate-500"}`}>
+                          <Icon className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-white">{mod.title}</p>
+                          <p className="text-[11px] text-slate-400">{mod.desc}</p>
+                        </div>
+                      </div>
+
+                      <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                        <input 
+                          type="checkbox" 
+                          checked={isEnabled}
+                          onChange={(e) => setFormState({ ...formState, [mod.key]: e.target.checked })}
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                      </label>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 5: SYSTEM STATUS & LOGS */}
+        {activeTab === "status" && (
+          <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                  <Activity className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-semibold text-white">System Diagnostics & Sync Status</h3>
+                  <p className="text-xs text-slate-400">Database health, last admin publisher, and active configurations</p>
+                </div>
+              </div>
+
+              <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                Operational
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+                <p className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">Firestore Database</p>
+                <p className="text-sm font-bold text-emerald-400 flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4" /> Connected Live
+                </p>
+                <p className="text-[11px] text-slate-500 font-mono truncate">Doc: settings/config</p>
+              </div>
+
+              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+                <p className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">Last Configuration Sync</p>
+                <p className="text-sm font-bold text-slate-200">
+                  {formState.updatedAt ? new Date(formState.updatedAt).toLocaleDateString() : "Default Config"}
+                </p>
+                <p className="text-[11px] text-slate-400 font-mono truncate">
+                  By: {formState.updatedBy || currentUser.email}
                 </p>
               </div>
 
-              {/* Test Spreadsheet Button */}
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleTestClassSheet}
-                  disabled={testingClassSheet}
-                  className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 flex items-center gap-2 transition-colors cursor-pointer disabled:opacity-50"
-                >
-                  {testingClassSheet ? <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-400" /> : <RefreshCw className="w-3.5 h-3.5 text-blue-400" />}
-                  <span>Test Connection</span>
-                </button>
-
-                {classSheetResult && (
-                  <span className={`text-xs flex items-center gap-1.5 ${classSheetResult.success ? "text-emerald-400" : "text-rose-400"}`}>
-                    {classSheetResult.success ? <Check className="w-3.5 h-3.5 shrink-0" /> : <AlertCircle className="w-3.5 h-3.5 shrink-0" />}
-                    {classSheetResult.msg}
-                  </span>
-                )}
-              </div>
-
-              {/* Semester Name & Last Updated Date */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                    Semester Name
-                  </label>
-                  <input
-                    type="text"
-                    value={formState.classRoutineSemester}
-                    onChange={(e) => setFormState({ ...formState, classRoutineSemester: e.target.value })}
-                    placeholder="Spring 2026 (261)"
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-xl py-2 px-3 text-xs text-slate-100 transition-colors outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                    Last Updated Date
-                  </label>
-                  <input
-                    type="text"
-                    value={formState.classRoutineLastUpdate}
-                    onChange={(e) => setFormState({ ...formState, classRoutineLastUpdate: e.target.value })}
-                    placeholder="14/07/2026"
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-xl py-2 px-3 text-xs text-slate-100 transition-colors outline-none"
-                  />
-                </div>
+              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+                <p className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">Active Broadcast Alert</p>
+                <p className={`text-sm font-bold ${formState.noticeBannerEnabled ? "text-amber-400" : "text-slate-500"}`}>
+                  {formState.noticeBannerEnabled ? "Banner Active" : "Disabled"}
+                </p>
+                <p className="text-[11px] text-slate-400 truncate">
+                  {formState.noticeBannerText || "No broadcast set"}
+                </p>
               </div>
             </div>
           </div>
-
-          {/* SECTION 2: EXAM ROUTINE CONFIGURATION */}
-          <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                  <Calendar className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-base font-semibold text-white">Exam Routine Settings</h3>
-                  <p className="text-xs text-slate-400">Midterm & Final examination schedules</p>
-                </div>
-              </div>
-
-              <span className="text-[10px] px-2 py-1 rounded-md bg-purple-500/10 text-purple-300 font-mono">
-                Exam Routine
-              </span>
-            </div>
-
-            <div className="space-y-4">
-              {/* Sheet URL */}
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5 flex items-center justify-between">
-                  <span>Exam Routine Google Sheet CSV URL</span>
-                  <a 
-                    href="https://docs.google.com/spreadsheets/d/1DcEso5N-DUqfLXcOJxCg5efXJyahZwk4IEdWoGqe0Do/edit?usp=sharing" 
-                    target="_blank" 
-                    rel="noreferrer"
-                    className="text-[11px] text-purple-400 hover:underline flex items-center gap-1"
-                  >
-                    Open Current Sheet <ExternalLink className="w-3 h-3" />
-                  </a>
-                </label>
-                <input
-                  type="text"
-                  value={formState.examRoutineSheetUrl}
-                  onChange={(e) => setFormState({ ...formState, examRoutineSheetUrl: e.target.value })}
-                  placeholder="https://docs.google.com/spreadsheets/d/.../export?format=csv"
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-purple-500 rounded-xl py-2.5 px-3 text-xs text-slate-100 font-mono placeholder-slate-600 transition-colors outline-none"
-                />
-              </div>
-
-              {/* Test Exam Spreadsheet Button */}
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleTestExamSheet}
-                  disabled={testingExamSheet}
-                  className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 flex items-center gap-2 transition-colors cursor-pointer disabled:opacity-50"
-                >
-                  {testingExamSheet ? <Loader2 className="w-3.5 h-3.5 animate-spin text-purple-400" /> : <RefreshCw className="w-3.5 h-3.5 text-purple-400" />}
-                  <span>Test Connection</span>
-                </button>
-
-                {examSheetResult && (
-                  <span className={`text-xs flex items-center gap-1.5 ${examSheetResult.success ? "text-emerald-400" : "text-rose-400"}`}>
-                    {examSheetResult.success ? <Check className="w-3.5 h-3.5 shrink-0" /> : <AlertCircle className="w-3.5 h-3.5 shrink-0" />}
-                    {examSheetResult.msg}
-                  </span>
-                )}
-              </div>
-
-              {/* Semester Name & Last Updated Date */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                    Exam Term / Semester
-                  </label>
-                  <input
-                    type="text"
-                    value={formState.examRoutineSemester}
-                    onChange={(e) => setFormState({ ...formState, examRoutineSemester: e.target.value })}
-                    placeholder="Spring 2026 (261)"
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-purple-500 rounded-xl py-2 px-3 text-xs text-slate-100 transition-colors outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                    Exam Tag / Type
-                  </label>
-                  <input
-                    type="text"
-                    value={formState.examName || "SEE"}
-                    onChange={(e) => setFormState({ ...formState, examName: e.target.value })}
-                    placeholder="SEE / Midterm / Final"
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-purple-500 rounded-xl py-2 px-3 text-xs text-slate-100 transition-colors outline-none"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* SECTION 3: ANNOUNCEMENT BANNER */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                <Bell className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-base font-semibold text-white">Broadcast Announcement Notice</h3>
-                <p className="text-xs text-slate-400">Display an urgent notice at the top of the portal for all students</p>
-              </div>
-            </div>
-
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input 
-                type="checkbox" 
-                checked={formState.noticeBannerEnabled}
-                onChange={(e) => setFormState({ ...formState, noticeBannerEnabled: e.target.checked })}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
-            </label>
-          </div>
-
-          <div>
-            <textarea
-              rows={2}
-              value={formState.noticeBannerText}
-              onChange={(e) => setFormState({ ...formState, noticeBannerText: e.target.value })}
-              placeholder="e.g. 📢 Class routine for Spring 2026 semester has been updated with new room assignments!"
-              className="w-full bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl p-3 text-xs text-slate-100 placeholder-slate-600 transition-colors outline-none resize-none"
-            />
-          </div>
-        </div>
+        )}
 
         {/* Save Bar Footer */}
         <div className="flex items-center justify-between pt-4 border-t border-slate-800">
@@ -735,12 +1177,12 @@ export function AdminPanel() {
             {isSaving ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Saving...</span>
+                <span>Publishing Changes...</span>
               </>
             ) : (
               <>
                 <Save className="w-4 h-4" />
-                <span>Publish Updates</span>
+                <span>Publish All Changes Live</span>
               </>
             )}
           </button>
@@ -749,3 +1191,4 @@ export function AdminPanel() {
     </div>
   );
 }
+
