@@ -34,8 +34,11 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { convertToCSVUrl, parseCSVToRoutine } from "../utils/csvParser";
 import { APP_CONFIG } from "../config";
+import { useAppConfig } from "../context/AppConfigContext";
 
 export default function RoutineViewer() {
+  const { config: appConfig } = useAppConfig();
+
   const [filters, setFilters] = useState<FilterOptions>({
     department: "",
     batch: "",
@@ -106,7 +109,7 @@ export default function RoutineViewer() {
 
   // Sync routine data with Google Sheet
   const syncWithGoogleSheet = async () => {
-    const targetUrl = APP_CONFIG.sheetUrl;
+    const targetUrl = appConfig.classRoutineSheetUrl || APP_CONFIG.sheetUrl;
     if (!targetUrl) {
       setSyncStatus("error");
       setSyncMessage("Spreadsheet URL is not configured.");
@@ -149,10 +152,10 @@ export default function RoutineViewer() {
     }
   };
 
-  // Silent sync on first mount to get freshest data
+  // Sync when sheet URL is available or updated
   useEffect(() => {
     syncWithGoogleSheet();
-  }, []);
+  }, [appConfig.classRoutineSheetUrl]);
 
   // Load saved routines from localStorage
   useEffect(() => {
@@ -449,11 +452,11 @@ export default function RoutineViewer() {
   <h1 className="text-2xl font-serif font-normal text-nature-header tracking-tight flex items-center gap-2 flex-wrap">
     BUFT Class Routine Planner
     <span className="text-xs px-3 py-1 bg-nature-btn text-white rounded-full font-bold shadow-md tracking-wide">
-      {APP_CONFIG.semester}
+      {appConfig.classRoutineSemester || APP_CONFIG.semester}
     </span>
   </h1>
   <p className="text-sm font-medium text-emerald-700 tracking-wide mt-1">
-    Last Update: {APP_CONFIG.lastUpdateDate}
+    Last Update: {appConfig.classRoutineLastUpdate || APP_CONFIG.lastUpdateDate}
   </p>
 </div>
         </div>
