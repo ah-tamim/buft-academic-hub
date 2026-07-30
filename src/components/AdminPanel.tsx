@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { 
   auth, 
   db,
@@ -13,7 +13,7 @@ import {
 } from "../lib/firebase";
 import { useAppConfig, PortalConfig, DEFAULT_PORTAL_CONFIG } from "../context/AppConfigContext";
 import { fetchCSVFromGoogleSheet } from "../utils/csvParser";
-import { NoteHubItem, NoteCategory, ExamType } from "../types";
+import { NoteHubItem, NoteCategory, ExamType, AdminProfile, AdminTab, AdminFieldPermissions } from "../types";
 import { BUFT_SEMESTERS, BUFT_DEPARTMENTS, INITIAL_NOTE_HUB_ITEMS } from "../data/sampleNoteHub";
 import { motion, AnimatePresence } from "motion/react";
 import { 
@@ -59,14 +59,50 @@ import {
   Edit3,
   FileCode,
   Search,
-  FolderPlus
+  FolderPlus,
+  UserCheck,
+  Users,
+  UserPlus,
+  Shield
 } from "lucide-react";
 
 export function AdminPanel() {
   const { config, saveConfig, isFirebaseAvailable } = useAppConfig();
 
   // Active Admin Tab State
-  const [activeTab, setActiveTab] = useState<"routines" | "notehub" | "broadcast" | "portal" | "features" | "status">("routines");
+  const [activeTab, setActiveTab] = useState<AdminTab>("routines");
+
+  // Admin Profiles & Granular Access State
+  const [adminProfiles, setAdminProfiles] = useState<AdminProfile[]>([]);
+  const [editingAdminId, setEditingAdminId] = useState<string | null>(null);
+  const [isSavingProfiles, setIsSavingProfiles] = useState(false);
+  const [isEditingMyName, setIsEditingMyName] = useState(false);
+  const [myNameInput, setMyNameInput] = useState("");
+
+  // Admin Profile Form State
+  const [adminForm, setAdminForm] = useState<{
+    email: string;
+    name: string;
+    role: "superadmin" | "editor";
+    allowedTabs: AdminTab[];
+    allowedFields: AdminFieldPermissions;
+  }>({
+    email: "",
+    name: "",
+    role: "editor",
+    allowedTabs: ["routines", "notehub"],
+    allowedFields: {
+      canEditClassRoutine: true,
+      canEditExamRoutine: true,
+      canManageNoteHub: true,
+      canEditBroadcastBanner: false,
+      canEditPortalBranding: false,
+      canEditQuickLinks: false,
+      canEditFeatureToggles: false,
+      canEditMaintenanceMode: false,
+      canManageAdmins: false,
+    },
+  });
 
   // Note HUB State
   const [noteHubItems, setNoteHubItems] = useState<NoteHubItem[]>(INITIAL_NOTE_HUB_ITEMS);
@@ -257,6 +293,294 @@ export function AdminPanel() {
     });
     return () => unsubscribe();
   }, []);
+
+  // Sync Admin Profiles from Firestore
+  useEffect(() => {
+    let unsubscribe: (() => void) | undefined;
+    try {
+      const docRef = doc(db, "settings", "admin_profiles");
+      unsubscribe = onSnapshot(
+        docRef,
+        (snapshot) => {
+          if (snapshot.exists()) {
+            const data = snapshot.data();
+            if (Array.isArray(data.profiles)) {
+              setAdminProfiles(data.profiles);
+            }
+          }
+        },
+        (error) => {
+          console.warn("Error fetching Admin Profiles in admin:", error);
+        }
+      );
+    } catch (e) {
+      console.warn("Admin profiles init error in admin:", e);
+    }
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, []);
+
+  // Compute Active Admin Profile & Permissions
+  const currentAdminProfile: AdminProfile = useMemo(() => {
+    if (!currentUser?.email) {
+      return {
+        id: "superadmin-default",
+        email: "admin@buft.edu.bd",
+        name: "Super Administrator",
+        role: "superadmin",
+        allowedTabs: ["routines", "notehub", "broadcast", "portal", "features", "status", "admins"],
+        allowedFields: {
+          canEditClassRoutine: true,
+          canEditExamRoutine: true,
+          canManageNoteHub: true,
+          canEditBroadcastBanner: true,
+          canEditPortalBranding: true,
+          canEditQuickLinks: true,
+          canEditFeatureToggles: true,
+          canEditMaintenanceMode: true,
+          canManageAdmins: true,
+        },
+        createdAt: new Date().toISOString()
+      };
+    }
+
+    const matched = adminProfiles.find(p => p.email.toLowerCase() === currentUser.email?.toLowerCase());
+    if (matched) return matched;
+
+    return {
+      id: `admin-${currentUser.uid}`,
+      email: currentUser.email,
+      name: currentUser.displayName || currentUser.email.split("@")[0],
+      role: "superadmin",
+      allowedTabs: ["routines", "notehub", "broadcast", "portal", "features", "status", "admins"],
+      allowedFields: {
+        canEditClassRoutine: true,
+        canEditExamRoutine: true,
+        canManageNoteHub: true,
+        canEditBroadcastBanner: true,
+        canEditPortalBranding: true,
+        canEditQuickLinks: true,
+        canEditFeatureToggles: true,
+        canEditMaintenanceMode: true,
+        canManageAdmins: true,
+      },
+      createdAt: new Date().toISOString()
+    };
+  }, [currentUser, adminProfiles]);
+
+  const hasTabPermission = (tab: AdminTab) => {
+    if (tab === "admins") return true; // All logged in admins can view their own profile tab
+    if (currentAdminProfile.role === "superadmin") return true;
+    return currentAdminProfile.allowedTabs.includes(tab);
+  };
+
+  const hasFieldPermission = (field: keyof AdminFieldPermissions) => {
+    if (currentAdminProfile.role === "superadmin") return true;
+    return !!currentAdminProfile.allowedFields[field];
+  };
+
+  const handleSaveMyName = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!myNameInput.trim()) return;
+    const targetEmail = currentUser?.email?.toLowerCase();
+    if (!targetEmail) return;
+
+    let updatedList: AdminProfile[];
+    const existingIndex = adminProfiles.findIndex(p => p.email.toLowerCase() === targetEmail);
+    if (existingIndex >= 0) {
+      updatedList = adminProfiles.map((p, i) => i === existingIndex ? { ...p, name: myNameInput.trim() } : p);
+    } else {
+      const newProf: AdminProfile = {
+        ...currentAdminProfile,
+        name: myNameInput.trim()
+      };
+      updatedList = [newProf, ...adminProfiles];
+    }
+
+    setAdminProfiles(updatedList);
+    await handleSaveAdminProfilesToFirestore(updatedList);
+    setIsEditingMyName(false);
+    setSaveToast({ type: "success", msg: "Your profile display name has been updated!" });
+  };
+
+  // Redirect if current activeTab is not allowed for logged in user
+  useEffect(() => {
+    if (!hasTabPermission(activeTab)) {
+      const allTabs: AdminTab[] = ["routines", "notehub", "broadcast", "portal", "features", "status", "admins"];
+      const allowed = allTabs.find(tab => hasTabPermission(tab));
+      if (allowed) setActiveTab(allowed);
+    }
+  }, [currentAdminProfile, activeTab]);
+
+  const handleSaveAdminProfilesToFirestore = async (newProfiles: AdminProfile[]) => {
+    setIsSavingProfiles(true);
+    try {
+      const docRef = doc(db, "settings", "admin_profiles");
+      await setDoc(docRef, { profiles: newProfiles, updatedAt: new Date().toISOString() }, { merge: true });
+      setSaveToast({ type: "success", msg: "Admin Profiles & Field Permissions updated live!" });
+    } catch (err: any) {
+      console.error("Failed to save Admin Profiles:", err);
+      setSaveToast({ type: "error", msg: `Failed to save Admin Profiles: ${err.message}` });
+    } finally {
+      setIsSavingProfiles(false);
+    }
+  };
+
+  const handleAddOrUpdateAdminProfile = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adminForm.email.trim() || !adminForm.name.trim()) {
+      setSaveToast({ type: "error", msg: "Please enter a valid admin email and full name." });
+      return;
+    }
+
+    let updatedList: AdminProfile[];
+    if (editingAdminId) {
+      updatedList = adminProfiles.map(p => p.id === editingAdminId ? {
+        ...p,
+        ...adminForm,
+        email: adminForm.email.trim().toLowerCase(),
+        updatedAt: new Date().toISOString()
+      } : p);
+      setEditingAdminId(null);
+    } else {
+      const newProfile: AdminProfile = {
+        id: `prof-${Date.now()}`,
+        ...adminForm,
+        email: adminForm.email.trim().toLowerCase(),
+        createdAt: new Date().toISOString(),
+        createdByUser: currentUser?.email || "Super Admin"
+      };
+      updatedList = [newProfile, ...adminProfiles];
+    }
+
+    setAdminProfiles(updatedList);
+    handleSaveAdminProfilesToFirestore(updatedList);
+
+    setAdminForm({
+      email: "",
+      name: "",
+      role: "editor",
+      allowedTabs: ["routines", "notehub"],
+      allowedFields: {
+        canEditClassRoutine: true,
+        canEditExamRoutine: true,
+        canManageNoteHub: true,
+        canEditBroadcastBanner: false,
+        canEditPortalBranding: false,
+        canEditQuickLinks: false,
+        canEditFeatureToggles: false,
+        canEditMaintenanceMode: false,
+        canManageAdmins: false,
+      }
+    });
+  };
+
+  const handleEditAdminClick = (prof: AdminProfile) => {
+    setEditingAdminId(prof.id);
+    setAdminForm({
+      email: prof.email,
+      name: prof.name,
+      role: prof.role,
+      allowedTabs: prof.allowedTabs || ["routines", "notehub"],
+      allowedFields: prof.allowedFields || {
+        canEditClassRoutine: true,
+        canEditExamRoutine: true,
+        canManageNoteHub: true,
+        canEditBroadcastBanner: false,
+        canEditPortalBranding: false,
+        canEditQuickLinks: false,
+        canEditFeatureToggles: false,
+        canEditMaintenanceMode: false,
+        canManageAdmins: false,
+      }
+    });
+    window.scrollTo({ top: 300, behavior: 'smooth' });
+  };
+
+  const handleDeleteAdminClick = (id: string, profileEmail: string) => {
+    if (profileEmail.toLowerCase() === currentUser?.email?.toLowerCase()) {
+      alert("You cannot delete your own logged-in admin profile!");
+      return;
+    }
+    if (window.confirm(`Are you sure you want to delete admin profile for ${profileEmail}?`)) {
+      const updatedList = adminProfiles.filter(p => p.id !== id);
+      setAdminProfiles(updatedList);
+      handleSaveAdminProfilesToFirestore(updatedList);
+    }
+  };
+
+  const applyPreset = (preset: "superadmin" | "routines_only" | "notehub_only" | "broadcast_only") => {
+    if (preset === "superadmin") {
+      setAdminForm(prev => ({
+        ...prev,
+        role: "superadmin",
+        allowedTabs: ["routines", "notehub", "broadcast", "portal", "features", "status", "admins"],
+        allowedFields: {
+          canEditClassRoutine: true,
+          canEditExamRoutine: true,
+          canManageNoteHub: true,
+          canEditBroadcastBanner: true,
+          canEditPortalBranding: true,
+          canEditQuickLinks: true,
+          canEditFeatureToggles: true,
+          canEditMaintenanceMode: true,
+          canManageAdmins: true,
+        }
+      }));
+    } else if (preset === "routines_only") {
+      setAdminForm(prev => ({
+        ...prev,
+        role: "editor",
+        allowedTabs: ["routines"],
+        allowedFields: {
+          canEditClassRoutine: true,
+          canEditExamRoutine: true,
+          canManageNoteHub: false,
+          canEditBroadcastBanner: false,
+          canEditPortalBranding: false,
+          canEditQuickLinks: false,
+          canEditFeatureToggles: false,
+          canEditMaintenanceMode: false,
+          canManageAdmins: false,
+        }
+      }));
+    } else if (preset === "notehub_only") {
+      setAdminForm(prev => ({
+        ...prev,
+        role: "editor",
+        allowedTabs: ["notehub"],
+        allowedFields: {
+          canEditClassRoutine: false,
+          canEditExamRoutine: false,
+          canManageNoteHub: true,
+          canEditBroadcastBanner: false,
+          canEditPortalBranding: false,
+          canEditQuickLinks: false,
+          canEditFeatureToggles: false,
+          canEditMaintenanceMode: false,
+          canManageAdmins: false,
+        }
+      }));
+    } else if (preset === "broadcast_only") {
+      setAdminForm(prev => ({
+        ...prev,
+        role: "editor",
+        allowedTabs: ["broadcast"],
+        allowedFields: {
+          canEditClassRoutine: false,
+          canEditExamRoutine: false,
+          canManageNoteHub: false,
+          canEditBroadcastBanner: true,
+          canEditPortalBranding: false,
+          canEditQuickLinks: false,
+          canEditFeatureToggles: false,
+          canEditMaintenanceMode: false,
+          canManageAdmins: false,
+        }
+      }));
+    }
+  };
 
   // Keep form state in sync with loaded Firestore config
   useEffect(() => {
@@ -577,14 +901,39 @@ export function AdminPanel() {
             <ShieldCheck className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-base font-bold text-white leading-tight flex items-center gap-2">
-              BUFT HUB Admin Controller
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-base font-bold text-white leading-tight">
+                BUFT HUB Admin Controller
+              </h1>
               <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                 Live Firestore
               </span>
-            </h1>
-            <p className="text-xs text-slate-400 hidden sm:block">
-              Logged in as <span className="text-emerald-400 font-mono">{currentUser.email}</span>
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold border ${
+                currentAdminProfile.role === "superadmin"
+                  ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/30"
+                  : "bg-indigo-500/10 text-indigo-300 border-indigo-500/30"
+              }`}>
+                {currentAdminProfile.role === "superadmin" ? "🛡️ Super Admin" : "🔑 Custom Editor"}
+              </span>
+
+              {/* Transferred Admin Profiles & Access button */}
+              <button
+                type="button"
+                onClick={() => setActiveTab("admins")}
+                className={`text-[10px] px-2.5 py-0.5 rounded-full font-semibold border transition-all cursor-pointer flex items-center gap-1 ${
+                  activeTab === "admins"
+                    ? "bg-indigo-600 text-white border-indigo-400 shadow-md shadow-indigo-950/50"
+                    : "bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20 border-indigo-500/30"
+                }`}
+                title="View Admin Profile & Permissions"
+              >
+                <UserCheck className="w-3 h-3 text-indigo-400" />
+                <span>{(currentAdminProfile.role === "superadmin" || currentAdminProfile.allowedFields?.canManageAdmins) ? "Admin Profiles & Access" : "My Admin Profile"}</span>
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-400 hidden sm:flex items-center gap-2 mt-0.5">
+              <span>Logged in as <span className="text-emerald-400 font-mono">{currentUser.email}</span></span>
             </p>
           </div>
         </div>
@@ -682,88 +1031,119 @@ export function AdminPanel() {
 
         {/* Tab Navigation Menu */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-800 text-xs font-medium no-scrollbar">
-          <button
-            onClick={() => setActiveTab("routines")}
-            className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
-              activeTab === "routines"
-                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-semibold shadow-inner"
-                : "bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-slate-200"
-            }`}
-          >
-            <Calendar className="w-4 h-4" />
-            <span>Class & Exam Routines</span>
-          </button>
+          {hasTabPermission("routines") && (
+            <button
+              onClick={() => setActiveTab("routines")}
+              className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                activeTab === "routines"
+                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-semibold shadow-inner"
+                  : "bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-slate-200"
+              }`}
+            >
+              <Calendar className="w-4 h-4" />
+              <span>Class & Exam Routines</span>
+            </button>
+          )}
 
-          <button
-            onClick={() => setActiveTab("notehub")}
-            className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
-              activeTab === "notehub"
-                ? "bg-teal-500/20 text-teal-400 border border-teal-500/30 font-semibold shadow-inner"
-                : "bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-slate-200"
-            }`}
-          >
-            <BookOpen className="w-4 h-4" />
-            <span>Note HUB Manager</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-teal-500/20 text-teal-300 font-mono">
-              {noteHubItems.length}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab("broadcast")}
-            className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
-              activeTab === "broadcast"
-                ? "bg-amber-500/20 text-amber-400 border border-amber-500/30 font-semibold shadow-inner"
-                : "bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-slate-200"
-            }`}
-          >
-            <Bell className="w-4 h-4" />
-            <span>Broadcast Notice Banner</span>
-            {formState.noticeBannerEnabled && (
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-            )}
-          </button>
-
-          <button
-            onClick={() => setActiveTab("portal")}
-            className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
-              activeTab === "portal"
-                ? "bg-blue-500/20 text-blue-400 border border-blue-500/30 font-semibold shadow-inner"
-                : "bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-slate-200"
-            }`}
-          >
-            <Globe className="w-4 h-4" />
-            <span>Portal Info & Quick Links</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab("features")}
-            className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
-              activeTab === "features"
-                ? "bg-purple-500/20 text-purple-400 border border-purple-500/30 font-semibold shadow-inner"
-                : "bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-slate-200"
-            }`}
-          >
-            <Sliders className="w-4 h-4" />
-            <span>Features & Maintenance</span>
-            {formState.maintenanceMode && (
-              <span className="text-[10px] px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">
-                Maintenance
+          {hasTabPermission("notehub") && (
+            <button
+              onClick={() => setActiveTab("notehub")}
+              className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                activeTab === "notehub"
+                  ? "bg-teal-500/20 text-teal-400 border border-teal-500/30 font-semibold shadow-inner"
+                  : "bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-slate-200"
+              }`}
+            >
+              <BookOpen className="w-4 h-4" />
+              <span>Note HUB Manager</span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-teal-500/20 text-teal-300 font-mono">
+                {noteHubItems.length}
               </span>
-            )}
-          </button>
+            </button>
+          )}
 
-          <button
-            onClick={() => setActiveTab("status")}
-            className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
-              activeTab === "status"
-                ? "bg-teal-500/20 text-teal-400 border border-teal-500/30 font-semibold shadow-inner"
-                : "bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-slate-200"
-            }`}
-          >
-            <Activity className="w-4 h-4" />
-            <span>System Status</span>
-          </button>
+          {hasTabPermission("broadcast") && (
+            <button
+              onClick={() => setActiveTab("broadcast")}
+              className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                activeTab === "broadcast"
+                  ? "bg-amber-500/20 text-amber-400 border border-amber-500/30 font-semibold shadow-inner"
+                  : "bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-slate-200"
+              }`}
+            >
+              <Bell className="w-4 h-4" />
+              <span>Broadcast Notice Banner</span>
+              {formState.noticeBannerEnabled && (
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+              )}
+            </button>
+          )}
+
+          {hasTabPermission("portal") && (
+            <button
+              onClick={() => setActiveTab("portal")}
+              className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                activeTab === "portal"
+                  ? "bg-blue-500/20 text-blue-400 border border-blue-500/30 font-semibold shadow-inner"
+                  : "bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-slate-200"
+              }`}
+            >
+              <Globe className="w-4 h-4" />
+              <span>Portal Info & Quick Links</span>
+            </button>
+          )}
+
+          {hasTabPermission("features") && (
+            <button
+              onClick={() => setActiveTab("features")}
+              className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                activeTab === "features"
+                  ? "bg-purple-500/20 text-purple-400 border border-purple-500/30 font-semibold shadow-inner"
+                  : "bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-slate-200"
+              }`}
+            >
+              <Sliders className="w-4 h-4" />
+              <span>Features & Maintenance</span>
+              {formState.maintenanceMode && (
+                <span className="text-[10px] px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                  Maintenance
+                </span>
+              )}
+            </button>
+          )}
+
+          {hasTabPermission("status") && (
+            <button
+              onClick={() => setActiveTab("status")}
+              className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                activeTab === "status"
+                  ? "bg-teal-500/20 text-teal-400 border border-teal-500/30 font-semibold shadow-inner"
+                  : "bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-slate-200"
+              }`}
+            >
+              <Activity className="w-4 h-4" />
+              <span>System Status</span>
+            </button>
+          )}
+
+          {hasTabPermission("admins") && (
+            <button
+              onClick={() => setActiveTab("admins")}
+              className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                activeTab === "admins"
+                  ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-semibold shadow-inner"
+                  : "bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-slate-200"
+              }`}
+            >
+              <UserCheck className="w-4 h-4" />
+              <span>{(currentAdminProfile.role === "superadmin" || currentAdminProfile.allowedFields?.canManageAdmins) ? "Admin Profiles & Access" : "My Admin Profile"}</span>
+              {(currentAdminProfile.role === "superadmin" || currentAdminProfile.allowedFields?.canManageAdmins) && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-mono">
+                  {adminProfiles.length || 1}
+                </span>
+              )}
+            </button>
+          )}
         </div>
 
         {/* TAB 1: ROUTINES & SPREADSHEETS */}
@@ -1698,6 +2078,571 @@ export function AdminPanel() {
                 </p>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* TAB 7: ADMIN PROFILES & GRANULAR FIELD ACCESS CONTROL */}
+        {activeTab === "admins" && (
+          <div className="space-y-8">
+            {/* LOGGED IN ADMIN PROFILE INFORMATION CARD (VISIBLE TO ALL LOGGED IN ADMINS) */}
+            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-800 pb-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-600 flex items-center justify-center text-white font-bold text-2xl shadow-lg shadow-indigo-950/50 border border-indigo-400/30 shrink-0">
+                    {currentAdminProfile.name ? currentAdminProfile.name.charAt(0).toUpperCase() : "A"}
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-lg font-bold text-white">{currentAdminProfile.name}</h3>
+                      <span className={`text-[11px] px-2.5 py-0.5 rounded-full font-semibold border flex items-center gap-1 ${
+                        currentAdminProfile.role === "superadmin"
+                          ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/30"
+                          : "bg-indigo-500/10 text-indigo-300 border-indigo-500/30"
+                      }`}>
+                        {currentAdminProfile.role === "superadmin" ? "🛡️ Super Administrator" : "🔑 Custom Admin Editor"}
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-indigo-300 font-mono flex items-center gap-1.5">
+                      <Mail className="w-3.5 h-3.5" />
+                      <span>{currentAdminProfile.email}</span>
+                    </p>
+
+                    <p className="text-[11px] text-slate-400 flex items-center gap-2 pt-0.5">
+                      <span className="flex items-center gap-1 text-emerald-400 font-medium">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                        Authenticated Live Session
+                      </span>
+                      <span>•</span>
+                      <span className="font-mono text-slate-500">ID: {currentAdminProfile.id}</span>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {!isEditingMyName ? (
+                    <button
+                      onClick={() => {
+                        setMyNameInput(currentAdminProfile.name);
+                        setIsEditingMyName(true);
+                      }}
+                      className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 flex items-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <Edit3 className="w-3.5 h-3.5 text-indigo-400" />
+                      <span>Edit Display Name</span>
+                    </button>
+                  ) : (
+                    <form onSubmit={handleSaveMyName} className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        required
+                        value={myNameInput}
+                        onChange={(e) => setMyNameInput(e.target.value)}
+                        className="bg-slate-950 border border-indigo-500 rounded-xl px-3 py-1.5 text-xs text-white outline-none w-48"
+                        placeholder="New display name..."
+                      />
+                      <button
+                        type="submit"
+                        className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium cursor-pointer"
+                      >
+                        Save
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingMyName(false)}
+                        className="px-2.5 py-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-slate-200 text-xs cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                    </form>
+                  )}
+                </div>
+              </div>
+
+              {/* Account Privileges & Assigned Responsibilities */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Accessible Dashboard Sections */}
+                <div className="bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-3">
+                  <h4 className="text-xs font-bold text-white flex items-center gap-2">
+                    <Layout className="w-4 h-4 text-indigo-400" />
+                    <span>Your Accessible Dashboard Sections ({currentAdminProfile.role === "superadmin" ? "All Unrestricted" : currentAdminProfile.allowedTabs.length})</span>
+                  </h4>
+
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { key: "routines", label: "Class & Exam Routines" },
+                      { key: "notehub", label: "Note HUB Resources" },
+                      { key: "broadcast", label: "Broadcast Notice Banner" },
+                      { key: "portal", label: "Portal Info & Links" },
+                      { key: "features", label: "Features & Maintenance" },
+                      { key: "status", label: "System Diagnostics" },
+                      { key: "admins", label: "My Admin Profile" }
+                    ].map(tab => {
+                      const isAllowed = currentAdminProfile.role === "superadmin" || currentAdminProfile.allowedTabs.includes(tab.key as AdminTab);
+                      return (
+                        <span
+                          key={tab.key}
+                          className={`px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1.5 border ${
+                            isAllowed
+                              ? "bg-indigo-500/10 text-indigo-300 border-indigo-500/30"
+                              : "bg-slate-900/50 text-slate-600 border-slate-800 line-through opacity-60"
+                          }`}
+                        >
+                          {isAllowed ? <CheckCircle2 className="w-3.5 h-3.5 text-indigo-400" /> : <Lock className="w-3.5 h-3.5 text-slate-600" />}
+                          {tab.label}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Field Editing Rights */}
+                <div className="bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-3">
+                  <h4 className="text-xs font-bold text-white flex items-center gap-2">
+                    <Key className="w-4 h-4 text-emerald-400" />
+                    <span>Assigned Field Edit Permissions</span>
+                  </h4>
+
+                  <div className="space-y-1.5 text-xs">
+                    {[
+                      { field: "canEditClassRoutine", label: "Class Routine Sheet URL & Semester Info" },
+                      { field: "canEditExamRoutine", label: "Exam Routine Sheet URL & Notices" },
+                      { field: "canManageNoteHub", label: "Note HUB Resource Management" },
+                      { field: "canEditBroadcastBanner", label: "Broadcast Notice Banner" },
+                      { field: "canEditPortalBranding", label: "Portal Branding & Contacts" },
+                      { field: "canEditQuickLinks", label: "Quick Links (Drive, Notice Board, Bus)" },
+                      { field: "canEditFeatureToggles", label: "Portal Feature Toggles" },
+                      { field: "canEditMaintenanceMode", label: "System Maintenance Mode" }
+                    ].map(item => {
+                      const isGranted = currentAdminProfile.role === "superadmin" || !!currentAdminProfile.allowedFields?.[item.field as keyof AdminFieldPermissions];
+                      return (
+                        <div key={item.field} className="flex items-center justify-between py-1 border-b border-slate-900 last:border-0">
+                          <span className="text-slate-300">{item.label}</span>
+                          <span className={`text-[10px] px-2 py-0.5 rounded font-mono font-semibold ${
+                            isGranted ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-slate-900 text-slate-600 border border-slate-800"
+                          }`}>
+                            {isGranted ? "Granted ✓" : "Restricted 🔒"}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* DISCREET / HIDDEN ADMIN MANAGEMENT PANEL (ONLY VISIBLE TO SUPER ADMINS) */}
+            {(currentAdminProfile.role === "superadmin" || currentAdminProfile.allowedFields?.canManageAdmins) && (
+              <div className="space-y-8 pt-4 border-t border-slate-800/80">
+                {/* Header Banner */}
+                <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex items-start gap-3">
+                    <div className="p-3 rounded-2xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                      <UserCheck className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-base font-bold text-white">Discreet Access Control & Admin Delegation</h3>
+                        <span className="text-[10px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded-full font-mono font-bold">
+                          Super Admin Exclusive
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
+                        Quietly create custom admin accounts and grant specific tab visibility or field edit rights. Non-superadmin users will only see their own assigned sections and will not see this permission management panel.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-xs font-mono bg-slate-950 px-4 py-2.5 rounded-xl border border-slate-800 text-slate-300 shrink-0">
+                    <Users className="w-4 h-4 text-indigo-400" />
+                    <span>Configured Admins: <strong className="text-indigo-400">{adminProfiles.length || 1}</strong></span>
+                  </div>
+                </div>
+
+                {/* Admin Profile Form */}
+                <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+                  <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+                    <div className="flex items-center gap-2.5">
+                      <UserPlus className="w-5 h-5 text-indigo-400" />
+                      <h4 className="text-sm font-bold text-white">
+                        {editingAdminId ? "Edit Admin Profile & Field Access" : "Create New Admin Profile"}
+                      </h4>
+                    </div>
+
+                    {editingAdminId && (
+                      <button
+                        onClick={() => {
+                          setEditingAdminId(null);
+                          setAdminForm({
+                            email: "",
+                            name: "",
+                            role: "editor",
+                            allowedTabs: ["routines", "notehub"],
+                            allowedFields: {
+                              canEditClassRoutine: true,
+                              canEditExamRoutine: true,
+                              canManageNoteHub: true,
+                              canEditBroadcastBanner: false,
+                              canEditPortalBranding: false,
+                              canEditQuickLinks: false,
+                              canEditFeatureToggles: false,
+                              canEditMaintenanceMode: false,
+                              canManageAdmins: false,
+                            }
+                          });
+                        }}
+                        className="text-xs text-rose-400 hover:underline flex items-center gap-1 cursor-pointer"
+                      >
+                        Cancel Editing
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Quick Preset Shortcuts */}
+                  <div className="bg-slate-950 p-4 rounded-xl border border-slate-800/80 space-y-2">
+                    <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                      <Zap className="w-3.5 h-3.5 text-amber-400" />
+                      Quick Access Presets:
+                    </span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => applyPreset("superadmin")}
+                        className="px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5"
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        Full Super Admin
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => applyPreset("routines_only")}
+                        className="px-3 py-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 border border-blue-500/30 text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5"
+                      >
+                        <Calendar className="w-3.5 h-3.5" />
+                        Class & Exam Routines Manager
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => applyPreset("notehub_only")}
+                        className="px-3 py-1.5 rounded-lg bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 border border-teal-500/30 text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5"
+                      >
+                        <BookOpen className="w-3.5 h-3.5" />
+                        Note HUB Resources Moderator
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => applyPreset("broadcast_only")}
+                        className="px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-medium transition-all cursor-pointer flex items-center gap-1.5"
+                      >
+                        <Bell className="w-3.5 h-3.5" />
+                        Broadcast Notice Editor
+                      </button>
+                    </div>
+                  </div>
+
+                  <form onSubmit={handleAddOrUpdateAdminProfile} className="space-y-6">
+                    {/* Email, Name, and Role */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-xs font-medium text-slate-300 mb-1">
+                          Admin Email <span className="text-rose-400">*</span>
+                        </label>
+                        <input
+                          type="email"
+                          required
+                          value={adminForm.email}
+                          onChange={(e) => setAdminForm({ ...adminForm, email: e.target.value })}
+                          placeholder="e.g. dept.head@buft.edu.bd"
+                          className="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl py-2.5 px-3 text-xs text-slate-100 placeholder-slate-600 outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium text-slate-300 mb-1">
+                          Admin Name / Title <span className="text-rose-400">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={adminForm.name}
+                          onChange={(e) => setAdminForm({ ...adminForm, name: e.target.value })}
+                          placeholder="e.g. Dr. Alimul Haque (CSE Department)"
+                          className="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl py-2.5 px-3 text-xs text-slate-100 placeholder-slate-600 outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium text-slate-300 mb-1">
+                          Admin Access Level
+                        </label>
+                        <select
+                          value={adminForm.role}
+                          onChange={(e) => {
+                            const r = e.target.value as "superadmin" | "editor";
+                            if (r === "superadmin") {
+                              applyPreset("superadmin");
+                            } else {
+                              setAdminForm(prev => ({ ...prev, role: "editor" }));
+                            }
+                          }}
+                          className="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl py-2.5 px-3 text-xs text-slate-100 outline-none"
+                        >
+                          <option value="superadmin">🛡️ Super Administrator (Unrestricted Access)</option>
+                          <option value="editor">🔑 Custom Access Editor (Selected Sections & Fields)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Section Visibility (Tabs) */}
+                    {adminForm.role === "editor" && (
+                      <div className="space-y-4 pt-2 border-t border-slate-800/80">
+                        <div>
+                          <h5 className="text-xs font-bold text-white mb-1 flex items-center gap-1.5">
+                            <Layout className="w-4 h-4 text-indigo-400" />
+                            1. Select Allowed Admin Dashboard Tabs:
+                          </h5>
+                          <p className="text-[11px] text-slate-400">
+                            Check the sections this admin can view in their dashboard menu.
+                          </p>
+                        </div>
+
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
+                          {[
+                            { key: "routines", label: "Class & Exam Routines", icon: Calendar },
+                            { key: "notehub", label: "Note HUB Manager", icon: BookOpen },
+                            { key: "broadcast", label: "Broadcast Notice Banner", icon: Bell },
+                            { key: "portal", label: "Portal Info & Links", icon: Globe },
+                            { key: "features", label: "Features & Maintenance", icon: Sliders },
+                            { key: "status", label: "System Diagnostics", icon: Activity },
+                            { key: "admins", label: "Admin Profiles Management", icon: UserCheck }
+                          ].map((tab) => {
+                            const isChecked = adminForm.allowedTabs.includes(tab.key as AdminTab);
+                            const Icon = tab.icon;
+                            return (
+                              <label
+                                key={tab.key}
+                                className={`p-2.5 rounded-xl border flex items-center gap-2 cursor-pointer transition-all text-xs font-medium ${
+                                  isChecked
+                                    ? "bg-indigo-500/10 border-indigo-500/40 text-indigo-200"
+                                    : "bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700"
+                                }`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setAdminForm(prev => ({ ...prev, allowedTabs: [...prev.allowedTabs, tab.key as AdminTab] }));
+                                    } else {
+                                      setAdminForm(prev => ({ ...prev, allowedTabs: prev.allowedTabs.filter(t => t !== tab.key) }));
+                                    }
+                                  }}
+                                  className="rounded border-slate-700 bg-slate-900 text-indigo-500 focus:ring-0"
+                                />
+                                <Icon className="w-3.5 h-3.5 shrink-0 text-indigo-400" />
+                                <span className="truncate">{tab.label}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Specific Field Access Permissions */}
+                    {adminForm.role === "editor" && (
+                      <div className="space-y-4 pt-4 border-t border-slate-800/80">
+                        <div>
+                          <h5 className="text-xs font-bold text-white mb-1 flex items-center gap-1.5">
+                            <Key className="w-4 h-4 text-emerald-400" />
+                            2. Granular Field Edit Permissions:
+                          </h5>
+                          <p className="text-[11px] text-slate-400">
+                            Choose exactly which specific fields this admin is allowed to modify. Unchecked fields will be locked read-only.
+                          </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                          {[
+                            { field: "canEditClassRoutine", label: "Class Routine Sheet URL & Semester Notices", tab: "Routines" },
+                            { field: "canEditExamRoutine", label: "Exam Routine Sheet URL & Exam Notices", tab: "Routines" },
+                            { field: "canManageNoteHub", label: "Note HUB Resources (Add / Edit / Delete)", tab: "Note HUB" },
+                            { field: "canEditBroadcastBanner", label: "Broadcast Notice Banner Text & Alert Type", tab: "Broadcast" },
+                            { field: "canEditPortalBranding", label: "Portal Branding Title, Subtitle & Helpline", tab: "Portal Info" },
+                            { field: "canEditQuickLinks", label: "Google Drive, Notice Board & Bus Schedule Links", tab: "Quick Links" },
+                            { field: "canEditFeatureToggles", label: "Feature Toggles (CGPA, Cover Maker, etc.)", tab: "Features" },
+                            { field: "canEditMaintenanceMode", label: "System Maintenance Mode Toggle & Notice", tab: "Maintenance" },
+                            { field: "canManageAdmins", label: "Admin Profiles & Permissions Management", tab: "Admin Roles" }
+                          ].map((item) => {
+                            const isChecked = !!adminForm.allowedFields[item.field as keyof AdminFieldPermissions];
+                            return (
+                              <label
+                                key={item.field}
+                                className={`p-3 rounded-xl border flex items-start gap-2.5 cursor-pointer transition-all text-xs ${
+                                  isChecked
+                                    ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-200"
+                                    : "bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700"
+                                }`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={(e) => {
+                                    const val = e.target.checked;
+                                    setAdminForm(prev => ({
+                                      ...prev,
+                                      allowedFields: {
+                                        ...prev.allowedFields,
+                                        [item.field]: val
+                                      }
+                                    }));
+                                  }}
+                                  className="mt-0.5 rounded border-slate-700 bg-slate-900 text-emerald-500 focus:ring-0"
+                                />
+                                <div>
+                                  <div className="font-semibold text-slate-100">{item.label}</div>
+                                  <span className="text-[10px] text-slate-400 font-mono">
+                                    Section: {item.tab}
+                                  </span>
+                                </div>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Submit Action */}
+                    <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+                      <button
+                        type="submit"
+                        disabled={isSavingProfiles}
+                        className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-medium text-xs shadow-lg shadow-indigo-950/50 flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                      >
+                        {isSavingProfiles ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <span>Saving Admin Profile...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Save className="w-4 h-4" />
+                            <span>{editingAdminId ? "Update Admin Profile" : "Save New Admin Profile"}</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                {/* Admin Profiles List */}
+                <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+                  <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+                    <div className="flex items-center gap-2.5">
+                      <Users className="w-5 h-5 text-indigo-400" />
+                      <h4 className="text-sm font-bold text-white">Configured Admin Accounts ({adminProfiles.length})</h4>
+                    </div>
+                  </div>
+
+                  {adminProfiles.length === 0 ? (
+                    <div className="text-center py-8 bg-slate-950 rounded-xl border border-slate-800 space-y-2">
+                      <ShieldAlert className="w-8 h-8 text-indigo-400 mx-auto" />
+                      <p className="text-sm font-medium text-slate-300">No custom admin profiles configured yet</p>
+                      <p className="text-xs text-slate-500 max-w-md mx-auto">
+                        Currently operating with default Super Admin access for logged in users. Create custom admin profiles above to assign field-level access rights.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {adminProfiles.map((prof) => {
+                        const isSelf = prof.email.toLowerCase() === currentUser?.email?.toLowerCase();
+                        return (
+                          <div
+                            key={prof.id}
+                            className={`p-5 rounded-2xl border transition-all space-y-4 ${
+                              isSelf
+                                ? "bg-slate-950 border-indigo-500/40 shadow-indigo-950/20 shadow-lg"
+                                : "bg-slate-950 border-slate-800 hover:border-slate-700"
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <h5 className="text-sm font-bold text-white">{prof.name}</h5>
+                                  {isSelf && (
+                                    <span className="text-[10px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.2 rounded-full font-mono">
+                                      You
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-xs font-mono text-indigo-300">{prof.email}</p>
+                              </div>
+
+                              <span className={`text-[10px] px-2.5 py-1 rounded-full font-semibold border shrink-0 ${
+                                prof.role === "superadmin"
+                                  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                                  : "bg-amber-500/10 text-amber-300 border-amber-500/30"
+                              }`}>
+                                {prof.role === "superadmin" ? "🛡️ Super Admin" : "🔑 Custom Editor"}
+                              </span>
+                            </div>
+
+                            {/* Allowed Sections and Fields Summary */}
+                            <div className="space-y-2 pt-2 border-t border-slate-800/80 text-xs">
+                              <div className="flex items-center gap-1.5 text-slate-400">
+                                <Layout className="w-3.5 h-3.5 text-indigo-400" />
+                                <span>Allowed Tabs:</span>
+                                <span className="text-slate-200 font-medium">
+                                  {prof.role === "superadmin" ? "All Sections Unrestricted" : prof.allowedTabs?.join(", ") || "None"}
+                                </span>
+                              </div>
+
+                              {prof.role === "editor" && prof.allowedFields && (
+                                <div className="flex flex-wrap gap-1.5 pt-1">
+                                  {Object.entries(prof.allowedFields)
+                                    .filter(([, allowed]) => allowed)
+                                    .map(([key]) => (
+                                      <span key={key} className="text-[10px] px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-emerald-400 font-mono">
+                                        ✓ {key.replace(/^can/, '')}
+                                      </span>
+                                    ))}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Footer Controls */}
+                            <div className="flex items-center justify-between pt-3 border-t border-slate-800/80 text-[11px] text-slate-500">
+                              <span>Added: {new Date(prof.createdAt).toLocaleDateString()}</span>
+
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => handleEditAdminClick(prof)}
+                                  className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 flex items-center gap-1 transition-colors cursor-pointer"
+                                >
+                                  <Edit3 className="w-3 h-3 text-indigo-400" />
+                                  <span>Edit</span>
+                                </button>
+
+                                <button
+                                  onClick={() => handleDeleteAdminClick(prof.id, prof.email)}
+                                  className="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 flex items-center gap-1 transition-colors cursor-pointer"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                  <span>Delete</span>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
