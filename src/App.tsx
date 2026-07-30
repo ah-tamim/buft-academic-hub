@@ -8,6 +8,8 @@ import RoutineViewer from './components/RoutineViewer';
 import { InstallPwaPrompt } from './components/InstallPwaPrompt';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ExamRoutine from "./components/ExamRoutine"; // Adjust path as needed
+import { AdminPanel } from './components/AdminPanel';
+import { useAppConfig } from './context/AppConfigContext';
 import { downloadA4PDF } from './utils/pdfGenerator';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -33,11 +35,14 @@ import {
 } from 'lucide-react';
 
 export default function App() {
+  const { config } = useAppConfig();
+
   // Current view: Reads clean path (e.g., /cgpa) or legacy hash for backward compatibility
-  const [currentView, setCurrentView] = useState<'home' | 'generator' | 'cgpa' | 'classroutine' | 'examroutine'>(() => {
+  const [currentView, setCurrentView] = useState<'home' | 'generator' | 'cgpa' | 'classroutine' | 'examroutine' | 'admin'>(() => {
     const path = window.location.pathname;
     const currentHash = window.location.hash;
 
+    if (path === '/admin' || path === '/admin-portal' || currentHash === '#/admin') return 'admin';
     if (path === '/cgpa' || currentHash === '#/cgpa') return 'cgpa';
     if (path === '/pagemaker' || path === '/coverpage' || currentHash === '#/pagemaker') return 'generator';
     if (path === '/classroutine' || currentHash === '#/classroutine') return 'classroutine';
@@ -46,12 +51,13 @@ export default function App() {
     // Legacy support for query parameters
     const params = new URLSearchParams(window.location.search);
     if (params.get('view') === 'cgpa') return 'cgpa';
+    if (params.get('view') === 'admin') return 'admin';
     
     return 'home';
   });
 
   // Clean path navigation helper
-  const navigateTo = (path: string, view: 'home' | 'generator' | 'cgpa' | 'classroutine' | 'examroutine', tab?: 'lab' | 'assignment' | 'index') => {
+  const navigateTo = (path: string, view: 'home' | 'generator' | 'cgpa' | 'classroutine' | 'examroutine' | 'admin', tab?: 'lab' | 'assignment' | 'index') => {
     setCurrentView(view);
     if (tab) setActiveTab(tab);
     window.history.pushState({}, '', path);
@@ -96,7 +102,10 @@ export default function App() {
       const path = window.location.pathname;
       const currentHash = window.location.hash;
 
-      if (path === '/cgpa' || currentHash === '#/cgpa') {
+      if (path === '/admin' || path === '/admin-portal' || currentHash === '#/admin') {
+        setCurrentView('admin');
+        if (currentHash) window.history.replaceState({}, '', '/admin');
+      } else if (path === '/cgpa' || currentHash === '#/cgpa') {
         setCurrentView('cgpa');
         if (currentHash) window.history.replaceState({}, '', '/cgpa');
       } else if (path === '/pagemaker' || path === '/coverpage' || currentHash === '#/pagemaker') {
@@ -620,8 +629,20 @@ export default function App() {
         )}
       </AnimatePresence>
 
-     {/* RENDER VIEW: CGPA, HOME, OR GENERATOR */}
-      {currentView === 'classroutine' ? (
+      {/* BROADCAST NOTICE BANNER (Managed by Admin Panel) */}
+      {config.noticeBannerEnabled && config.noticeBannerText && (
+        <div className="bg-gradient-to-r from-amber-600 to-orange-600 text-white px-4 py-2 text-xs font-semibold text-center flex items-center justify-center gap-2 shadow-sm no-print">
+          <span className="bg-white/20 px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider">
+            Notice
+          </span>
+          <span>{config.noticeBannerText}</span>
+        </div>
+      )}
+
+     {/* RENDER VIEW: ADMIN, ROUTINES, CGPA, HOME, OR GENERATOR */}
+      {currentView === 'admin' ? (
+        <AdminPanel />
+      ) : currentView === 'classroutine' ? (
         <main className="flex-1 max-w-5xl mx-auto w-full px-4 lg:px-8 py-10 lg:py-16 flex flex-col items-center no-print animate-fade-in">
           <RoutineViewer />
         </main>
