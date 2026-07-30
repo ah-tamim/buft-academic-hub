@@ -33,7 +33,8 @@ import {
   Heart,
   Calculator,
   Home,
-  Menu
+  Menu,
+  Wrench
 } from 'lucide-react';
 
 export default function App() {
@@ -704,37 +705,127 @@ export default function App() {
         </div>
       ) : currentView === 'notehub' ? (
         <main className="flex-1 w-full no-print animate-fade-in flex flex-col justify-between">
-          <NoteHub />
+          {config.enableNoteHub !== false ? (
+            <NoteHub />
+          ) : (
+            <div className="max-w-xl mx-auto my-16 p-8 bg-white border border-amber-200 rounded-3xl text-center space-y-4 shadow-lg">
+              <div className="w-14 h-14 bg-amber-100 text-amber-600 rounded-2xl mx-auto flex items-center justify-center">
+                <Wrench className="w-7 h-7 animate-bounce" />
+              </div>
+              <h2 className="text-xl font-black text-slate-900">Note HUB Under Maintenance</h2>
+              <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                {config.maintenanceMessage || "Note HUB is currently undergoing scheduled updates or maintenance. Please check back shortly!"}
+              </p>
+              <a
+                href="/"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigateTo('/', 'home');
+                }}
+                className="inline-block px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition cursor-pointer shadow-md"
+              >
+                Return to Home
+              </a>
+            </div>
+          )}
           <Footer />
         </main>
       ) : currentView === 'classroutine' ? (
         <main className="flex-1 max-w-5xl mx-auto w-full px-4 lg:px-8 py-10 lg:py-16 flex flex-col items-center justify-between no-print animate-fade-in">
-          <RoutineViewer />
+          {config.enableClassRoutine !== false ? (
+            <RoutineViewer />
+          ) : (
+            <div className="max-w-xl mx-auto my-16 p-8 bg-white border border-amber-200 rounded-3xl text-center space-y-4 shadow-lg w-full">
+              <div className="w-14 h-14 bg-amber-100 text-amber-600 rounded-2xl mx-auto flex items-center justify-center">
+                <Wrench className="w-7 h-7 animate-bounce" />
+              </div>
+              <h2 className="text-xl font-black text-slate-900">Class Routine Under Maintenance</h2>
+              <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                {config.maintenanceMessage || "Class Routine viewer is currently undergoing scheduled updates or maintenance. Please check back shortly!"}
+              </p>
+              <a
+                href="/"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigateTo('/', 'home');
+                }}
+                className="inline-block px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition cursor-pointer shadow-md"
+              >
+                Return to Home
+              </a>
+            </div>
+          )}
           <Footer />
         </main>
       ) : currentView === 'examroutine' ? (
         <main className="flex-1 max-w-6xl mx-auto w-full px-4 lg:px-8 py-10 lg:py-16 flex flex-col items-center justify-between no-print animate-fade-in">
-          <ExamRoutine />
+          {config.enableExamRoutine !== false ? (
+            <ExamRoutine />
+          ) : (
+            <div className="max-w-xl mx-auto my-16 p-8 bg-white border border-amber-200 rounded-3xl text-center space-y-4 shadow-lg w-full">
+              <div className="w-14 h-14 bg-amber-100 text-amber-600 rounded-2xl mx-auto flex items-center justify-center">
+                <Wrench className="w-7 h-7 animate-bounce" />
+              </div>
+              <h2 className="text-xl font-black text-slate-900">Exam Routine Under Maintenance</h2>
+              <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                {config.maintenanceMessage || "Exam Routine viewer is currently undergoing scheduled updates or maintenance. Please check back shortly!"}
+              </p>
+              <a
+                href="/"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigateTo('/', 'home');
+                }}
+                className="inline-block px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition cursor-pointer shadow-md"
+              >
+                Return to Home
+              </a>
+            </div>
+          )}
           <Footer />
         </main>
       ) : currentView === 'cgpa' ? (
         <main className="flex-1 max-w-5xl mx-auto w-full px-4 lg:px-8 py-10 lg:py-16 flex flex-col items-center no-print animate-fade-in">
-          {/* Header section for CGPA Page */}
-          <div className="text-center max-w-3xl mb-8">
-            <div className="mx-auto bg-gradient-to-tr from-pink-500 to-indigo-500 p-3.5 rounded-3xl text-white shadow-lg w-fit mb-4">
-              <Calculator className="h-7 w-7" />
-            </div>
-            <h2 className="text-3xl md:text-4xl font-black tracking-tight text-slate-950 mb-2 leading-tight">
-              CGPA Calculator
-            </h2>
-            <p className="text-xs md:text-sm text-slate-600 font-medium leading-relaxed max-w-xl mx-auto">
-              Plan and calculate your BUFT academic standings with precision. Add semesters, input grade credit points, and get real-time statistics.
-            </p>
-          </div>
+          {config.enableCgpaCalculator !== false ? (
+            <>
+              {/* Header section for CGPA Page */}
+              <div className="text-center max-w-3xl mb-8">
+                <div className="mx-auto bg-gradient-to-tr from-pink-500 to-indigo-500 p-3.5 rounded-3xl text-white shadow-lg w-fit mb-4">
+                  <Calculator className="h-7 w-7" />
+                </div>
+                <h2 className="text-3xl md:text-4xl font-black tracking-tight text-slate-950 mb-2 leading-tight">
+                  CGPA Calculator
+                </h2>
+                <p className="text-xs md:text-sm text-slate-600 font-medium leading-relaxed max-w-xl mx-auto">
+                  Plan and calculate your BUFT academic standings with precision. Add semesters, input grade credit points, and get real-time statistics.
+                </p>
+              </div>
 
-          <div className="w-full">
-            <CgpaCalculator />
-          </div>
+              <div className="w-full">
+                <CgpaCalculator />
+              </div>
+            </>
+          ) : (
+            <div className="max-w-xl mx-auto my-16 p-8 bg-white border border-amber-200 rounded-3xl text-center space-y-4 shadow-lg w-full">
+              <div className="w-14 h-14 bg-amber-100 text-amber-600 rounded-2xl mx-auto flex items-center justify-center">
+                <Wrench className="w-7 h-7 animate-bounce" />
+              </div>
+              <h2 className="text-xl font-black text-slate-900">CGPA Calculator Under Maintenance</h2>
+              <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                {config.maintenanceMessage || "CGPA Calculator tool is currently undergoing scheduled updates or maintenance. Please check back shortly!"}
+              </p>
+              <a
+                href="/"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigateTo('/', 'home');
+                }}
+                className="inline-block px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition cursor-pointer shadow-md"
+              >
+                Return to Home
+              </a>
+            </div>
+          )}
 
           <Footer />
         </main>
@@ -795,8 +886,15 @@ export default function App() {
               className="bg-white/80 backdrop-blur-sm border border-slate-100/80 p-6 rounded-3xl hover:border-emerald-300/60 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between"
             >
               <div>
-                <div className="bg-emerald-100 text-emerald-700 p-3 rounded-2xl w-fit mb-5 group-hover:scale-110 transition-transform">
-                  <BookOpen className="h-6 w-6" />
+                <div className="flex items-center justify-between mb-5">
+                  <div className="bg-emerald-100 text-emerald-700 p-3 rounded-2xl w-fit group-hover:scale-110 transition-transform">
+                    <BookOpen className="h-6 w-6" />
+                  </div>
+                  {config.enableCoverPageMaker === false && (
+                    <span className="px-2 py-0.5 rounded text-[10px] bg-amber-100 text-amber-800 font-bold border border-amber-200">
+                      Maintenance
+                    </span>
+                  )}
                 </div>
                 <h3 className="font-extrabold text-lg text-slate-900 mb-2">Assignment Cover</h3>
                 <p className="text-xs text-slate-500 leading-relaxed font-medium">
@@ -819,8 +917,15 @@ export default function App() {
               className="bg-white/80 backdrop-blur-sm border border-slate-100/80 p-6 rounded-3xl hover:border-emerald-300/60 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between"
             >
               <div>
-                <div className="bg-emerald-100 text-emerald-700 p-3 rounded-2xl w-fit mb-5 group-hover:scale-110 transition-transform">
-                  <FileText className="h-6 w-6" />
+                <div className="flex items-center justify-between mb-5">
+                  <div className="bg-emerald-100 text-emerald-700 p-3 rounded-2xl w-fit group-hover:scale-110 transition-transform">
+                    <FileText className="h-6 w-6" />
+                  </div>
+                  {config.enableCoverPageMaker === false && (
+                    <span className="px-2 py-0.5 rounded text-[10px] bg-amber-100 text-amber-800 font-bold border border-amber-200">
+                      Maintenance
+                    </span>
+                  )}
                 </div>
                 <h3 className="font-extrabold text-lg text-slate-900 mb-2">Lab Report Cover</h3>
                 <p className="text-xs text-slate-500 leading-relaxed font-medium">
@@ -843,8 +948,15 @@ export default function App() {
               className="bg-white/80 backdrop-blur-sm border border-slate-100/80 p-6 rounded-3xl hover:border-emerald-300/60 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between"
             >
               <div>
-                <div className="bg-emerald-100 text-emerald-700 p-3 rounded-2xl w-fit mb-5 group-hover:scale-110 transition-transform">
-                  <Table className="h-6 w-6" />
+                <div className="flex items-center justify-between mb-5">
+                  <div className="bg-emerald-100 text-emerald-700 p-3 rounded-2xl w-fit group-hover:scale-110 transition-transform">
+                    <Table className="h-6 w-6" />
+                  </div>
+                  {config.enableCoverPageMaker === false && (
+                    <span className="px-2 py-0.5 rounded text-[10px] bg-amber-100 text-amber-800 font-bold border border-amber-200">
+                      Maintenance
+                    </span>
+                  )}
                 </div>
                 <h3 className="font-extrabold text-lg text-slate-900 mb-2">Index Table Page</h3>
                 <p className="text-xs text-slate-500 leading-relaxed font-medium">
@@ -867,8 +979,15 @@ export default function App() {
               className="bg-white/80 backdrop-blur-sm border border-slate-100/80 p-6 rounded-3xl hover:border-emerald-300/60 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between"
             >
               <div>
-                <div className="bg-emerald-100 text-emerald-700 p-3 rounded-2xl w-fit mb-5 group-hover:scale-110 transition-transform">
-                  <BookOpen className="h-6 w-6" />
+                <div className="flex items-center justify-between mb-5">
+                  <div className="bg-emerald-100 text-emerald-700 p-3 rounded-2xl w-fit group-hover:scale-110 transition-transform">
+                    <BookOpen className="h-6 w-6" />
+                  </div>
+                  {config.enableNoteHub === false && (
+                    <span className="px-2 py-0.5 rounded text-[10px] bg-amber-100 text-amber-800 font-bold border border-amber-200">
+                      Maintenance
+                    </span>
+                  )}
                 </div>
                 <h3 className="font-extrabold text-lg text-slate-900 mb-2">Note HUB</h3>
                 <p className="text-xs text-slate-500 leading-relaxed font-medium">
@@ -891,8 +1010,15 @@ export default function App() {
               className="bg-white/80 backdrop-blur-sm border border-slate-100/80 p-6 rounded-3xl hover:border-emerald-300/60 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between"
             >
               <div>
-                <div className="bg-emerald-100 text-emerald-700 p-3 rounded-2xl w-fit mb-5 group-hover:scale-110 transition-transform">
-                  <Calculator className="h-6 w-6" />
+                <div className="flex items-center justify-between mb-5">
+                  <div className="bg-emerald-100 text-emerald-700 p-3 rounded-2xl w-fit group-hover:scale-110 transition-transform">
+                    <Calculator className="h-6 w-6" />
+                  </div>
+                  {config.enableCgpaCalculator === false && (
+                    <span className="px-2 py-0.5 rounded text-[10px] bg-amber-100 text-amber-800 font-bold border border-amber-200">
+                      Maintenance
+                    </span>
+                  )}
                 </div>
                 <h3 className="font-extrabold text-lg text-slate-900 mb-2">CGPA Calculator</h3>
                 <p className="text-xs text-slate-500 leading-relaxed font-medium">
@@ -915,8 +1041,15 @@ export default function App() {
               className="bg-white/80 backdrop-blur-sm border border-slate-100/80 p-6 rounded-3xl hover:border-emerald-300/60 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between"
             >
               <div>
-                <div className="bg-emerald-100 text-emerald-700 p-3 rounded-2xl w-fit mb-5 group-hover:scale-110 transition-transform">
-                  <BookOpen className="h-6 w-6" />
+                <div className="flex items-center justify-between mb-5">
+                  <div className="bg-emerald-100 text-emerald-700 p-3 rounded-2xl w-fit group-hover:scale-110 transition-transform">
+                    <BookOpen className="h-6 w-6" />
+                  </div>
+                  {config.enableClassRoutine === false && (
+                    <span className="px-2 py-0.5 rounded text-[10px] bg-amber-100 text-amber-800 font-bold border border-amber-200">
+                      Maintenance
+                    </span>
+                  )}
                 </div>
                 <h3 className="font-extrabold text-lg text-slate-900 mb-2">Class Routine</h3>
                 <p className="text-xs text-slate-500 leading-relaxed font-medium">
@@ -939,8 +1072,15 @@ export default function App() {
               className="bg-white/80 backdrop-blur-sm border border-slate-100/80 p-6 rounded-3xl hover:border-emerald-300/60 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between"
             >
               <div>
-                <div className="bg-emerald-100 text-emerald-700 p-3 rounded-2xl w-fit mb-5 group-hover:scale-110 transition-transform">
-                  <FileText className="h-6 w-6" />
+                <div className="flex items-center justify-between mb-5">
+                  <div className="bg-emerald-100 text-emerald-700 p-3 rounded-2xl w-fit group-hover:scale-110 transition-transform">
+                    <FileText className="h-6 w-6" />
+                  </div>
+                  {config.enableExamRoutine === false && (
+                    <span className="px-2 py-0.5 rounded text-[10px] bg-amber-100 text-amber-800 font-bold border border-amber-200">
+                      Maintenance
+                    </span>
+                  )}
                 </div>
                 <h3 className="font-extrabold text-lg text-slate-900 mb-2">Exam Routine</h3>
                 <p className="text-xs text-slate-500 leading-relaxed font-medium">
@@ -1003,9 +1143,10 @@ export default function App() {
         </main>
       ) : (
         /* WORKSPACE GENERATOR VIEW */
-        <div className="flex-1 flex flex-col lg:flex-row no-print h-[calc(100vh-3.5rem)] overflow-hidden">
-          
-          {/* SIDEBAR EDIT PANEL */}
+        config.enableCoverPageMaker !== false ? (
+          <div className="flex-1 flex flex-col lg:flex-row no-print h-[calc(100vh-3.5rem)] overflow-hidden">
+            
+            {/* SIDEBAR EDIT PANEL */}
           <div className={`lg:block ${mobileView === 'edit' ? 'block' : 'hidden'} w-full lg:w-auto h-full`}>
             <SidebarControls
               state={coverState}
@@ -1143,6 +1284,27 @@ export default function App() {
           </div>
 
         </div>
+        ) : (
+          <main className="flex-1 max-w-xl mx-auto my-16 p-8 bg-white border border-amber-200 rounded-3xl text-center space-y-4 shadow-lg no-print animate-fade-in">
+            <div className="w-14 h-14 bg-amber-100 text-amber-600 rounded-2xl mx-auto flex items-center justify-center">
+              <Wrench className="w-7 h-7 animate-bounce" />
+            </div>
+            <h2 className="text-xl font-black text-slate-900">Cover Page Generator Under Maintenance</h2>
+            <p className="text-xs text-slate-600 leading-relaxed font-medium">
+              {config.maintenanceMessage || "Cover Page Generator tool is currently undergoing scheduled updates or maintenance. Please check back shortly!"}
+            </p>
+            <a
+              href="/"
+              onClick={(e) => {
+                e.preventDefault();
+                navigateTo('/', 'home');
+              }}
+              className="inline-block px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition cursor-pointer shadow-md"
+            >
+              Return to Home
+            </a>
+          </main>
+        )
       )}
 
       {/* HIGH RES REAL A4 PRINT OUTLET CONTAINER */}
