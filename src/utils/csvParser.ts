@@ -125,44 +125,32 @@ export async function fetchCSVFromGoogleSheet(url: string): Promise<string> {
   const primaryUrl = convertToCSVUrl(trimmed);
   const fallbackUrl = getExportCSVUrl(trimmed);
 
-  // Try primary URL (gviz/tq)
-  try {
-    const res = await fetch(primaryUrl);
-    if (res.ok) {
-      const text = await res.text();
-      if (text && !text.includes("<!DOCTYPE html>")) {
-        return text;
-      }
-    }
-  } catch (e) {
-    // Continue to fallback
-  }
+  const targets = [
+    primaryUrl,
+    fallbackUrl,
+    trimmed,
+    `https://corsproxy.io/?${encodeURIComponent(primaryUrl)}`,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(primaryUrl)}`,
+    `https://corsproxy.io/?${encodeURIComponent(fallbackUrl)}`,
+  ];
 
-  // Try fallback URL (export?format=csv)
-  if (fallbackUrl && fallbackUrl !== primaryUrl) {
+  const uniqueTargets = Array.from(new Set(targets.filter(Boolean)));
+
+  for (const target of uniqueTargets) {
     try {
-      const res = await fetch(fallbackUrl);
+      const res = await fetch(target);
       if (res.ok) {
         const text = await res.text();
-        if (text && !text.includes("<!DOCTYPE html>")) {
+        if (text && !text.includes("<!DOCTYPE html>") && text.length > 20) {
           return text;
         }
       }
     } catch (e) {
-      // Fallback failed
+      // Try next endpoint
     }
   }
 
-  // Also try direct URL as last resort
-  if (trimmed !== primaryUrl && trimmed !== fallbackUrl) {
-    const res = await fetch(trimmed);
-    if (res.ok) {
-      const text = await res.text();
-      if (text && !text.includes("<!DOCTYPE html>")) return text;
-    }
-  }
-
-  throw new Error("HTTP 400: Google Sheet is private or restricted. Please set sharing to 'Anyone with the link' or publish to web as CSV.");
+  throw new Error("Unable to access Google Sheet CSV. Please make sure the sheet is shared as 'Anyone with the link can view' or published to web.");
 }
 
 export function parseCSVToRoutine(csvText: string): RoutineItem[] {
