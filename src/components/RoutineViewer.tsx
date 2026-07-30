@@ -9,7 +9,7 @@ import {
   RefreshCw, 
   Bookmark, 
   BookmarkCheck, 
-  Info,  
+  Info, 
   Clock, 
   MapPin, 
   User as UserIcon, 
@@ -32,7 +32,7 @@ import { RoutineItem, FilterOptions } from "../routineTypes";
 import { getFilterOptions, routineData } from "../data/routineData";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import { convertToCSVUrl, parseCSVToRoutine } from "../utils/csvParser";
+import { convertToCSVUrl, parseCSVToRoutine, fetchCSVFromGoogleSheet } from "../utils/csvParser";
 import { APP_CONFIG } from "../config";
 import { useAppConfig } from "../context/AppConfigContext";
 
@@ -120,12 +120,7 @@ export default function RoutineViewer() {
     setSyncMessage("Fetching latest schedule from Google Sheets...");
 
     try {
-      const csvUrl = convertToCSVUrl(targetUrl);
-      const response = await fetch(csvUrl);
-      if (!response.ok) {
-        throw new Error(`Google Sheets responded with HTTP ${response.status}`);
-      }
-      const csvText = await response.text();
+      const csvText = await fetchCSVFromGoogleSheet(targetUrl);
       if (!csvText || !csvText.includes("Room Number")) {
         throw new Error("Invalid spreadsheet format. Make sure the linked spreadsheet contains 'Room Number'.");
       }
@@ -146,9 +141,9 @@ export default function RoutineViewer() {
         setSyncStatus("idle");
       }, 5000);
     } catch (err: any) {
-      console.error("Google Sheets sync failed:", err);
-      setSyncStatus("error");
-      setSyncMessage(err.message || "Failed to fetch from Google Sheets. Using local offline database fallback.");
+      console.warn("Google Sheets sync fallback active:", err?.message || err);
+      setSyncStatus("idle");
+      setSyncMessage("Using offline class routine archive.");
     }
   };
 
