@@ -183,10 +183,10 @@ export function AdminPanel() {
     try {
       const text = await fetchCSVFromGoogleSheet(sheetUrl);
       const lines = text.split("\n").filter(l => l.trim().length > 0);
-      if (lines.length > 1) {
+      if (lines.length > 0) {
         setClassSheetResult({
           success: true,
-          msg: `Connected successfully! Spreadsheet contains ${lines.length - 1} data rows.`
+          msg: `Connected successfully! Automatically loaded ${lines.length} rows from Google Sheet.`
         });
       } else {
         setClassSheetResult({
@@ -219,10 +219,10 @@ export function AdminPanel() {
     try {
       const text = await fetchCSVFromGoogleSheet(sheetUrl);
       const lines = text.split("\n").filter(l => l.trim().length > 0);
-      if (lines.length > 1) {
+      if (lines.length > 0) {
         setExamSheetResult({
           success: true,
-          msg: `Connected successfully! Exam spreadsheet contains ${lines.length - 1} schedule entries.`
+          msg: `Connected successfully! Automatically loaded ${lines.length} rows from Google Sheet.`
         });
       } else {
         setExamSheetResult({
