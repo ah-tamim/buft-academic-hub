@@ -9,7 +9,7 @@ import {
   RefreshCw, 
   Bookmark, 
   BookmarkCheck, 
-  Info, 
+  Info,  
   Clock, 
   MapPin, 
   User as UserIcon, 
