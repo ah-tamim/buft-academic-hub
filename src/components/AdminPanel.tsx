@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { 
   auth, 
+  db,
+  doc,
+  setDoc,
+  onSnapshot,
   signInWithEmailAndPassword, 
   signOut, 
   onAuthStateChanged, 
@@ -9,6 +13,8 @@ import {
 } from "../lib/firebase";
 import { useAppConfig, PortalConfig, DEFAULT_PORTAL_CONFIG } from "../context/AppConfigContext";
 import { fetchCSVFromGoogleSheet } from "../utils/csvParser";
+import { NoteHubItem, NoteCategory, ExamType } from "../types";
+import { BUFT_SEMESTERS, BUFT_DEPARTMENTS, INITIAL_NOTE_HUB_ITEMS } from "../data/sampleNoteHub";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   Lock, 
@@ -46,14 +52,178 @@ import {
   Layout,
   MessageSquare,
   Zap,
-  Activity
+  Activity,
+  BookOpen,
+  Plus,
+  Trash2,
+  Edit3,
+  FileCode,
+  Search,
+  FolderPlus
 } from "lucide-react";
 
 export function AdminPanel() {
   const { config, saveConfig, isFirebaseAvailable } = useAppConfig();
 
   // Active Admin Tab State
-  const [activeTab, setActiveTab] = useState<"routines" | "broadcast" | "portal" | "features" | "status">("routines");
+  const [activeTab, setActiveTab] = useState<"routines" | "notehub" | "broadcast" | "portal" | "features" | "status">("routines");
+
+  // Note HUB State
+  const [noteHubItems, setNoteHubItems] = useState<NoteHubItem[]>(INITIAL_NOTE_HUB_ITEMS);
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [isSavingNoteHub, setIsSavingNoteHub] = useState(false);
+  
+  // Note HUB Form State
+  const [noteForm, setNoteForm] = useState<{
+    title: string;
+    courseCode: string;
+    batch: string;
+    authorName: string;
+    examType: ExamType;
+    semester: string;
+    department: string;
+    category: NoteCategory;
+    fileUrl: string;
+    description: string;
+    fileType: string;
+  }>({
+    title: "",
+    courseCode: "",
+    batch: "",
+    authorName: "",
+    examType: "SME",
+    semester: "1st Semester",
+    department: "B.Sc. in CSE",
+    category: "notes",
+    fileUrl: "",
+    description: "",
+    fileType: "Google Drive"
+  });
+
+  // Note HUB Filter State for Admin List
+  const [adminNoteFilterSemester, setAdminNoteFilterSemester] = useState<string>("All");
+  const [adminNoteFilterDept, setAdminNoteFilterDept] = useState<string>("All");
+  const [adminNoteSearch, setAdminNoteSearch] = useState<string>("");
+
+  // Sync Note HUB from Firestore
+  useEffect(() => {
+    let unsubscribe: (() => void) | undefined;
+    try {
+      const docRef = doc(db, "settings", "notehub");
+      unsubscribe = onSnapshot(
+        docRef,
+        (snapshot) => {
+          if (snapshot.exists()) {
+            const data = snapshot.data();
+            if (Array.isArray(data.items)) {
+              setNoteHubItems(data.items);
+            }
+          }
+        },
+        (error) => {
+          console.warn("Error fetching NoteHub items in admin:", error);
+        }
+      );
+    } catch (e) {
+      console.warn("NoteHub init error in admin:", e);
+    }
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, []);
+
+  const handleSaveNoteHubToFirestore = async (newItems: NoteHubItem[]) => {
+    setIsSavingNoteHub(true);
+    try {
+      const docRef = doc(db, "settings", "notehub");
+      await setDoc(docRef, { items: newItems, updatedAt: new Date().toISOString() }, { merge: true });
+      setSaveToast({ type: "success", msg: "Note HUB resources published live!" });
+    } catch (err: any) {
+      console.error("Failed to save Note HUB:", err);
+      setSaveToast({ type: "error", msg: `Failed to save Note HUB: ${err.message}` });
+    } finally {
+      setIsSavingNoteHub(false);
+    }
+  };
+
+  const handleAddOrUpdateNoteItem = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!noteForm.title.trim() || !noteForm.fileUrl.trim()) {
+      setSaveToast({ type: "error", msg: "Please fill in title and valid file URL link!" });
+      return;
+    }
+
+    let updatedList: NoteHubItem[];
+    if (editingNoteId) {
+      // Edit existing
+      updatedList = noteHubItems.map(item => item.id === editingNoteId ? {
+        ...item,
+        ...noteForm,
+        dateAdded: item.dateAdded || new Date().toLocaleDateString('en-GB')
+      } : item);
+      setEditingNoteId(null);
+    } else {
+      // Add new
+      const newItem: NoteHubItem = {
+        id: `nh-${Date.now()}`,
+        ...noteForm,
+        dateAdded: new Date().toLocaleDateString('en-GB'),
+        uploadedBy: currentUser?.email || "Admin"
+      };
+      updatedList = [newItem, ...noteHubItems];
+    }
+
+    setNoteHubItems(updatedList);
+    handleSaveNoteHubToFirestore(updatedList);
+
+    // Reset Form
+    setNoteForm({
+      title: "",
+      courseCode: "",
+      batch: "",
+      authorName: "",
+      examType: "SME",
+      semester: "1st Semester",
+      department: "B.Sc. in CSE",
+      category: "notes",
+      fileUrl: "",
+      description: "",
+      fileType: "Google Drive"
+    });
+  };
+
+  const handleEditNoteClick = (item: NoteHubItem) => {
+    setEditingNoteId(item.id);
+    setNoteForm({
+      title: item.title,
+      courseCode: item.courseCode || "",
+      batch: item.batch || "",
+      authorName: item.authorName || "",
+      examType: item.examType || "SME",
+      semester: item.semester,
+      department: item.department,
+      category: item.category,
+      fileUrl: item.fileUrl,
+      description: item.description || "",
+      fileType: item.fileType || "Google Drive"
+    });
+    window.scrollTo({ top: 300, behavior: 'smooth' });
+  };
+
+  const handleDeleteNoteClick = (id: string) => {
+    if (window.confirm("Are you sure you want to delete this Note HUB item?")) {
+      const updatedList = noteHubItems.filter(item => item.id !== id);
+      setNoteHubItems(updatedList);
+      handleSaveNoteHubToFirestore(updatedList);
+    }
+  };
+
+  const handleSeedDefaultNotes = () => {
+    if (window.confirm("This will load/reset pre-seeded default resources for BUFT semesters and departments. Continue?")) {
+      setNoteHubItems(INITIAL_NOTE_HUB_ITEMS);
+      handleSaveNoteHubToFirestore(INITIAL_NOTE_HUB_ITEMS);
+    }
+  };
 
   // Auth States
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -522,6 +692,21 @@ export function AdminPanel() {
           >
             <Calendar className="w-4 h-4" />
             <span>Class & Exam Routines</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("notehub")}
+            className={`px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+              activeTab === "notehub"
+                ? "bg-teal-500/20 text-teal-400 border border-teal-500/30 font-semibold shadow-inner"
+                : "bg-slate-900/60 text-slate-400 border border-slate-800 hover:bg-slate-800 hover:text-slate-200"
+            }`}
+          >
+            <BookOpen className="w-4 h-4" />
+            <span>Note HUB Manager</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-teal-500/20 text-teal-300 font-mono">
+              {noteHubItems.length}
+            </span>
           </button>
 
           <button
@@ -1107,6 +1292,362 @@ export function AdminPanel() {
           </div>
         )}
 
+        {/* TAB 2: NOTE HUB MANAGEMENT */}
+        {activeTab === "notehub" && (
+          <div className="space-y-8">
+            {/* ADD / EDIT NOTE RESOURCE FORM */}
+            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-teal-500/10 text-teal-400 border border-teal-500/20">
+                    <BookOpen className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-semibold text-white">
+                      {editingNoteId ? "Edit Note HUB Resource" : "Add New Note HUB Resource"}
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      Upload lecture notes, question archives, or lab report files accessible to students
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleSeedDefaultNotes}
+                    className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 flex items-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <FolderPlus className="w-3.5 h-3.5 text-teal-400" />
+                    <span>Reset / Seed Defaults</span>
+                  </button>
+                </div>
+              </div>
+
+              <form onSubmit={handleAddOrUpdateNoteItem} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Title */}
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      Resource Title / Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={noteForm.title}
+                      onChange={(e) => setNoteForm({ ...noteForm, title: e.target.value })}
+                      placeholder="e.g. C Programming Lecture Notes & Slides"
+                      className="w-full bg-slate-950 border border-slate-800 focus:border-teal-500 rounded-xl py-2.5 px-3.5 text-xs text-slate-100 placeholder-slate-600 transition-colors outline-none"
+                    />
+                  </div>
+
+                  {/* Course Code */}
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      Course Code (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={noteForm.courseCode}
+                      onChange={(e) => setNoteForm({ ...noteForm, courseCode: e.target.value })}
+                      placeholder="e.g. CSE 1101"
+                      className="w-full bg-slate-950 border border-slate-800 focus:border-teal-500 rounded-xl py-2.5 px-3.5 text-xs text-slate-100 placeholder-slate-600 transition-colors outline-none font-mono"
+                    />
+                  </div>
+
+                  {/* Category (Note Hub, Questions Hub, Lab Reports Hub) */}
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      Hub Option / Category *
+                    </label>
+                    <select
+                      value={noteForm.category}
+                      onChange={(e) => setNoteForm({ ...noteForm, category: e.target.value as NoteCategory })}
+                      className="w-full bg-slate-950 border border-slate-800 focus:border-teal-500 rounded-xl py-2.5 px-3.5 text-xs text-slate-100 transition-colors outline-none cursor-pointer"
+                    >
+                      <option value="notes">1. Note Hub (Lecture Notes & Handouts)</option>
+                      <option value="questions">2. Questions Hub (Midterm & Final Exam Questions)</option>
+                      <option value="lab_reports">3. Lab Reports Hub (Lab Experiment Manuals & Reports)</option>
+                    </select>
+                  </div>
+
+                  {/* Dynamic Fields Based On Category */}
+                  {(noteForm.category === "notes" || noteForm.category === "lab_reports") && (
+                    <div>
+                      <label className="block text-xs font-medium text-teal-300 mb-1.5">
+                        Author / Owner Name (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={noteForm.authorName}
+                        onChange={(e) => setNoteForm({ ...noteForm, authorName: e.target.value })}
+                        placeholder="e.g. Ahsan Habib Tamim (TE 242) or Dr. Alimul Haque"
+                        className="w-full bg-slate-950 border border-teal-500/40 focus:border-teal-400 rounded-xl py-2.5 px-3.5 text-xs text-slate-100 placeholder-slate-600 transition-colors outline-none"
+                      />
+                    </div>
+                  )}
+
+                  {noteForm.category === "questions" && (
+                    <>
+                      <div>
+                        <label className="block text-xs font-medium text-amber-300 mb-1.5">
+                          Exam Category (SME vs SEE) *
+                        </label>
+                        <select
+                          value={noteForm.examType}
+                          onChange={(e) => setNoteForm({ ...noteForm, examType: e.target.value as ExamType })}
+                          className="w-full bg-slate-950 border border-amber-500/40 focus:border-amber-400 rounded-xl py-2.5 px-3.5 text-xs text-slate-100 transition-colors outline-none cursor-pointer font-bold"
+                        >
+                          <option value="SME">SME (Sessional / Midterm Examination)</option>
+                          <option value="SEE">SEE (Semester End Examination)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium text-amber-300 mb-1.5">
+                          Batch Number / Term (e.g. Batch 251)
+                        </label>
+                        <input
+                          type="text"
+                          value={noteForm.batch}
+                          onChange={(e) => setNoteForm({ ...noteForm, batch: e.target.value })}
+                          placeholder="e.g. Batch 251"
+                          className="w-full bg-slate-950 border border-amber-500/40 focus:border-amber-400 rounded-xl py-2.5 px-3.5 text-xs text-slate-100 placeholder-slate-600 transition-colors outline-none font-mono"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Semester */}
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      Semester *
+                    </label>
+                    <select
+                      value={noteForm.semester}
+                      onChange={(e) => setNoteForm({ ...noteForm, semester: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 focus:border-teal-500 rounded-xl py-2.5 px-3.5 text-xs text-slate-100 transition-colors outline-none cursor-pointer font-bold"
+                    >
+                      {BUFT_SEMESTERS.map((sem) => (
+                        <option key={sem} value={sem}>{sem}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Department */}
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      Department *
+                    </label>
+                    <select
+                      value={noteForm.department}
+                      onChange={(e) => setNoteForm({ ...noteForm, department: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 focus:border-teal-500 rounded-xl py-2.5 px-3.5 text-xs text-slate-100 transition-colors outline-none cursor-pointer"
+                    >
+                      {BUFT_DEPARTMENTS.map((dept) => (
+                        <option key={dept} value={dept}>{dept}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* File URL */}
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      File / Google Drive Link URL *
+                    </label>
+                    <input
+                      type="url"
+                      required
+                      value={noteForm.fileUrl}
+                      onChange={(e) => setNoteForm({ ...noteForm, fileUrl: e.target.value })}
+                      placeholder="https://drive.google.com/drive/folders/... or PDF Link"
+                      className="w-full bg-slate-950 border border-slate-800 focus:border-teal-500 rounded-xl py-2.5 px-3.5 text-xs text-slate-100 placeholder-slate-600 transition-colors outline-none font-mono"
+                    />
+                  </div>
+
+                  {/* File Type & Description */}
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      File Format Label
+                    </label>
+                    <input
+                      type="text"
+                      value={noteForm.fileType}
+                      onChange={(e) => setNoteForm({ ...noteForm, fileType: e.target.value })}
+                      placeholder="e.g. Google Drive, PDF, Zip Archive"
+                      className="w-full bg-slate-950 border border-slate-800 focus:border-teal-500 rounded-xl py-2.5 px-3.5 text-xs text-slate-100 placeholder-slate-600 transition-colors outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                      Short Description
+                    </label>
+                    <input
+                      type="text"
+                      value={noteForm.description}
+                      onChange={(e) => setNoteForm({ ...noteForm, description: e.target.value })}
+                      placeholder="Brief topic highlights or instructions..."
+                      className="w-full bg-slate-950 border border-slate-800 focus:border-teal-500 rounded-xl py-2.5 px-3.5 text-xs text-slate-100 placeholder-slate-600 transition-colors outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-2 flex items-center justify-end gap-3 border-t border-slate-800">
+                  {editingNoteId && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingNoteId(null);
+                        setNoteForm({
+                          title: "",
+                          courseCode: "",
+                          semester: "1st Semester",
+                          department: "B.Sc. in CSE",
+                          category: "notes",
+                          fileUrl: "",
+                          description: "",
+                          fileType: "Google Drive"
+                        });
+                      }}
+                      className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 cursor-pointer"
+                    >
+                      Cancel Edit
+                    </button>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={isSavingNoteHub}
+                    className="px-6 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold flex items-center gap-2 shadow-lg shadow-teal-950/50 cursor-pointer transition-all disabled:opacity-50"
+                  >
+                    {isSavingNoteHub ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                    <span>{editingNoteId ? "Update Resource" : "Add Resource Live"}</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* EXISTING NOTE HUB ITEMS TABLE / LIST */}
+            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                <div>
+                  <h3 className="text-base font-semibold text-white">
+                    Uploaded Note HUB Resources ({noteHubItems.length})
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Manage and filter existing academic notes, question banks, and lab reports
+                  </p>
+                </div>
+
+                {/* Filters */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <select
+                    value={adminNoteFilterSemester}
+                    onChange={(e) => setAdminNoteFilterSemester(e.target.value)}
+                    className="bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-xl px-3 py-1.5 outline-none cursor-pointer"
+                  >
+                    <option value="All">All Semesters</option>
+                    {BUFT_SEMESTERS.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+
+                  <select
+                    value={adminNoteFilterDept}
+                    onChange={(e) => setAdminNoteFilterDept(e.target.value)}
+                    className="bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-xl px-3 py-1.5 outline-none cursor-pointer"
+                  >
+                    <option value="All">All Departments</option>
+                    {BUFT_DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
+                  </select>
+
+                  <input
+                    type="text"
+                    value={adminNoteSearch}
+                    onChange={(e) => setAdminNoteSearch(e.target.value)}
+                    placeholder="Search..."
+                    className="bg-slate-950 border border-slate-800 text-slate-200 text-xs rounded-xl px-3 py-1.5 outline-none w-32 focus:w-48 transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Items List */}
+              <div className="space-y-3">
+                {noteHubItems
+                  .filter((item) => {
+                    const matchSem = adminNoteFilterSemester === "All" || item.semester === adminNoteFilterSemester;
+                    const matchDept = adminNoteFilterDept === "All" || item.department === adminNoteFilterDept;
+                    const matchQuery = !adminNoteSearch || item.title.toLowerCase().includes(adminNoteSearch.toLowerCase()) || (item.courseCode && item.courseCode.toLowerCase().includes(adminNoteSearch.toLowerCase()));
+                    return matchSem && matchDept && matchQuery;
+                  })
+                  .map((item) => (
+                    <div
+                      key={item.id}
+                      className="p-4 rounded-xl bg-slate-950 border border-slate-800/80 hover:border-slate-700 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all"
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
+                            item.category === "notes" ? "bg-blue-500/20 text-blue-300 border border-blue-500/30" :
+                            item.category === "questions" ? "bg-amber-500/20 text-amber-300 border border-amber-500/30" :
+                            "bg-purple-500/20 text-purple-300 border border-purple-500/30"
+                          }`}>
+                            {item.category === "notes" ? "Note" : item.category === "questions" ? "Question" : "Lab Report"}
+                          </span>
+
+                          <span className="text-xs font-mono font-bold text-slate-400 bg-slate-900 px-2 py-0.5 rounded">
+                            {item.semester} • {item.department}
+                          </span>
+
+                          {item.courseCode && (
+                            <span className="text-xs font-mono text-emerald-400">
+                              [{item.courseCode}]
+                            </span>
+                          )}
+                        </div>
+
+                        <p className="text-sm font-semibold text-white">{item.title}</p>
+                        {item.description && (
+                          <p className="text-xs text-slate-400 leading-relaxed">{item.description}</p>
+                        )}
+                        <p className="text-[10px] text-slate-500 font-mono truncate max-w-lg">
+                          Link: {item.fileUrl}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <a
+                          href={item.fileUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="p-2 rounded-lg bg-slate-900 text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
+                          title="Open Link"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
+
+                        <button
+                          onClick={() => handleEditNoteClick(item)}
+                          className="p-2 rounded-lg bg-slate-900 text-teal-400 hover:bg-teal-500/20 transition-colors cursor-pointer"
+                          title="Edit Resource"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </button>
+
+                        <button
+                          onClick={() => handleDeleteNoteClick(item.id)}
+                          className="p-2 rounded-lg bg-slate-900 text-rose-400 hover:bg-rose-500/20 transition-colors cursor-pointer"
+                          title="Delete Resource"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* TAB 5: SYSTEM STATUS & LOGS */}
         {activeTab === "status" && (
           <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
@@ -1191,3 +1732,4 @@ export function AdminPanel() {
     </div>
   );
 }
+
