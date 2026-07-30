@@ -113,7 +113,8 @@ export default function NoteHub() {
     setSelectedExamType(null);
     setSearchQuery("");
   };
- // Helper to normalize department names (e.g. "B.Sc. in CSE" -> "CSE")
+
+  // Helper to normalize department names (e.g. "B.Sc. in CSE" -> "CSE")
   const formatDept = (dept: string) => {
     if (!dept) return "";
     return dept.replace(/^(B\.Sc\.\s*in\s*|B\.Sc\s*in\s*|B\.A\.\s*in\s*)/i, '').trim();
@@ -124,7 +125,6 @@ export default function NoteHub() {
     return formatDept(itemDept) === formatDept(selectedDept);
   };
 
-  
   // Filtered items logic
   const isReadyToViewFiles = 
     selectedSemester !== null && 
@@ -139,7 +139,7 @@ export default function NoteHub() {
     const matchSemester = item.semester === selectedSemester;
     
     // 2. Department match
-    const matchDept = selectedDepartment === "All Departments" || item.department === selectedDepartment;
+    const matchDept = isDeptMatch(item.department, selectedDepartment);
 
     // 3. Category match
     const matchCategory = item.category === selectedCategory;
@@ -168,7 +168,7 @@ export default function NoteHub() {
     if (!selectedSemester) return 0;
     return items.filter((item) => {
       const matchSemester = item.semester === selectedSemester;
-      const matchDept = dept === "All Departments" || item.department === dept;
+      const matchDept = isDeptMatch(item.department, dept);
       return matchSemester && matchDept;
     }).length;
   };
@@ -178,7 +178,7 @@ export default function NoteHub() {
     if (!selectedSemester || !selectedDepartment) return 0;
     return items.filter((item) => {
       const matchSemester = item.semester === selectedSemester;
-      const matchDept = selectedDepartment === "All Departments" || item.department === selectedDepartment;
+      const matchDept = isDeptMatch(item.department, selectedDepartment);
       return matchSemester && matchDept && item.category === cat;
     }).length;
   };
@@ -203,7 +203,7 @@ export default function NoteHub() {
             </h1>
 
             <p className="text-xs md:text-sm text-slate-300 max-w-2xl leading-relaxed">
-             
+              
             </p>
           </div>
 
@@ -344,7 +344,7 @@ export default function NoteHub() {
 
               {selectedDepartment && (
                 <span className="text-xs font-bold text-teal-800 bg-teal-100 px-3 py-1 rounded-full border border-teal-200">
-                  ✓ {selectedDepartment}
+                  ✓ {formatDept(selectedDepartment)}
                 </span>
               )}
             </div>
@@ -352,28 +352,27 @@ export default function NoteHub() {
             {/* Department Buttons */}
             <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
               {["All Departments", ...BUFT_DEPARTMENTS].map((dept) => {
-  const isSelected = selectedDepartment === dept;
-  const count = getItemCountForDept(dept);
-
-  return (
-    <button
-      key={dept}
-      onClick={() => handleSelectDepartment(dept)}
-      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-        isSelected
-          ? "bg-emerald-600 text-white shadow-sm"
-          : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/60"
-      }`}
-    >
-      <span>{formatDept(dept)}</span>
-      <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-        isSelected ? "bg-emerald-500 text-white" : "bg-slate-200 text-slate-700"
-      }`}>
-        {count}
-      </span>
-    </button>
-  );
-})}
+                const isSelected = selectedDepartment === dept;
+                const count = getDeptCountInSemester(dept);
+                return (
+                  <button
+                    key={dept}
+                    onClick={() => handleSelectDepartment(dept)}
+                    className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-2 cursor-pointer shrink-0 ${
+                      isSelected
+                        ? "bg-slate-900 text-white shadow-md ring-2 ring-slate-700"
+                        : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/60"
+                    }`}
+                  >
+                    <span>{formatDept(dept)}</span>
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                      isSelected ? "bg-emerald-500 text-white" : "bg-slate-200 text-slate-700"
+                    }`}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </motion.div>
         )}
@@ -637,8 +636,8 @@ export default function NoteHub() {
                       {/* Department & Semester Meta */}
                       <div className="pt-2 flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
                         <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-medium">
-  {formatDept(item.department)}
-</span>
+                          {formatDept(item.department)}
+                        </span>
                         <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-medium">
                           {item.semester}
                         </span>
