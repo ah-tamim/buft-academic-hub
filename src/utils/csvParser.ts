@@ -85,14 +85,84 @@ export function parseClassCell(cellText: string) {
 
 export function convertToCSVUrl(url: string): string {
   if (!url) return "";
-  const match = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-  if (match) {
+  let trimmed = url.trim();
+  
+  // If it's already a published CSV or export link, keep it
+  if (trimmed.includes("output=csv") || trimmed.includes("tqx=out:csv")) return trimmed;
+  
+  const match = trimmed.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+  if (match && match[1]) {
     const sheetId = match[1];
-    const gidMatch = url.match(/[#&?]gid=([0-9]+)/);
-    const gid = gidMatch ? `&gid=${gidMatch[1]}` : "";
-    return `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv${gid}`;
+    const gidMatch = trimmed.match(/[#&?]gid=([0-9]+)/);
+    const gid = gidMatch ? gidMatch[1] : "0";
+    
+    // gviz/tq?tqx=out:csv is very reliable for Google Sheets
+    return `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&gid=${gid}`;
   }
-  return url;
+  return trimmed;
+}
+
+export function getExportCSVUrl(url: string): string {
+  if (!url) return "";
+  let trimmed = url.trim();
+  const match = trimmed.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+  if (match && match[1]) {
+    const sheetId = match[1];
+    const gidMatch = trimmed.match(/[#&?]gid=([0-9]+)/);
+    const gid = gidMatch ? gidMatch[1] : "0";
+    return `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
+  }
+  return trimmed;
+}
+
+/**
+ * Attempts to fetch CSV from Google Sheet URL with fallbacks
+ */
+export async function fetchCSVFromGoogleSheet(url: string): Promise<string> {
+  if (!url) throw new Error("Spreadsheet URL is empty.");
+  
+  const trimmed = url.trim();
+  const primaryUrl = convertToCSVUrl(trimmed);
+  const fallbackUrl = getExportCSVUrl(trimmed);
+
+  // Try primary URL (gviz/tq)
+  try {
+    const res = await fetch(primaryUrl);
+    if (res.ok) {
+      const text = await res.text();
+      if (text && !text.includes("<!DOCTYPE html>")) {
+        return text;
+      }
+    }
+  } catch (e) {
+    // Continue to fallback
+  }
+
+  // Try fallback URL (export?format=csv)
+  if (fallbackUrl && fallbackUrl !== primaryUrl) {
+    try {
+      const res = await fetch(fallbackUrl);
+      if (res.ok) {
+        const text = await res.text();
+        if (text && !text.includes("<!DOCTYPE html>")) {
+          return text;
+        }
+      }
+    } catch (e) {
+      // Fallback failed
+    }
+  }
+
+  // Also try direct URL as last resort
+  if (trimmed !== primaryUrl && trimmed !== fallbackUrl) {
+    const res = await fetch(trimmed);
+    if (res.ok) {
+      const text = await res.text();
+      if (text && !text.includes("<!DOCTYPE html>")) return text;
+    }
+  }
+
+  throw new Error("HTTP 400: Google Sheet is private or restricted. Please set sharing to 'Anyone with the link' or publish to web as CSV.");
 }
 
 export function parseCSVToRoutine(csvText: string): RoutineItem[] {
