@@ -81,6 +81,32 @@ export interface IndexRow {
 export type NoteCategory = 'notes' | 'questions' | 'lab_reports';
 export type ExamType = 'SME' | 'SEE';
 
+export type AdminTab = "routines" | "notehub" | "broadcast" | "portal" | "features" | "status" | "admins";
+
+export interface AdminFieldPermissions {
+  canEditClassRoutine: boolean;
+  canEditExamRoutine: boolean;
+  canManageNoteHub: boolean;
+  canEditBroadcastBanner: boolean;
+  canEditPortalBranding: boolean;
+  canEditQuickLinks: boolean;
+  canEditFeatureToggles: boolean;
+  canEditMaintenanceMode: boolean;
+  canManageAdmins: boolean;
+}
+
+export interface AdminProfile {
+  id: string;
+  email: string;
+  name: string;
+  role: "superadmin" | "editor";
+  allowedTabs: AdminTab[];
+  allowedFields: AdminFieldPermissions;
+  createdAt: string;
+  updatedAt?: string;
+  createdByUser?: string;
+}
+
 export interface NoteHubItem {
   id: string;
   title: string;
