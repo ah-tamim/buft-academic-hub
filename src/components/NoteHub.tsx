@@ -509,7 +509,7 @@ export default function NoteHub() {
                           : "bg-slate-800 text-slate-300 hover:bg-slate-700"
                       }`}
                     >
-                      SME (Sessional / Midterm)
+                      SME (Semester Mid Exam)
                     </button>
 
                     <button
