@@ -77,3 +77,23 @@ export interface IndexRow {
   pageNo: string;
   remarks: string;
 }
+
+export type NoteCategory = 'notes' | 'questions' | 'lab_reports';
+export type ExamType = 'SME' | 'SEE';
+
+export interface NoteHubItem {
+  id: string;
+  title: string;
+  semester: string; // "1st Semester", "2nd Semester", ..., "8th Semester"
+  department: string; // e.g. "B.Sc. in AMT", "B.Sc. in FDT", "B.Sc. in CSE", etc.
+  category: NoteCategory; // 'notes' | 'questions' | 'lab_reports'
+  fileUrl: string;
+  authorName?: string; // Author / Owner name of note or lab report
+  examType?: ExamType; // 'SME' or 'SEE' for questions hub
+  batch?: string; // e.g. "Batch 251"
+  courseCode?: string;
+  description?: string;
+  fileType?: string; // "PDF", "Google Drive", "Word Doc", etc.
+  uploadedBy?: string;
+  dateAdded?: string;
+}
