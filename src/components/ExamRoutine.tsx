@@ -9,7 +9,7 @@ import {
   AlertTriangle, 
   GraduationCap, 
   Layers, 
-  Users,  
+  Users, 
   Compass,
   Award,
   CheckCircle2,
@@ -18,6 +18,7 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { fetchCSVFromGoogleSheet } from "../utils/csvParser";
 
 // ==========================================
 // 1. INLINED TYPES & INTERFACES
@@ -314,28 +315,30 @@ export default function ExamRoutine() {
       const afternoonUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=Afternoon`;
 
       // Fetch Morning sheet
-      const morningResponse = await fetch(morningUrl);
-      if (!morningResponse.ok) {
-        throw new Error("Failed to fetch 'Morning' tab data from Google Sheets.");
+      let morningExams: ExamRow[] = [];
+      try {
+        const morningCsvText = await fetchCSVFromGoogleSheet(morningUrl);
+        const morningRows = parseCSV(morningCsvText);
+        morningExams = parseSheetData(morningRows, "Morning");
+      } catch (e) {
+        // Fallback or continue
       }
-      const morningCsvText = await morningResponse.text();
-      const morningRows = parseCSV(morningCsvText);
-      const morningExams = parseSheetData(morningRows, "Morning");
 
       // Fetch Afternoon sheet
-      const afternoonResponse = await fetch(afternoonUrl);
-      if (!afternoonResponse.ok) {
-        throw new Error("Failed to fetch 'Afternoon' tab data from Google Sheets.");
+      let afternoonExams: ExamRow[] = [];
+      try {
+        const afternoonCsvText = await fetchCSVFromGoogleSheet(afternoonUrl);
+        const afternoonRows = parseCSV(afternoonCsvText);
+        afternoonExams = parseSheetData(afternoonRows, "Afternoon");
+      } catch (e) {
+        // Fallback or continue
       }
-      const afternoonCsvText = await afternoonResponse.text();
-      const afternoonRows = parseCSV(afternoonCsvText);
-      const afternoonExams = parseSheetData(afternoonRows, "Afternoon");
 
       // Combine and sort
       const combined = sortByDate([...morningExams, ...afternoonExams]);
       
       if (combined.length === 0) {
-        throw new Error("No exam entries found in the spreadsheet tabs. Verify sheet formatting.");
+        throw new Error("Unable to load exam spreadsheet. Please check link permissions in Admin Settings.");
       }
 
       setExams(combined);
@@ -358,8 +361,8 @@ export default function ExamRoutine() {
         }
       }
     } catch (err: any) {
-      console.error(err);
-      setError(err.message || "An unexpected error occurred while parsing the Google Spreadsheet.");
+      console.warn("Exam spreadsheet sync notice:", err?.message || err);
+      setError(err.message || "An unexpected issue occurred while loading the exam schedule.");
     } finally {
       setLoading(false);
     }
