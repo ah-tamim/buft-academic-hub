@@ -1,0 +1,20 @@
+{
+  "entities": {
+    "settings": {
+      "title": "Settings",
+      "description": "Global application configuration for routines and announcements",
+      "properties": {
+        "classRoutineSheetUrl": { "type": "string" },
+        "classRoutineLastUpdate": { "type": "string" },
+        "classRoutineSemester": { "type": "string" },
+        "examRoutineSheetUrl": { "type": "string" },
+        "examRoutineLastUpdate": { "type": "string" },
+        "examRoutineSemester": { "type": "string" },
+        "noticeBannerText": { "type": "string" },
+        "noticeBannerEnabled": { "type": "boolean" },
+        "updatedAt": { "type": "string" },
+        "updatedBy": { "type": "string" }
+      }
+    }
+  }
+}
