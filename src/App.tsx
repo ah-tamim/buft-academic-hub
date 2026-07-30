@@ -8,7 +8,9 @@ import RoutineViewer from './components/RoutineViewer';
 import { InstallPwaPrompt } from './components/InstallPwaPrompt';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ExamRoutine from "./components/ExamRoutine"; // Adjust path as needed
+import NoteHub from "./components/NoteHub";
 import { AdminPanel } from './components/AdminPanel';
+import { Footer } from './components/Footer';
 import { useAppConfig } from './context/AppConfigContext';
 import { downloadA4PDF } from './utils/pdfGenerator';
 import { motion, AnimatePresence } from 'motion/react';
@@ -38,11 +40,12 @@ export default function App() {
   const { config } = useAppConfig();
 
   // Current view: Reads clean path (e.g., /cgpa) or legacy hash for backward compatibility
-  const [currentView, setCurrentView] = useState<'home' | 'generator' | 'cgpa' | 'classroutine' | 'examroutine' | 'admin'>(() => {
+  const [currentView, setCurrentView] = useState<'home' | 'generator' | 'cgpa' | 'classroutine' | 'examroutine' | 'notehub' | 'admin'>(() => {
     const path = window.location.pathname;
     const currentHash = window.location.hash;
 
     if (path === '/admin' || path === '/admin-portal' || currentHash === '#/admin') return 'admin';
+    if (path === '/notehub' || currentHash === '#/notehub') return 'notehub';
     if (path === '/cgpa' || currentHash === '#/cgpa') return 'cgpa';
     if (path === '/pagemaker' || path === '/coverpage' || currentHash === '#/pagemaker') return 'generator';
     if (path === '/classroutine' || currentHash === '#/classroutine') return 'classroutine';
@@ -50,6 +53,7 @@ export default function App() {
     
     // Legacy support for query parameters
     const params = new URLSearchParams(window.location.search);
+    if (params.get('view') === 'notehub') return 'notehub';
     if (params.get('view') === 'cgpa') return 'cgpa';
     if (params.get('view') === 'admin') return 'admin';
     
@@ -57,7 +61,7 @@ export default function App() {
   });
 
   // Clean path navigation helper
-  const navigateTo = (path: string, view: 'home' | 'generator' | 'cgpa' | 'classroutine' | 'examroutine' | 'admin', tab?: 'lab' | 'assignment' | 'index') => {
+  const navigateTo = (path: string, view: 'home' | 'generator' | 'cgpa' | 'classroutine' | 'examroutine' | 'notehub' | 'admin', tab?: 'lab' | 'assignment' | 'index') => {
     setCurrentView(view);
     if (tab) setActiveTab(tab);
     window.history.pushState({}, '', path);
@@ -105,6 +109,9 @@ export default function App() {
       if (path === '/admin' || path === '/admin-portal' || currentHash === '#/admin') {
         setCurrentView('admin');
         if (currentHash) window.history.replaceState({}, '', '/admin');
+      } else if (path === '/notehub' || currentHash === '#/notehub') {
+        setCurrentView('notehub');
+        if (currentHash) window.history.replaceState({}, '', '/notehub');
       } else if (path === '/cgpa' || currentHash === '#/cgpa') {
         setCurrentView('cgpa');
         if (currentHash) window.history.replaceState({}, '', '/cgpa');
@@ -135,10 +142,15 @@ export default function App() {
   // Dynamic SEO meta description, canonical tags & document title updates
   useEffect(() => {
     let title = 'BUFT Academic HUB | Official University Academic Portal';
-    let description = 'Official academic tool suite for BGMEA University of Fashion & Technology (BUFT). Access CGPA Calculator, Class Routine, Exam Routine, and Cover Page Generator.';
+    let description = 'Official academic tool suite for BGMEA University of Fashion & Technology (BUFT). Access CGPA Calculator, Class Routine, Exam Routine, Note HUB, and Cover Page Generator.';
     let canonicalPath = '/';
 
-    if (currentView === 'cgpa') {
+    if (currentView === 'notehub') {
+      title = 'Note HUB | BUFT Notes, Exam Questions & Lab Reports Archive';
+      description = 'Explore lecture notes, question banks, and lab reports across all 8 semesters and departments at BGMEA University of Fashion & Technology (BUFT).';
+      canonicalPath = '/notehub';
+    } else if (currentView === 'cgpa') {
+
       title = 'BUFT CGPA Calculator | BGMEA University GPA & Credit Calculator';
       description = 'Accurate SGPA and CGPA Calculator for BUFT students. Calculate semester GPA, credit weightage, target marks, and grade points easily.';
       canonicalPath = '/cgpa';
@@ -395,6 +407,18 @@ export default function App() {
           >
             Tools
           </a>
+
+          <a 
+            href="/notehub"
+            onClick={(e) => {
+              e.preventDefault();
+              navigateTo('/notehub', 'notehub');
+            }}
+            className={`text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${currentView === 'notehub' ? 'text-emerald-600 font-extrabold' : 'text-slate-600 hover:text-emerald-600'}`}
+          >
+            <BookOpen className="h-3.5 w-3.5 text-emerald-600" />
+            <span>Note HUB</span>
+          </a>
          
           <a 
             href="/cgpa"
@@ -562,6 +586,23 @@ export default function App() {
               </a>
 
               <a 
+                href="/notehub"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setMobileMenuOpen(false);
+                  navigateTo('/notehub', 'notehub');
+                }}
+                className={`flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                  currentView === 'notehub'
+                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/40 shadow-sm'
+                    : 'text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                <BookOpen className="h-4 w-4 text-emerald-600" />
+                <span>Note HUB</span>
+              </a>
+
+              <a 
                 href="/cgpa"
                 onClick={(e) => {
                   e.preventDefault();
@@ -654,26 +695,27 @@ export default function App() {
           <p className="text-sm text-slate-600 max-w-md mb-6 leading-relaxed">
             {config.maintenanceMessage || "The portal is currently undergoing scheduled updates and maintenance. Please check back shortly!"}
           </p>
-          <a
-            href="/admin"
-            onClick={(e) => {
-              e.preventDefault();
-              navigateTo('/admin', 'admin');
-            }}
-            className="text-xs text-slate-400 hover:text-slate-600 underline"
-          >
-            Admin Portal Sign In
-          </a>
+          
         </main>
       ) : currentView === 'admin' ? (
-        <AdminPanel />
+        <div className="flex-1 w-full flex flex-col justify-between">
+          <AdminPanel />
+          <Footer />
+        </div>
+      ) : currentView === 'notehub' ? (
+        <main className="flex-1 w-full no-print animate-fade-in flex flex-col justify-between">
+          <NoteHub />
+          <Footer />
+        </main>
       ) : currentView === 'classroutine' ? (
-        <main className="flex-1 max-w-5xl mx-auto w-full px-4 lg:px-8 py-10 lg:py-16 flex flex-col items-center no-print animate-fade-in">
+        <main className="flex-1 max-w-5xl mx-auto w-full px-4 lg:px-8 py-10 lg:py-16 flex flex-col items-center justify-between no-print animate-fade-in">
           <RoutineViewer />
+          <Footer />
         </main>
       ) : currentView === 'examroutine' ? (
-        <main className="flex-1 max-w-6xl mx-auto w-full px-4 lg:px-8 py-10 lg:py-16 flex flex-col items-center no-print animate-fade-in">
+        <main className="flex-1 max-w-6xl mx-auto w-full px-4 lg:px-8 py-10 lg:py-16 flex flex-col items-center justify-between no-print animate-fade-in">
           <ExamRoutine />
+          <Footer />
         </main>
       ) : currentView === 'cgpa' ? (
         <main className="flex-1 max-w-5xl mx-auto w-full px-4 lg:px-8 py-10 lg:py-16 flex flex-col items-center no-print animate-fade-in">
@@ -694,12 +736,7 @@ export default function App() {
             <CgpaCalculator />
           </div>
 
-          <footer className="mt-16 text-center text-slate-400 text-[11px] font-medium border-t border-slate-200/50 pt-6 w-full max-w-5xl">
-            <p>© 2026 BUFT Academic HUB.</p>
-            <p className="mt-1 text-slate-500 font-semibold flex items-center justify-center gap-1">
-              Made with <Heart className="h-3 w-3 text-red-500 fill-red-500 inline" /> for BUFTians | Ahsan Habib Tamim (TE 242)
-            </p>
-          </footer>
+          <Footer />
         </main>
       ) : currentView === 'home' ? (
         <main className="flex-1 max-w-7xl mx-auto w-full px-4 lg:px-8 py-10 lg:py-16 flex flex-col items-center justify-center no-print">
@@ -816,6 +853,30 @@ export default function App() {
               </div>
               <div className="mt-6 flex items-center text-xs font-bold text-emerald-600 group-hover:translate-x-1 transition-transform">
                 <span>Start Designing</span>
+                <span className="ml-1">&rarr;</span>
+              </div>
+            </a>
+
+            {/* NOTE HUB CARD */}
+            <a 
+              href="/notehub"
+              onClick={(e) => {
+                e.preventDefault();
+                navigateTo('/notehub', 'notehub');
+              }}
+              className="bg-white/80 backdrop-blur-sm border border-slate-100/80 p-6 rounded-3xl hover:border-emerald-300/60 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between"
+            >
+              <div>
+                <div className="bg-emerald-100 text-emerald-700 p-3 rounded-2xl w-fit mb-5 group-hover:scale-110 transition-transform">
+                  <BookOpen className="h-6 w-6" />
+                </div>
+                <h3 className="font-extrabold text-lg text-slate-900 mb-2">Note HUB</h3>
+                <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                  Access lecture notes, question banks, and lab reports across 8 semesters and departments.
+                </p>
+              </div>
+              <div className="mt-6 flex items-center text-xs font-bold text-emerald-600 group-hover:translate-x-1 transition-transform">
+                <span>Explore Note HUB</span>
                 <span className="ml-1">&rarr;</span>
               </div>
             </a>
@@ -938,12 +999,7 @@ export default function App() {
           </motion.div>
 
           {/* FOOTER */}
-          <footer className="mt-16 text-center text-slate-400 text-[11px] font-medium border-t border-slate-200/50 pt-6 w-full max-w-5xl">
-            <p>© 2026 BUFT Academic HUB. </p>
-            <p className="mt-1 text-slate-500 font-semibold flex items-center justify-center gap-1">
-              Made with <Heart className="h-3 w-3 text-red-500 fill-red-500 inline" /> for BUFTians | Ahsan Habib Tamim (TE 242)
-            </p>
-          </footer>
+          <Footer />
         </main>
       ) : (
         /* WORKSPACE GENERATOR VIEW */
@@ -1054,6 +1110,8 @@ export default function App() {
                     />
                   </div>
                 </div>
+
+                <Footer />
               </div>
             </div>
           </div>
