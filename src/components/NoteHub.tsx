@@ -603,7 +603,7 @@ export default function NoteHub() {
                       {item.authorName && (
                         <div className="flex items-center gap-1.5 text-xs text-emerald-800 font-semibold bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100/80 w-fit">
                           <User className="w-3.5 h-3.5 text-emerald-600" />
-                          <span>{item.category === "notes" ? "Author:" : "Prepared by:"} {item.authorName}</span>
+                          <span>{item.category === "notes" ? "Prepared by:" : "Prepared by:"} {item.authorName}</span>
                         </div>
                       )}
 
