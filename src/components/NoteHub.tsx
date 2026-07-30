@@ -183,7 +183,7 @@ export default function NoteHub() {
             <div className="flex items-center gap-2">
               <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-semibold flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5" />
-                BUFT Student Academic Resource Portal
+                Academic Resource HUB
               </span>
             </div>
 
@@ -192,7 +192,7 @@ export default function NoteHub() {
             </h1>
 
             <p className="text-xs md:text-sm text-slate-300 max-w-2xl leading-relaxed">
-              Step-by-step academic archive for BGMEA University of Fashion &amp; Technology. Select your semester first to unlock your department files, question archives, and lab manuals.
+             
             </p>
           </div>
 
@@ -407,7 +407,7 @@ export default function NoteHub() {
                     <BookOpen className="w-5 h-5 shrink-0 text-emerald-300" />
                     <div className="text-left">
                       <div className="text-sm font-bold">1. Note HUB</div>
-                      <div className="text-[10px] text-emerald-200 font-normal">Lecture notes with Author</div>
+                      <div className="text-[10px] text-emerald-200 font-normal">Lecture &amp; Topic Notes</div>
                     </div>
                   </div>
                   <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono ${
@@ -453,7 +453,7 @@ export default function NoteHub() {
                     <FileCode className="w-5 h-5 shrink-0 text-purple-300" />
                     <div className="text-left">
                       <div className="text-sm font-bold">3. Lab Reports HUB</div>
-                      <div className="text-[10px] text-purple-200 font-normal">Lab Manuals &amp; Owner</div>
+                      <div className="text-[10px] text-purple-200 font-normal">Lab Manuals &amp; Reports</div>
                     </div>
                   </div>
                   <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono ${
