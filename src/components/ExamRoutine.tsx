@@ -9,7 +9,7 @@ import {
   AlertTriangle, 
   GraduationCap, 
   Layers, 
-  Users, 
+  Users,  
   Compass,
   Award,
   CheckCircle2,
