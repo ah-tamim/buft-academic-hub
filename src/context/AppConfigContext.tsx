@@ -40,6 +40,7 @@ export interface PortalConfig {
   enableCoverPageMaker: boolean;
   enableClassRoutine: boolean;
   enableExamRoutine: boolean;
+  enableNoteHub: boolean;
 
   updatedAt?: string;
   updatedBy?: string;
@@ -77,6 +78,7 @@ export const DEFAULT_PORTAL_CONFIG: PortalConfig = {
   enableCoverPageMaker: true,
   enableClassRoutine: true,
   enableExamRoutine: true,
+  enableNoteHub: true,
 };
 
 interface AppConfigContextType {
