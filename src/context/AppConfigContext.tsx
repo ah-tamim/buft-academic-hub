@@ -3,15 +3,44 @@ import { db, doc, onSnapshot, setDoc } from "../lib/firebase";
 import { APP_CONFIG } from "../config";
 
 export interface PortalConfig {
+  // Class Routine Settings
   classRoutineSheetUrl: string;
   classRoutineLastUpdate: string;
   classRoutineSemester: string;
+  classRoutineNotice: string;
+  
+  // Exam Routine Settings
   examRoutineSheetUrl: string;
   examRoutineLastUpdate: string;
   examRoutineSemester: string;
   examName: string;
+  examNotice: string;
+  
+  // Notice & Broadcast Banner
   noticeBannerText: string;
   noticeBannerEnabled: boolean;
+  noticeBannerType: 'info' | 'warning' | 'alert' | 'success';
+
+  // Portal Branding & Contact Information
+  portalTitle: string;
+  portalSubtitle: string;
+  contactEmail: string;
+  helplinePhone: string;
+  universityName: string;
+
+  // External Portal & Quick Links
+  googleDriveLink: string;
+  noticeBoardUrl: string;
+  busScheduleUrl: string;
+
+  // Feature Toggles & Maintenance Mode
+  maintenanceMode: boolean;
+  maintenanceMessage: string;
+  enableCgpaCalculator: boolean;
+  enableCoverPageMaker: boolean;
+  enableClassRoutine: boolean;
+  enableExamRoutine: boolean;
+
   updatedAt?: string;
   updatedBy?: string;
 }
@@ -20,12 +49,34 @@ export const DEFAULT_PORTAL_CONFIG: PortalConfig = {
   classRoutineSheetUrl: APP_CONFIG.sheetUrl,
   classRoutineLastUpdate: APP_CONFIG.lastUpdateDate,
   classRoutineSemester: APP_CONFIG.semester,
+  classRoutineNotice: "",
+
   examRoutineSheetUrl: "https://docs.google.com/spreadsheets/d/1DcEso5N-DUqfLXcOJxCg5efXJyahZwk4IEdWoGqe0Do/edit?usp=sharing",
   examRoutineLastUpdate: APP_CONFIG.lastUpdateDate,
   examRoutineSemester: "Spring 2026 (261)",
   examName: "SEE",
+  examNotice: "",
+
   noticeBannerText: "",
-  noticeBannerEnabled: false
+  noticeBannerEnabled: false,
+  noticeBannerType: "info",
+
+  portalTitle: "BUFT Academic Hub",
+  portalSubtitle: "BGMEA University of Fashion & Technology — Official Routine & Academic Portal",
+  contactEmail: "academic@buft.edu.bd",
+  helplinePhone: "+880 9678-002838",
+  universityName: "BGMEA University of Fashion & Technology (BUFT)",
+
+  googleDriveLink: "https://drive.google.com",
+  noticeBoardUrl: "https://buft.edu.bd/notice",
+  busScheduleUrl: "https://buft.edu.bd/transport",
+
+  maintenanceMode: false,
+  maintenanceMessage: "The portal is currently undergoing scheduled updates. Please check back shortly.",
+  enableCgpaCalculator: true,
+  enableCoverPageMaker: true,
+  enableClassRoutine: true,
+  enableExamRoutine: true,
 };
 
 interface AppConfigContextType {
