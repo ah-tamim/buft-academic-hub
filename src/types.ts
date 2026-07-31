@@ -86,6 +86,7 @@ export type AdminTab = "routines" | "notehub" | "broadcast" | "portal" | "featur
 export interface AdminFieldPermissions {
   canEditClassRoutine: boolean;
   canEditExamRoutine: boolean;
+  canEditAcademicCalendar: boolean;
   canManageNoteHub: boolean;
   canEditBroadcastBanner: boolean;
   canEditPortalBranding: boolean;
