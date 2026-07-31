@@ -8,6 +8,7 @@ import RoutineViewer from './components/RoutineViewer';
 import { InstallPwaPrompt } from './components/InstallPwaPrompt';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ExamRoutine from "./components/ExamRoutine"; // Adjust path as needed
+import AcademicCalendar from "./components/AcademicCalendar";
 import NoteHub from "./components/NoteHub";
 import { AdminPanel } from './components/AdminPanel';
 import { Footer } from './components/Footer';
@@ -41,7 +42,7 @@ export default function App() {
   const { config } = useAppConfig();
 
   // Current view: Reads clean path (e.g., /cgpa) or legacy hash for backward compatibility
-  const [currentView, setCurrentView] = useState<'home' | 'generator' | 'cgpa' | 'classroutine' | 'examroutine' | 'notehub' | 'admin'>(() => {
+  const [currentView, setCurrentView] = useState<'home' | 'generator' | 'cgpa' | 'classroutine' | 'examroutine' | 'academiccalendar' | 'notehub' | 'admin'>(() => {
     const path = window.location.pathname;
     const currentHash = window.location.hash;
 
@@ -51,18 +52,20 @@ export default function App() {
     if (path === '/pagemaker' || path === '/coverpage' || currentHash === '#/pagemaker') return 'generator';
     if (path === '/classroutine' || currentHash === '#/classroutine') return 'classroutine';
     if (path === '/examroutine' || currentHash === '#/examroutine') return 'examroutine';
+    if (path === '/academiccalendar' || path === '/academic-calendar' || currentHash === '#/academiccalendar') return 'academiccalendar';
     
     // Legacy support for query parameters
     const params = new URLSearchParams(window.location.search);
     if (params.get('view') === 'notehub') return 'notehub';
     if (params.get('view') === 'cgpa') return 'cgpa';
+    if (params.get('view') === 'academiccalendar') return 'academiccalendar';
     if (params.get('view') === 'admin') return 'admin';
     
     return 'home';
   });
 
   // Clean path navigation helper
-  const navigateTo = (path: string, view: 'home' | 'generator' | 'cgpa' | 'classroutine' | 'examroutine' | 'notehub' | 'admin', tab?: 'lab' | 'assignment' | 'index') => {
+  const navigateTo = (path: string, view: 'home' | 'generator' | 'cgpa' | 'classroutine' | 'examroutine' | 'academiccalendar' | 'notehub' | 'admin', tab?: 'lab' | 'assignment' | 'index') => {
     setCurrentView(view);
     if (tab) setActiveTab(tab);
     window.history.pushState({}, '', path);
@@ -125,6 +128,9 @@ export default function App() {
       } else if (path === '/examroutine' || currentHash === '#/examroutine') { 
         setCurrentView('examroutine');
         if (currentHash) window.history.replaceState({}, '', '/examroutine');
+      } else if (path === '/academiccalendar' || path === '/academic-calendar' || currentHash === '#/academiccalendar') { 
+        setCurrentView('academiccalendar');
+        if (currentHash) window.history.replaceState({}, '', '/academiccalendar');
       } else if (path === '/' && (currentHash === '' || currentHash === '#/')) {
         setCurrentView('home');
         if (currentHash) window.history.replaceState({}, '', '/');
@@ -163,6 +169,10 @@ export default function App() {
       title = 'BUFT Exam Routine | Midterm & Final Examination Schedule';
       description = 'Check official BUFT midterm and final exam schedules. Search exam routines by course code, room number, date, and timing.';
       canonicalPath = '/examroutine';
+    } else if (currentView === 'academiccalendar') {
+      title = 'BUFT Academic Calendar | Official Semester Events & Schedules';
+      description = 'View official BUFT academic calendar, term schedules, holidays, and semester events.';
+      canonicalPath = '/academiccalendar';
     } else if (currentView === 'generator') {
       title = 'BUFT Cover Page Generator | Lab & Assignment Cover PDF';
       description = 'Create and download official BUFT assignment and lab report cover pages with high-resolution A4 PDF export.';
@@ -455,6 +465,17 @@ export default function App() {
             <span>Exam Routine</span>
           </a>
           <a 
+            href="/academiccalendar"
+            onClick={(e) => {
+              e.preventDefault();
+              navigateTo('/academiccalendar', 'academiccalendar');
+            }}
+            className={`text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${currentView === 'academiccalendar' ? 'text-emerald-600 font-extrabold' : 'text-slate-600 hover:text-emerald-600'}`}
+          >
+            <Table className="h-3.5 w-3.5 text-emerald-600" />
+            <span>Academic Calendar</span>
+          </a>
+          <a 
             href="https://naabilll.github.io/buft-bus-tracker/" 
             target="_blank" 
             rel="noopener noreferrer" 
@@ -655,6 +676,23 @@ export default function App() {
               </a>
 
               <a 
+                href="/academiccalendar"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setMobileMenuOpen(false);
+                  navigateTo('/academiccalendar', 'academiccalendar');
+                }}
+                className={`flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                  currentView === 'academiccalendar'
+                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/40 shadow-sm'
+                    : 'text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                <Table className="h-4 w-4 text-emerald-600" />
+                <span>Academic Calendar</span>
+              </a>
+
+              <a 
                 href="https://naabilll.github.io/buft-bus-tracker/" 
                 target="_blank" 
                 rel="noopener noreferrer" 
@@ -769,6 +807,33 @@ export default function App() {
               <h2 className="text-xl font-black text-slate-900">Exam Routine Under Maintenance</h2>
               <p className="text-xs text-slate-600 leading-relaxed font-medium">
                 {config.maintenanceMessage || "Exam Routine viewer is currently undergoing scheduled updates or maintenance. Please check back shortly!"}
+              </p>
+              <a
+                href="/"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigateTo('/', 'home');
+                }}
+                className="inline-block px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition cursor-pointer shadow-md"
+              >
+                Return to Home
+              </a>
+            </div>
+          )}
+          <Footer />
+        </main>
+      ) : currentView === 'academiccalendar' ? (
+        <main className="flex-1 max-w-6xl mx-auto w-full px-4 lg:px-8 py-10 lg:py-16 flex flex-col items-center justify-between no-print animate-fade-in">
+          {config.enableAcademicCalendar !== false ? (
+            <AcademicCalendar />
+          ) : (
+            <div className="max-w-xl mx-auto my-16 p-8 bg-white border border-amber-200 rounded-3xl text-center space-y-4 shadow-lg w-full">
+              <div className="w-14 h-14 bg-amber-100 text-amber-600 rounded-2xl mx-auto flex items-center justify-center">
+                <Wrench className="w-7 h-7 animate-bounce" />
+              </div>
+              <h2 className="text-xl font-black text-slate-900">Academic Calendar Under Maintenance</h2>
+              <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                {config.maintenanceMessage || "Academic Calendar viewer is currently undergoing scheduled updates or maintenance. Please check back shortly!"}
               </p>
               <a
                 href="/"
@@ -1089,6 +1154,37 @@ export default function App() {
               </div>
               <div className="mt-6 flex items-center text-xs font-bold text-emerald-600 group-hover:translate-x-1 transition-transform">
                 <span>View Exam Routine</span>
+                <span className="ml-1">&rarr;</span>
+              </div>
+            </a>
+
+            {/* ACADEMIC CALENDAR CARD */}
+            <a 
+              href="/academiccalendar"
+              onClick={(e) => {
+                e.preventDefault();
+                navigateTo('/academiccalendar', 'academiccalendar');
+              }}
+              className="bg-white/80 backdrop-blur-sm border border-slate-100/80 p-6 rounded-3xl hover:border-teal-300/60 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-5">
+                  <div className="bg-teal-100 text-teal-700 p-3 rounded-2xl w-fit group-hover:scale-110 transition-transform">
+                    <Table className="h-6 w-6" />
+                  </div>
+                  {config.enableAcademicCalendar === false && (
+                    <span className="px-2 py-0.5 rounded text-[10px] bg-amber-100 text-amber-800 font-bold border border-amber-200">
+                      Maintenance
+                    </span>
+                  )}
+                </div>
+                <h3 className="font-extrabold text-lg text-slate-900 mb-2">Academic Calendar</h3>
+                <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                  Check semester events, key dates & academic holidays.
+                </p>
+              </div>
+              <div className="mt-6 flex items-center text-xs font-bold text-teal-600 group-hover:translate-x-1 transition-transform">
+                <span>View Academic Calendar</span>
                 <span className="ml-1">&rarr;</span>
               </div>
             </a>
