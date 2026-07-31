@@ -16,6 +16,13 @@ export interface PortalConfig {
   examName: string;
   examNotice: string;
   
+  // Academic Calendar Settings
+  academicCalendarSheetUrl: string;
+  academicCalendarLastUpdate: string;
+  academicCalendarSemester: string;
+  academicCalendarNotice: string;
+  showAcademicCalendarExportPdf?: boolean;
+  
   // Notice & Broadcast Banner
   noticeBannerText: string;
   noticeBannerEnabled: boolean;
@@ -40,6 +47,7 @@ export interface PortalConfig {
   enableCoverPageMaker: boolean;
   enableClassRoutine: boolean;
   enableExamRoutine: boolean;
+  enableAcademicCalendar: boolean;
   enableNoteHub: boolean;
 
   updatedAt?: string;
@@ -57,6 +65,12 @@ export const DEFAULT_PORTAL_CONFIG: PortalConfig = {
   examRoutineSemester: "Spring 2026 (261)",
   examName: "SEE",
   examNotice: "",
+
+  academicCalendarSheetUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSmHiHQGisHhpQu2tlL4ilcGjoibkp6_kA7QtYuCLiU5RvkEafHYqe1jS7gWrsNDBHMl9nVtG8vncJE/pub?gid=73818628&single=true&output=csv",
+  academicCalendarLastUpdate: APP_CONFIG.lastUpdateDate,
+  academicCalendarSemester: "Spring 2026 (261)",
+  academicCalendarNotice: "",
+  showAcademicCalendarExportPdf: false,
 
   noticeBannerText: "",
   noticeBannerEnabled: false,
@@ -78,6 +92,7 @@ export const DEFAULT_PORTAL_CONFIG: PortalConfig = {
   enableCoverPageMaker: true,
   enableClassRoutine: true,
   enableExamRoutine: true,
+  enableAcademicCalendar: true,
   enableNoteHub: true,
 };
 
