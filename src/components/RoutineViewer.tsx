@@ -112,7 +112,7 @@ export default function RoutineViewer() {
     const targetUrl = appConfig.classRoutineSheetUrl || APP_CONFIG.sheetUrl;
     if (!targetUrl) {
       setSyncStatus("error");
-      setSyncMessage("Spreadsheet URL is not configured.");
+      setSyncMessage(" Error!");
       return;
     }
 
@@ -122,12 +122,12 @@ export default function RoutineViewer() {
     try {
       const csvText = await fetchCSVFromGoogleSheet(targetUrl);
       if (!csvText || !csvText.includes("Room Number")) {
-        throw new Error("Invalid spreadsheet format. Make sure the linked spreadsheet contains 'Room Number'.");
+        throw new Error("Error!");
       }
 
       const parsedItems = parseCSVToRoutine(csvText);
       if (parsedItems.length === 0) {
-        throw new Error("Could not parse any class records. Double check your spreadsheet structure.");
+        throw new Error("Error!");
       }
 
       // Sync successful!
