@@ -35,7 +35,8 @@ import {
   Calculator,
   Home,
   Menu,
-  Wrench
+  Wrench,
+  Share2
 } from 'lucide-react';
 
 export default function App() {
@@ -266,6 +267,44 @@ export default function App() {
   const [showAbout, setShowAbout] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Web Share API & Link Copy toast state
+  const [shareToast, setShareToast] = useState<string | null>(null);
+
+  const handleShare = async () => {
+    const shareData = {
+      title: 'BUFT Academic HUB',
+      text: 'Access CGPA Calculator, Class Routine, Exam Routine, Note HUB, and Cover Page Generator for BUFT students!',
+      url: window.location.origin || window.location.href || 'https://bufthub.vercel.app/'
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        setShareToast('Shared successfully!');
+        setTimeout(() => setShareToast(null), 2500);
+        return;
+      } catch (err: any) {
+        if (err.name === 'AbortError') return; // User canceled share sheet
+        console.warn('Web Share API error, falling back to copy:', err);
+      }
+    }
+
+    // Fallback: Copy URL to Clipboard
+    try {
+      await navigator.clipboard.writeText(shareData.url);
+      setShareToast('Link copied to clipboard!');
+    } catch (err) {
+      const textArea = document.createElement('textarea');
+      textArea.value = shareData.url;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setShareToast('Link copied to clipboard!');
+    }
+    setTimeout(() => setShareToast(null), 2500);
+  };
   
   // Floating In-App bottom banner control state
   const [showBottomNotify, setShowBottomNotify] = useState(true);
@@ -500,11 +539,27 @@ export default function App() {
             <Award className="h-3.5 w-3.5" />
             <span>About</span>
           </button>
+          <button 
+            onClick={handleShare}
+            className="text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/60 px-2.5 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+            title="Share BUFT Academic HUB with classmates"
+          >
+            <Share2 className="h-3.5 w-3.5 text-emerald-600" />
+            <span>Share</span>
+          </button>
         </nav>
 
         <div className="flex items-center gap-2">
-          {/* Mobile elements container: Feedback & About on the left, followed by three-line button on the right */}
+          {/* Mobile elements container: Share, Feedback & About on the left, followed by three-line button on the right */}
           <div className="flex md:hidden items-center gap-1 select-none mr-1">
+            <button 
+              onClick={handleShare}
+              className="p-1.5 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition cursor-pointer flex items-center gap-1 text-xs font-bold"
+              title="Share App"
+              aria-label="Share App"
+            >
+              <Share2 className="h-4 w-4 text-emerald-600" />
+            </button>
             <button 
               onClick={() => setShowFeedback(true)}
               className="p-1.5 text-slate-600 hover:text-emerald-600 hover:bg-slate-50 rounded-xl transition cursor-pointer"
@@ -704,6 +759,17 @@ export default function App() {
                 </div>
                 <ExternalLink className="h-3 w-3 opacity-60" />
               </a>
+
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleShare();
+                }}
+                className="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold rounded-xl text-emerald-800 bg-emerald-50/90 hover:bg-emerald-100/80 border border-emerald-200/60 transition-all cursor-pointer w-full text-left"
+              >
+                <Share2 className="h-4 w-4 text-emerald-600" />
+                <span>Share BUFT Academic HUB</span>
+              </button>
             </div>
           </motion.div>
         )}
@@ -1665,6 +1731,21 @@ export default function App() {
 
       {/* PWA TOP INSTALL PROMPT BANNER */}
       <InstallPwaPrompt />
+
+      {/* SHARE TOAST NOTIFICATION */}
+      <AnimatePresence>
+        {shareToast && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            className="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 text-white text-xs font-bold px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 border border-slate-700/80 pointer-events-none backdrop-blur-md"
+          >
+            <Check className="h-4 w-4 text-emerald-400 shrink-0" />
+            <span>{shareToast}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );
