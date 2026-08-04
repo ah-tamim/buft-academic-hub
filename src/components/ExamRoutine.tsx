@@ -307,7 +307,7 @@ export default function ExamRoutine() {
       const url = appConfig.examRoutineSheetUrl || config.spreadsheetUrl;
       const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
       if (!match || !match[1]) {
-        throw new Error("Invalid Google Spreadsheet URL in configuration.");
+        throw new Error("Error!");
       }
       
       const spreadsheetId = match[1];
@@ -338,7 +338,7 @@ export default function ExamRoutine() {
       const combined = sortByDate([...morningExams, ...afternoonExams]);
       
       if (combined.length === 0) {
-        throw new Error("Unable to load exam spreadsheet. Please check link permissions in Admin Settings.");
+        throw new Error("Unable to load exam routine data");
       }
 
       setExams(combined);
@@ -361,7 +361,7 @@ export default function ExamRoutine() {
         }
       }
     } catch (err: any) {
-      console.warn("Exam spreadsheet sync notice:", err?.message || err);
+      console.warn("Exam routine data sync notice:", err?.message || err);
       setError(err.message || "An unexpected issue occurred while loading the exam schedule.");
     } finally {
       setLoading(false);
