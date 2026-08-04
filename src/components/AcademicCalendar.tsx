@@ -322,20 +322,20 @@ export default function AcademicCalendar() {
     try {
       const url = appConfig.academicCalendarSheetUrl || appConfig.classRoutineSheetUrl;
       if (!url) {
-        throw new Error("Academic Calendar spreadsheet URL is empty.");
+        throw new Error("Academic Calendar data is empty.");
       }
 
       const csvText = await fetchCSVFromGoogleSheet(url);
       const parsed = parseAcademicCalendarCSV(csvText);
 
       if (parsed.mainSchedule.length === 0 && parsed.importantDaysCategories.length === 0) {
-        throw new Error("Spreadsheet reached, but appears empty or lacks valid table data.");
+        throw new Error("Error!");
       }
 
       setCalendarData(parsed);
     } catch (err: any) {
-      console.warn("Academic Calendar sheet error:", err);
-      setError(err?.message || "Failed to load Academic Calendar data. Please verify spreadsheet URL and permissions.");
+      console.warn("Academic Calendar data error:", err);
+      setError(err?.message || "Failed to load Academic Calendar data.");
     } finally {
       setLoading(false);
     }
@@ -630,7 +630,7 @@ export default function AcademicCalendar() {
               <div className="p-3 bg-rose-50 text-rose-600 rounded-2xl mb-4">
                 <AlertTriangle className="h-8 w-8" />
               </div>
-              <h3 className="text-lg font-bold text-slate-800">Spreadsheet Loading Error</h3>
+              <h3 className="text-lg font-bold text-slate-800">Data Loading Error</h3>
               <p className="text-slate-600 max-w-md mt-2 text-xs sm:text-sm leading-relaxed">{error}</p>
               <button
                 onClick={fetchData}
